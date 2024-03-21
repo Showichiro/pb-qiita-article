@@ -8,7 +8,7 @@
     "schema:gen": "drizzle-kit generate:sqlite --out migrations --schema src/schema.ts",
     "format": "biome format src/ --write",
     "lint": "biome lint src/ --fix",
-    "schema:apply": "bun wrangler d1 migrations apply pb-qiita-articles"
+    "schema:apply": "wrangler d1 migrations apply pb-qiita-articles"
   },
   "dependencies": {
     "@hono/swagger-ui": "^0.2.1",
