@@ -1,16 +1,9 @@
 import { renderer } from "@/renderer";
-import { drizzle } from "drizzle-orm/d1";
-import * as schema from "@/db/schema";
-import { zValidator } from "@hono/zod-validator";
-import { z } from "zod";
-import { basicAuth } from "hono/basic-auth";
-import { logger } from "hono/logger";
-import { findAllArticles } from "@/db/findAllArticles";
-import { Hono } from "hono";
-
-type Bindings = {
-  DB: D1Database;
-};
+import { drizzle, zValidator, basicAuth, logger, Hono } from "@/lib";
+import { schema } from "@/db";
+import { findAllArticles } from "@/db";
+import { Bindings } from "@/types";
+import { articlesQuery } from "@/schemas";
 
 const app = new Hono<{ Bindings: Bindings }>();
 
@@ -21,21 +14,15 @@ app
     "/api/*",
     basicAuth({ username: "pb-qiita-articles", password: "Ua:ciab7AeTh" })
   )
-  .get(
-    "/api/articles",
-    zValidator(
-      "query",
-      z.object({
-        limit: z.coerce.number().max(100).default(10).nullable(),
-        offset: z.coerce.number().default(0).nullable(),
-      })
-    ),
-    async (c) => {
-      const { limit, offset } = c.req.valid("query");
-      const db = drizzle(c.env.DB, { schema, logger: true });
-      const results = await findAllArticles(db, { limit, offset });
-      return c.json(results);
-    }
-  );
+  .get("/api/articles", zValidator("query", articlesQuery), async (c) => {
+    const query = c.req.valid("query");
+    const db = drizzle(c.env.DB, { schema, logger: true });
+    const results = await findAllArticles(db, {
+      ...query,
+      sinse: query.sinse ?? null,
+      until: query.until ?? null,
+    });
+    return c.json(results);
+  });
 
 export default app;

@@ -11,6 +11,6 @@ CREATE TABLE `articles` (
 CREATE TABLE `tags` (
 	`article_id` text,
 	`id` integer PRIMARY KEY NOT NULL,
-	`name` text,
+	`name` text NOT NULL,
 	FOREIGN KEY (`article_id`) REFERENCES `articles`(`id`) ON UPDATE cascade ON DELETE cascade
 );

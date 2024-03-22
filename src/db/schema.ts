@@ -1,5 +1,4 @@
-import { relations } from "drizzle-orm";
-import { text, integer, sqliteTable } from "drizzle-orm/sqlite-core";
+import { relations, text, integer, sqliteTable } from "@/lib";
 
 export const articles = sqliteTable("articles", {
   id: text("id").primaryKey(),
@@ -21,7 +20,7 @@ export const tags = sqliteTable("tags", {
     onUpdate: "cascade",
   }),
   id: integer("id").primaryKey(),
-  name: text("name"),
+  name: text("name").notNull(),
 });
 
 export const tagRelation = relations(tags, ({ one }) => ({
