@@ -5,14 +5,12 @@
     "build": "vite build",
     "preview": "wrangler pages dev dist",
     "deploy": "$npm_execpath run build && wrangler pages deploy dist",
-    "schema:gen": "drizzle-kit generate:sqlite --out migrations --schema src/schema.ts",
+    "schema:gen": "drizzle-kit generate:sqlite --out migrations --schema src/db/schema.ts",
     "format": "biome format src/ --write",
     "lint": "biome lint src/ --fix",
     "schema:apply": "wrangler d1 migrations apply pb-qiita-articles"
   },
   "dependencies": {
-    "@hono/swagger-ui": "^0.2.1",
-    "@hono/zod-openapi": "^0.9.8",
     "@hono/zod-validator": "^0.2.0",
     "biome": "^0.3.3",
     "drizzle-orm": "^0.30.4",
