@@ -23,7 +23,7 @@ type FindAllArticlesReturnType = Array<Article>;
  * @example
  * const articles = await findAllArticles(db, { limit: 10, offset: 0 });
  */
-type Config = {
+export type FindAllArticlesConfig = {
   limit: number | null;
   offset: number | null;
   sinse: string | null;
@@ -41,7 +41,7 @@ type Config = {
  */
 export const findAllArticles = async (
   db: DrizzleD1Database<typeof schema>,
-  config: Config
+  config: FindAllArticlesConfig
 ): Promise<FindAllArticlesReturnType> => {
   const defaultLimit = 10;
   const defaultOffset = 0;
