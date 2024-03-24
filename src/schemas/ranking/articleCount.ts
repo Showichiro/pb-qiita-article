@@ -1,8 +1,8 @@
 import { z } from "zod";
 
-export const articleCountGroupByUserQuery = z.object({
-  sinse: z.coerce.string().datetime().nullish(),
-  until: z.coerce.string().datetime().nullish(),
+export const countQuery = z.object({
+  sinse: z.coerce.date().nullish().or(z.string().length(0)),
+  until: z.coerce.date().nullish().or(z.string().length(0)),
 });
 
 export const articleCountGroupByUserSchema = z.object({

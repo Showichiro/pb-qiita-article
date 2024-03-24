@@ -24,7 +24,7 @@ import { ArticleCountGroupByUser } from "@/schemas";
  * };
  * ```
  */
-type Config = {
+export type RankingConfig = {
   sinse: string | null;
   until: string | null;
   sort?: "asc" | "desc";
@@ -47,7 +47,7 @@ type Config = {
  */
 export const getArticleCountGroupByUser = async (
   db: DrizzleD1Database<typeof schema>,
-  { sinse, until, sort = "desc" }: Config
+  { sinse, until, sort = "desc" }: RankingConfig
 ): Promise<Array<ArticleCountGroupByUser>> => {
   const results = await db
     .select({
