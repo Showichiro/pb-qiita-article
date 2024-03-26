@@ -20,9 +20,10 @@
     "@cloudflare/workers-types": "^4.20240208.0",
     "@hono/vite-cloudflare-pages": "^0.2.4",
     "@hono/vite-dev-server": "^0.9.0",
+    "biome": "^0.3.3",
+    "bun-types": "^1.0.35",
     "drizzle-kit": "^0.20.14",
     "vite": "^5.0.12",
-    "wrangler": "^3.32.0",
-    "biome": "^0.3.3"
+    "wrangler": "^3.32.0"
   }
 }
