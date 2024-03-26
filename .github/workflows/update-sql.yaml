@@ -1,0 +1,32 @@
+name: update-sql
+
+on:
+  push:
+    branches: ["main"]
+  schedule:
+    - cron: "0 15 * * *"
+
+jobs:
+  update-sql:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+      - name: Install dependencies
+        run: bun install
+      - name: update-sql
+        run: bun run scripts/updateArticles.ts
+        env:
+          QIITA_API_KEY: ${{secrets.QIITA_API}}
+      - name: exec-updated-sql
+        run: for sql in data/**/*.sql; do bun wrangler d1 execute pb-qiita-articles --remote --file $sql; done
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      - name: Commit & Create PR
+        uses: peter-evans/create-pull-request@v5
+        with:
+          commit-message: Update SQL
+          delete-branch: true
+          title: Update SQL
