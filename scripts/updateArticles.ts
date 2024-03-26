@@ -93,4 +93,6 @@ if (apiKey) {
       break;
     }
   }
+} else {
+  throw new Error("QIITA_API_KEY is not set");
 }
