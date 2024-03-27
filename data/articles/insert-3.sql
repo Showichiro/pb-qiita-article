@@ -1,3 +1,4 @@
+INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('9a9abe2b4f6c8d0efccf','合成関数の微分がなぜかけ算になる(連鎖律)のかを理解する','masatomix','Masatomi KINO','2019-05-19T22:08:33+09:00',1,0); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('a4cc9f09feb2eabb99ca','あるデータの列から、教師データとテストデータを重複なくランダムに取得する方法(Python/NumPy)','masatomix','Masatomi KINO','2019-05-12T20:16:48+09:00',0,3); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('947f607b245bd5ec4794','PythonのNumPyやPandasを使って、ランダムなテストデータを作成する','masatomix','Masatomi KINO','2019-05-05T17:39:47+09:00',4,8); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('d4e5fb3b52fa4c92366f','機械学習にでてくる勾配降下法/勾配ベクトルなどの整理。ついでにPythonで試してみた。','masatomix','Masatomi KINO','2019-05-02T00:11:51+09:00',28,20); 
@@ -47,7 +48,7 @@ INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_coun
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('9bb9ee58c51023685ecd','変更を一時的に退避する、git stash','ryotaro76','riga','2018-09-27T10:14:54+09:00',1,0); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('2c4fafe02994dce4ffa6','GitLab APIを利用する','ryotaro76','riga','2018-09-25T16:15:34+09:00',1,1); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('f92e8ad3c74e678ce2b2','Spring Boot を使って特定のリクエストだけ文字エンコードを変更する','ryotaro76','riga','2018-09-25T16:14:34+09:00',1,1); 
-INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('07a37ee8d141ceb4fa6f','SourceTreeで、マージとリベースを行う','masatomix','Masatomi KINO','2018-09-25T16:11:48+09:00',98,103); 
+INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('07a37ee8d141ceb4fa6f','SourceTreeで、マージとリベースを行う','masatomix','Masatomi KINO','2018-09-25T16:11:48+09:00',98,104); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('6ba8126c9adca4e9cb5d','独自ドメイン取得からメール運用までの手順3(アドレス作成とMXレコード設定、メール送受信)','masatomix','Masatomi KINO','2018-09-17T20:41:21+09:00',10,11); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('da8efe3691758ebcafe0','UiPathでJSON文字列をDictionaryで生成する','masatomix','Masatomi KINO','2018-09-13T19:56:56+09:00',9,5); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('ae619eed7699e677338d','UiPath Studio 2018.3 Early access - Beta release をさわってみた2 (カスタムアクティビティ)','masatomix','Masatomi KINO','2018-09-12T15:21:44+09:00',2,2); 
@@ -97,4 +98,3 @@ INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_coun
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('1c6394abba968cd7722a','ファイルパスの操作','masatomix','Masatomi KINO','2016-12-07T17:48:33+09:00',1,1); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('ca4c504e290d088aaa4c','Git強制チェックアウト','ryotaro76','riga','2016-10-20T16:28:02+09:00',17,9); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('4e273be640d2716a7b91','vmstat','ryotaro76','riga','2016-10-13T14:16:48+09:00',5,4); 
-INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('0cc1ef1d6c001954e14f','Githubをもっと便利に使う','ryotaro76','riga','2016-10-04T14:45:03+09:00',1,2); 
