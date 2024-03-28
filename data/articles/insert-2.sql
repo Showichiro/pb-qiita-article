@@ -1,3 +1,4 @@
+INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('f09e4e4f052dcac47f8a','【Redmine】Redmineの更新をPowerAutomateを利用してTeamsに通知する','kazuki_yoshida','Kazuki Yoshida','2022-06-26T11:58:46+09:00',14,13); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('f8d989b4895f4ef3aafe','[UiPath]非推奨化のリストから。マシンキーが2022年10月から非推奨化される？','masatomix','Masatomi KINO','2022-06-22T08:48:03+09:00',11,8); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('a66a52ef813e168195bb','【WSL2】WSL2環境でOh my zshを入れてAgnosterのテーマを適用する','kazuki_yoshida','Kazuki Yoshida','2022-06-14T02:01:26+09:00',12,10); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('4cc83940f420559d84f1','Reactのチュートリアル用のRepositoryを作りました(とハンズオンの感想)','umiushi_1','','2022-06-09T22:07:16+09:00',2,2); 
@@ -97,4 +98,3 @@ INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_coun
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('0678e56e56af27efa110','誤差逆伝播ででてくるアフィン変換の微分演算の導出と、Pythonで実際に計算してみた','masatomix','Masatomi KINO','2019-06-05T11:05:27+09:00',29,32); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('146ab67dd91263898f5b','Qiitaの下書きで、数式プレビューが無効になった？？','masatomix','Masatomi KINO','2019-06-01T14:53:23+09:00',1,0); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('6c8405fada7a6fead7cc','Spring Security で「Hello World！」','ryotaro76','riga','2019-05-20T17:40:34+09:00',12,10); 
-INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('42b322a8db61e5b4d65f','パーセプトロンによるXOR実装の可視化を入り口にして、ニューラルネットワークの基礎を理解する','masatomix','Masatomi KINO','2019-05-20T14:38:00+09:00',16,17); 
