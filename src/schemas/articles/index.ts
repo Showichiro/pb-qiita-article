@@ -4,7 +4,7 @@ import { tagSchema } from "../tags";
 export const articlesQuery = z.object({
   limit: z.coerce.number().max(100).default(10).nullable(),
   offset: z.coerce.number().default(0).nullable(),
-  sinse: z.coerce.string().datetime().nullish(),
+  since: z.coerce.string().datetime().nullish(),
   until: z.coerce.string().datetime().nullish(),
 });
 

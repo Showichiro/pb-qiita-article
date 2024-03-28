@@ -18,7 +18,7 @@ type FindAllArticlesReturnType = Array<Article>;
  *
  * @param limit - Limit number of articles.
  * @param offset - Offset number of articles.
- * @param sinse - Date since articles.
+ * @param since - Date since articles.
  * @param until - Date until articles.
  * @example
  * const articles = await findAllArticles(db, { limit: 10, offset: 0 });
@@ -26,7 +26,7 @@ type FindAllArticlesReturnType = Array<Article>;
 export type FindAllArticlesConfig = {
   limit: number | null;
   offset: number | null;
-  sinse: string | null;
+  since: string | null;
   until: string | null;
 };
 
@@ -45,19 +45,19 @@ export const findAllArticles = async (
 ): Promise<FindAllArticlesReturnType> => {
   const defaultLimit = 10;
   const defaultOffset = 0;
-  const { limit, offset, sinse, until } = config;
+  const { limit, offset, since, until } = config;
   const results = await db.query.articles.findMany({
     limit: limit ?? defaultLimit,
     offset: offset ?? defaultOffset,
     where:
-      !sinse && !until
+      !since && !until
         ? undefined
         : (fileds, { between, gte, lte }) => {
-            if (sinse && until) {
-              return between(fileds.createdAt, sinse, until);
+            if (since && until) {
+              return between(fileds.createdAt, since, until);
             }
-            if (sinse) {
-              return gte(fileds.createdAt, sinse);
+            if (since) {
+              return gte(fileds.createdAt, since);
             }
             if (until) {
               return lte(fileds.createdAt, until);

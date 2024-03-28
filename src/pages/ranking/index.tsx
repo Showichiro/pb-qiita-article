@@ -14,7 +14,7 @@ export const RankingPage: FC<{
       <h1>記事数・いいね数ランキング</h1>
       <RankingRange
         default={{
-          since: config.sinse ? dateTimetoDateString(config.sinse) : null,
+          since: config.since ? dateTimetoDateString(config.since) : null,
           until: config.until ? dateTimetoDateString(config.until) : null,
         }}
       />

@@ -64,7 +64,7 @@ export const RankingRange: FC<{
 }> = ({ default: { since, until } }) => {
   return (
     <form action="/ranking" method="GET">
-      <input type="date" name="sinse" value={since ?? undefined} />
+      <input type="date" name="since" value={since ?? undefined} />
       ～
       <input type="date" name="until" value={until ?? undefined} />
       <button type="submit">検索する</button>

@@ -16,7 +16,7 @@ import { RankingConfig, schema } from "@/db";
  */
 export const getLikesCountGroupByUser = async (
   db: DrizzleD1Database<typeof schema>,
-  { sinse, until, sort = "desc" }: RankingConfig
+  { since, until, sort = "desc" }: RankingConfig
 ): Promise<Array<LikesCountSchema>> => {
   const results = await db
     .select({
@@ -27,14 +27,14 @@ export const getLikesCountGroupByUser = async (
     })
     .from(schema.articles)
     .where(
-      !sinse && !until
+      !since && !until
         ? undefined
         : (fileds) => {
-            if (sinse && until) {
-              return between(fileds.createdAt, sinse, until);
+            if (since && until) {
+              return between(fileds.createdAt, since, until);
             }
-            if (sinse) {
-              return gte(fileds.createdAt, sinse);
+            if (since) {
+              return gte(fileds.createdAt, since);
             }
             if (until) {
               return lte(fileds.createdAt, until);

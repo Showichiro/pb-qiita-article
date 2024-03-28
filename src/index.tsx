@@ -24,7 +24,7 @@ app
         db={db}
         config={{
           ...query,
-          sinse: query.sinse ?? null,
+          since: query.since ?? null,
           until: query.until ?? null,
         }}
       />
@@ -38,12 +38,12 @@ app
         db={db}
         config={{
           ...query,
-          sinse:
-            typeof query.sinse === "string"
-              ? query.sinse
-              : query.sinse == null
+          since:
+            typeof query.since === "string"
+              ? query.since
+              : query.since == null
               ? null
-              : dateToDatetimeString(query.sinse),
+              : dateToDatetimeString(query.since),
           until:
             typeof query.until === "string"
               ? query.until
@@ -60,7 +60,7 @@ app
     const db = drizzle(c.env.DB, { schema, logger: true });
     const results = await findAllArticles(db, {
       ...query,
-      sinse: query.sinse || null,
+      since: query.since || null,
       until: query.until || null,
     });
     return c.json(results);
@@ -72,12 +72,12 @@ app
       const query = c.req.valid("query");
       const db = drizzle(c.env.DB, { schema, logger: true });
       const results = await getArticleCountGroupByUser(db, {
-        sinse:
-          typeof query.sinse === "string"
-            ? query.sinse
-            : query.sinse == null
+        since:
+          typeof query.since === "string"
+            ? query.since
+            : query.since == null
             ? null
-            : dateToDatetimeString(query.sinse),
+            : dateToDatetimeString(query.since),
         until:
           typeof query.until === "string"
             ? query.until
@@ -95,12 +95,12 @@ app
       const query = c.req.valid("query");
       const db = drizzle(c.env.DB, { schema, logger: true });
       const results = await getLikesCountGroupByUser(db, {
-        sinse:
-          typeof query.sinse === "string"
-            ? query.sinse
-            : query.sinse == null
+        since:
+          typeof query.since === "string"
+            ? query.since
+            : query.since == null
             ? null
-            : dateToDatetimeString(query.sinse),
+            : dateToDatetimeString(query.since),
         until:
           typeof query.until === "string"
             ? query.until

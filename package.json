@@ -8,7 +8,9 @@
     "schema:gen": "drizzle-kit generate:sqlite --out migrations --schema src/db/schema.ts",
     "format": "biome format src/ --write",
     "lint": "biome lint src/ --fix",
-    "schema:apply": "wrangler d1 migrations apply pb-qiita-articles"
+    "schema:apply": "wrangler d1 migrations apply pb-qiita-articles",
+    "test": "vitest",
+    "test:ci": "vitest --bail 1 --silent --run"
   },
   "dependencies": {
     "@hono/zod-validator": "^0.2.0",
@@ -23,7 +25,9 @@
     "biome": "^0.3.3",
     "bun-types": "^1.0.35",
     "drizzle-kit": "^0.20.14",
+    "miniflare": "^3.20240320.0",
     "vite": "^5.0.12",
+    "vitest": "^1.4.0",
     "wrangler": "^3.32.0"
   }
 }

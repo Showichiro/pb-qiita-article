@@ -4,13 +4,13 @@ import { ArticleCountGroupByUser } from "@/schemas";
 
 /**
  * Config for getArticleCountGroupByUser.
- * @property {string | null} sinse Start date.
+ * @property {string | null} since Start date.
  * @property {string | null} until End date.
  * @property {"asc" | "desc"} sort Sort order. Default is "desc".
  * @example
  * ```ts
  * const config: Config = {
- *   sinse: "2024-01-01T00:00:00Z",
+ *   since: "2024-01-01T00:00:00Z",
  *   until: "2023-01-01T00:00:00Z",
  *   sort: "asc",
  * };
@@ -18,14 +18,14 @@ import { ArticleCountGroupByUser } from "@/schemas";
  * @example
  * ```ts
  * const config: Config = {
- *   sinse: null,
+ *   since: null,
  *   until: null,
  *   sort: "asc",
  * };
  * ```
  */
 export type RankingConfig = {
-  sinse: string | null;
+  since: string | null;
   until: string | null;
   sort?: "asc" | "desc";
 };
@@ -38,7 +38,7 @@ export type RankingConfig = {
  * @example
  * ```ts
  * const config: Config = {
- *   sinse: "2024-01-01T00:00:00Z",
+ *   since: "2024-01-01T00:00:00Z",
  *   until: "2023-01-01T00:00:00Z",
  *   sort: "asc",
  * };
@@ -47,7 +47,7 @@ export type RankingConfig = {
  */
 export const getArticleCountGroupByUser = async (
   db: DrizzleD1Database<typeof schema>,
-  { sinse, until, sort = "desc" }: RankingConfig
+  { since, until, sort = "desc" }: RankingConfig
 ): Promise<Array<ArticleCountGroupByUser>> => {
   const results = await db
     .select({
@@ -58,14 +58,14 @@ export const getArticleCountGroupByUser = async (
     })
     .from(schema.articles)
     .where(
-      !sinse && !until
+      !since && !until
         ? undefined
         : (fileds) => {
-            if (sinse && until) {
-              return between(fileds.createdAt, sinse, until);
+            if (since && until) {
+              return between(fileds.createdAt, since, until);
             }
-            if (sinse) {
-              return gte(fileds.createdAt, sinse);
+            if (since) {
+              return gte(fileds.createdAt, since);
             }
             if (until) {
               return lte(fileds.createdAt, until);

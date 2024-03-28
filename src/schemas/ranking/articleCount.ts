@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 export const countQuery = z.object({
-  sinse: z.coerce.date().nullish().or(z.string().length(0)),
+  since: z.coerce.date().nullish().or(z.string().length(0)),
   until: z.coerce.date().nullish().or(z.string().length(0)),
 });
 
