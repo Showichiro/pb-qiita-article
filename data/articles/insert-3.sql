@@ -1,3 +1,4 @@
+INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('42b322a8db61e5b4d65f','パーセプトロンによるXOR実装の可視化を入り口にして、ニューラルネットワークの基礎を理解する','masatomix','Masatomi KINO','2019-05-20T14:38:00+09:00',16,17); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('9a9abe2b4f6c8d0efccf','合成関数の微分がなぜかけ算になる(連鎖律)のかを理解する','masatomix','Masatomi KINO','2019-05-19T22:08:33+09:00',1,0); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('a4cc9f09feb2eabb99ca','あるデータの列から、教師データとテストデータを重複なくランダムに取得する方法(Python/NumPy)','masatomix','Masatomi KINO','2019-05-12T20:16:48+09:00',0,3); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('947f607b245bd5ec4794','PythonのNumPyやPandasを使って、ランダムなテストデータを作成する','masatomix','Masatomi KINO','2019-05-05T17:39:47+09:00',4,8); 
@@ -97,4 +98,3 @@ INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_coun
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('d62bd409b58cf5e248c0','数値をフォーマッティングして表示する','masatomix','Masatomi KINO','2016-12-09T13:41:23+09:00',0,0); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('1c6394abba968cd7722a','ファイルパスの操作','masatomix','Masatomi KINO','2016-12-07T17:48:33+09:00',1,1); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('ca4c504e290d088aaa4c','Git強制チェックアウト','ryotaro76','riga','2016-10-20T16:28:02+09:00',17,9); 
-INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('4e273be640d2716a7b91','vmstat','ryotaro76','riga','2016-10-13T14:16:48+09:00',5,4); 
