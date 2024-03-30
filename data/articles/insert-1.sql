@@ -1,4 +1,4 @@
-INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('0d4935f8e285bdabe806','VBAからAdobe Acrobatを制御してPDFファイルにタイムスタンプを付与する','pbcho','','2024-03-28T19:17:54+09:00',3,1); 
+INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('0d4935f8e285bdabe806','VBAからAdobe Acrobatを制御してPDFファイルにタイムスタンプを付与する','pbcho','','2024-03-28T19:17:54+09:00',3,2); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('790ff806ebaf9e4f54fa','【Git】エイリアス設定集','iketo','','2024-03-27T06:26:12+09:00',1,1); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('963a54a560f8d7944df0','VBAからAdobe Acrobatを制御してPDFファイルをデジタル署名する','pbcho','','2024-03-20T10:34:52+09:00',2,2); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('35d8bbba50ca33918e31','SpotifyAPIを使ってライブのセットリストからプレイリストを作りたい！（Part1）','y-hys','','2024-03-19T00:19:56+09:00',3,1); 
