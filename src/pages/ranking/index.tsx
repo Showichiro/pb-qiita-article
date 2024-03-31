@@ -1,4 +1,12 @@
-import { RankingRange } from "@/components";
+import {
+  Header,
+  PageLayout,
+  PageTitle,
+  RankingRange,
+  RankingScrollMenu,
+  Spinner,
+  ToTopButton,
+} from "@/components";
 import { RankningContainer } from "@/containers";
 import { RankingConfig, schema } from "@/db";
 import { DrizzleD1Database } from "@/lib";
@@ -11,16 +19,24 @@ export const RankingPage: FC<{
 }> = ({ config, db }) => {
   return (
     <>
-      <h1>記事数・いいね数ランキング</h1>
-      <RankingRange
-        default={{
-          since: config.since ? dateTimetoDateString(config.since) : null,
-          until: config.until ? dateTimetoDateString(config.until) : null,
-        }}
-      />
-      <Suspense fallback={"...loading"}>
-        <RankningContainer config={config} db={db} />
-      </Suspense>
+      <Header>
+        <RankingScrollMenu />
+      </Header>
+      <PageTitle label="記事数・いいね数ランキング" />
+      <PageLayout>
+        <div class="my-4">
+          <RankingRange
+            default={{
+              since: config.since ? dateTimetoDateString(config.since) : null,
+              until: config.until ? dateTimetoDateString(config.until) : null,
+            }}
+          />
+        </div>
+        <Suspense fallback={<Spinner />}>
+          <RankningContainer config={config} db={db} />
+        </Suspense>
+      </PageLayout>
+      <ToTopButton />
     </>
   );
 };

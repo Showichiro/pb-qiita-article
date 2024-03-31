@@ -11,6 +11,10 @@ export default defineConfig({
       entry: "src/index.tsx",
     }),
   ],
+  build: {
+    assetsDir: "static",
+    ssrEmitAssets: true,
+  },
   resolve: {
     alias: {
       "@": "/src",

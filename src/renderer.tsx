@@ -1,11 +1,12 @@
 import { jsxRenderer } from "hono/jsx-renderer";
+import styles from "./index.css?url";
 
 export const renderer = jsxRenderer(
   ({ children, title }) => {
     return (
-      <html>
+      <html data-theme="lemonade">
         <head>
-          <link href="/static/style.css" rel="stylesheet" />
+          <link href={styles} rel="stylesheet" />
           <title>{title}</title>
         </head>
         <body>{children}</body>

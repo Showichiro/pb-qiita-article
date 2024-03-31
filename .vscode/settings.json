@@ -4,5 +4,8 @@
     "[github-actions-workflow]": {
         "editor.defaultFormatter": "esbenp.prettier-vscode"
     },
-    "vitest.enable": true
+    "vitest.enable": true,
+    "[css]": {
+        "editor.defaultFormatter": "vscode.css-language-features"
+    }
 }
