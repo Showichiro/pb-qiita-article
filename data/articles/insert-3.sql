@@ -1,3 +1,4 @@
+INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('6c8405fada7a6fead7cc','Spring Security で「Hello World！」','ryotaro76','riga','2019-05-20T17:40:34+09:00',12,10); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('42b322a8db61e5b4d65f','パーセプトロンによるXOR実装の可視化を入り口にして、ニューラルネットワークの基礎を理解する','masatomix','Masatomi KINO','2019-05-20T14:38:00+09:00',16,17); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('9a9abe2b4f6c8d0efccf','合成関数の微分がなぜかけ算になる(連鎖律)のかを理解する','masatomix','Masatomi KINO','2019-05-19T22:08:33+09:00',1,0); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('a4cc9f09feb2eabb99ca','あるデータの列から、教師データとテストデータを重複なくランダムに取得する方法(Python/NumPy)','masatomix','Masatomi KINO','2019-05-12T20:16:48+09:00',0,3); 
@@ -97,4 +98,3 @@ INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_coun
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('87d0d5f72668d9c76089','Amazon Dash Button でSlackにデータを送信する','masatomix','Masatomi KINO','2016-12-11T14:02:20+09:00',5,9); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('d62bd409b58cf5e248c0','数値をフォーマッティングして表示する','masatomix','Masatomi KINO','2016-12-09T13:41:23+09:00',0,0); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('1c6394abba968cd7722a','ファイルパスの操作','masatomix','Masatomi KINO','2016-12-07T17:48:33+09:00',1,1); 
-INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('ca4c504e290d088aaa4c','Git強制チェックアウト','ryotaro76','riga','2016-10-20T16:28:02+09:00',17,9); 

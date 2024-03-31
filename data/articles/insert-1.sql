@@ -1,3 +1,4 @@
+INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('3e0e37154b57ac57be18','VBAからAdobe Acrobatを制御してPDFファイルに画像を追加する','pbcho','','2024-03-31T21:02:58+09:00',0,0); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('0d4935f8e285bdabe806','VBAからAdobe Acrobatを制御してPDFファイルにタイムスタンプを付与する','pbcho','','2024-03-28T19:17:54+09:00',3,2); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('790ff806ebaf9e4f54fa','【Git】エイリアス設定集','iketo','','2024-03-27T06:26:12+09:00',1,1); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('963a54a560f8d7944df0','VBAからAdobe Acrobatを制御してPDFファイルをデジタル署名する','pbcho','','2024-03-20T10:34:52+09:00',2,2); 
@@ -16,7 +17,7 @@ INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_coun
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('cdf3414ea67d5ccf58c0','redis 基本操作備忘録','iketo','','2023-11-28T17:37:49+09:00',3,1); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('76e26c01665289c01a17','Git 時空操作のススメ','ko-sato-primebrains','晃季 佐藤','2023-11-27T12:37:32+09:00',46,42); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('5cdbe957f4afd522e8e2','適格請求書発行事業者(インボイス)登録番号の調べ方','iketo','','2023-11-17T17:08:19+09:00',7,3); 
-INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('5f8ce746c51435d75f8f','自分のリポジトリをAIにコードレビューしてもらっていて快適です。','umiushi_1','','2023-11-17T13:07:07+09:00',13,13); 
+INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('5f8ce746c51435d75f8f','自分のリポジトリをAIにコードレビューしてもらっていて快適です。','umiushi_1','','2023-11-17T13:07:07+09:00',14,14); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('3c6e0e10b139e3149757','Bootstrap備忘録～グリッド～','PBKimura','','2023-11-16T13:58:32+09:00',2,0); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('81e65cbe6d8c6a161449','Reactでカウントダウン/ストップウォッチアプリを作って、不定期的にメンテナンスしています','umiushi_1','','2023-11-11T22:52:55+09:00',8,2); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('d6d0edc32c1414a2e02d','現場における動き方に関する自省録','pbueoka','上岡 颯人','2023-11-06T20:25:15+09:00',4,1); 
@@ -97,4 +98,3 @@ INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_coun
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('67247e1fcc7049cefcc0','[UiPath]外部アプリケーション機能(OAuth)によるOrchestrator APIコール実装方法(TypeScript版)','masatomix','Masatomi KINO','2022-07-20T00:29:48+09:00',7,1); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('f873fa1c5fea183b1211','Postmanがすごそう','umiushi_1','','2022-07-11T17:55:23+09:00',5,4); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('0bc82696d48cd998daa8','UiPath Orchestrator APIを非機密アプリケーションで使用するときの code_challenge 生成方法','masatomix','Masatomi KINO','2022-07-05T15:41:18+09:00',4,1); 
-INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('fdf1275293b4746269b3','UiPath製品群をプロキシ環境で使用するための環境設定手順 2022.4版','masatomix','Masatomi KINO','2022-07-05T00:00:17+09:00',9,2); 
