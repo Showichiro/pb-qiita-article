@@ -1,4 +1,10 @@
-import { Pagenation } from "@/components";
+import {
+  Header,
+  PageLayout,
+  Pagenation,
+  PageTitle,
+  Spinner,
+} from "@/components";
 import { ArticlesContainer } from "@/containers";
 import { FindAllArticlesConfig, schema } from "@/db";
 import { DrizzleD1Database } from "@/lib";
@@ -12,11 +18,16 @@ export const ArticlesPage: FC<{
   const page = (config.offset ?? 0) / limit + 1;
   return (
     <>
-      <h1>記事一覧</h1>
-      <Suspense fallback={"...loading"}>
-        <ArticlesContainer db={db} config={config} />
-      </Suspense>
-      <Pagenation page={page} limit={limit} />
+      <Header />
+      <PageTitle label="記事一覧" />
+      <PageLayout>
+        <Suspense fallback={<Spinner />}>
+          <ArticlesContainer db={db} config={config} />
+        </Suspense>
+        <div class="my-4">
+          <Pagenation page={page} limit={limit} />
+        </div>
+      </PageLayout>
     </>
   );
 };

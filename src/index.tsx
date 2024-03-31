@@ -16,10 +16,13 @@ const app = new Hono<{ Bindings: Bindings }>();
 app
   .use(renderer)
   .use(logger())
+  .get("/", (c) => {
+    return c.redirect("/articles");
+  })
   .get("/articles", zValidator("query", articlesQuery), (c) => {
     const query = c.req.valid("query");
     const db = drizzle(c.env.DB, { schema, logger: true });
-    return c.html(
+    return c.render(
       <ArticlesPage
         db={db}
         config={{
@@ -27,13 +30,16 @@ app
           since: query.since ?? null,
           until: query.until ?? null,
         }}
-      />
+      />,
+      {
+        title: "記事一覧",
+      }
     );
   })
   .get("/ranking", zValidator("query", countQuery), (c) => {
     const query = c.req.valid("query");
     const db = drizzle(c.env.DB, { schema, logger: true });
-    return c.html(
+    return c.render(
       <RankingPage
         db={db}
         config={{
@@ -51,7 +57,10 @@ app
               ? null
               : dateToDatetimeString(query.until),
         }}
-      />
+      />,
+      {
+        title: "ランキング",
+      }
     );
   })
   // API

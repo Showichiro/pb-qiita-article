@@ -5,18 +5,24 @@ export const Pagenation: FC<{
   limit: number;
 }> = ({ page, limit }) => {
   return (
-    <div>
+    <div className="join">
       <form action="/articles" method="get">
         <button
           type="submit"
           name="offset"
           value={(page - 2) * limit}
           disabled={page === 1}
+          className="join-item btn"
         >
           Prev
         </button>
-        <span>{page}</span>
-        <button type="submit" name="offset" value={page * limit}>
+        <span className="join-item btn">{page}</span>
+        <button
+          className="join-item btn"
+          type="submit"
+          name="offset"
+          value={page * limit}
+        >
           Next
         </button>
       </form>

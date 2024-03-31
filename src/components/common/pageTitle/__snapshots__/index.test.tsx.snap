@@ -1,0 +1,3 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`PageTitle > renders page title 1`] = `"<h1 class="text-4xl m-4">test</h1>"`;

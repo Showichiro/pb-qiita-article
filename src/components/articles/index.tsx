@@ -5,7 +5,7 @@ export const ArticlesTable: FC<{ articles: Array<Article> }> = ({
   articles,
 }) => {
   return (
-    <table>
+    <table class="table overflow-x-auto table-zebra">
       <thead>
         <tr>
           <th>タイトル</th>
@@ -17,9 +17,10 @@ export const ArticlesTable: FC<{ articles: Array<Article> }> = ({
       </thead>
       <tbody>
         {articles.map((article) => (
-          <tr key={article.id}>
+          <tr key={article.id} className="hover">
             <td>
               <a
+                className="link link-primary"
                 href={`https://qiita.com/${article.userId}/items/${article.id}`}
                 target="_blank"
               >
@@ -27,13 +28,22 @@ export const ArticlesTable: FC<{ articles: Array<Article> }> = ({
               </a>
             </td>
             <td>
-              {article.userId}
-              <span>{article.userName != "" && `(${article.userName})`}</span>
+              <a
+                className="link link-secondary"
+                href={`https://qiita.com/${article.userId}`}
+                target="_blank"
+              >
+                {article.userId}
+                <span>{article.userName != "" && `(${article.userName})`}</span>
+              </a>
             </td>
             <td>
               <ul>
                 {article.tags.map((tag) => (
-                  <li key={`${article.id}-${tag.name}`}>
+                  <li
+                    key={`${article.id}-${tag.name}`}
+                    className="badge badge-lg"
+                  >
                     <a
                       href={`https://qiita.com/tags/${tag.name}`}
                       target="_blank"

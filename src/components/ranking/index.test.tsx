@@ -1,5 +1,5 @@
 import { renderer } from "@/util";
-import { Ranking } from "@/components";
+import { Ranking, RankingRange, RankingScrollMenu } from "@/components";
 
 describe("Ranking", () => {
   it("should render ranking", async () => {
@@ -21,6 +21,22 @@ describe("Ranking", () => {
         ]}
       />
     );
+    expect(text).toMatchSnapshot();
+  });
+});
+
+describe("RankingRange", () => {
+  it("renders ranking date range", async () => {
+    const { text } = await renderer(
+      <RankingRange default={{ since: "2024-02-21", until: "2024-04-01" }} />
+    );
+    expect(text).toMatchSnapshot();
+  });
+});
+
+describe("RankingScrollMenu", () => {
+  it("renders ranking scroll menu", async () => {
+    const { text } = await renderer(<RankingScrollMenu />);
     expect(text).toMatchSnapshot();
   });
 });

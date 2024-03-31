@@ -1,9 +1,5 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`Pagenation > should render pagenation 1`] = `"<div><form action="/articles" method="get"><button type="submit" name="offset" value="-10" disabled="">Prev</button><span>1</span><button type="submit" name="offset" value="10">Next</button></form></div>"`;
+exports[`Pagenation > should render pagenation with active next page button 1`] = `"<div class="join"><form action="/articles" method="get"><button type="submit" name="offset" value="0" class="join-item btn">Prev</button><span class="join-item btn">2</span><button type="submit" name="offset" value="20" class="join-item btn">Next</button></form></div>"`;
 
-exports[`Pagenation > should render pagenation 2`] = `"<div><form action="/articles" method="get"><button type="submit" name="offset" value="0">Prev</button><span>2</span><button type="submit" name="offset" value="20">Next</button></form></div>"`;
-
-exports[`Pagenation > should render pagenation with active next page button 1`] = `"<div><form action="/articles" method="get"><button type="submit" name="offset" value="0">Prev</button><span>2</span><button type="submit" name="offset" value="20">Next</button></form></div>"`;
-
-exports[`Pagenation > should render pagenation with disabled next page button 1`] = `"<div><form action="/articles" method="get"><button type="submit" name="offset" value="-10" disabled="">Prev</button><span>1</span><button type="submit" name="offset" value="10">Next</button></form></div>"`;
+exports[`Pagenation > should render pagenation with disabled next page button 1`] = `"<div class="join"><form action="/articles" method="get"><button type="submit" name="offset" value="-10" disabled="" class="join-item btn">Prev</button><span class="join-item btn">1</span><button type="submit" name="offset" value="10" class="join-item btn">Next</button></form></div>"`;
