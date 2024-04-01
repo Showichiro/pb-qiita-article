@@ -39,6 +39,7 @@ export const Header: FC<{ children?: Child }> = ({ children }) => {
           class="btn btn-ghost text-xl"
           href="https://qiita.com/organizations/primebrains"
           target="_blank"
+          rel="noopener noreferrer"
         >
           PB Qiita
         </a>
