@@ -26,7 +26,7 @@ export const Ranking: FC<{
                   <td>{index + 1}</td>
                   <td>
                     <a
-                      className="link link-primary"
+                      className="link"
                       href={`https://qiita.com/${user.userId}`}
                       target="_blank"
                       rel="noopener noreferrer"
@@ -59,7 +59,7 @@ export const Ranking: FC<{
                   <td>{index + 1}</td>
                   <td>
                     <a
-                      className="link link-primary"
+                      className="link"
                       href={`https://qiita.com/${user.userId}`}
                       rel="noopener noreferrer"
                     >
@@ -83,11 +83,12 @@ export const RankingRange: FC<{
 }> = ({ default: { since, until } }) => {
   return (
     <form action="/ranking" method="GET">
-      <label htmlFor="since">
+      <label>
+        <span class="mr-2">since:</span>
         <input type="date" name="since" value={since ?? undefined} />
       </label>
-      <span class="mx-2">to</span>
-      <label htmlFor="until">
+      <label class="ml-2">
+        <span class="mr-2">until:</span>
         <input type="date" name="until" value={until ?? undefined} />
       </label>
       <div class="pt-4">
@@ -101,20 +102,18 @@ export const RankingRange: FC<{
 
 export const RankingScrollMenu: FC = () => {
   return (
-    <ul class="menu menu-horizontal px-1">
-      <li>
-        <details>
-          <summary>Menu</summary>
-          <ul class="p-2 bg-base-200 rounded-t-none w-56">
-            <li>
-              <a href="#posts">投稿数</a>
-            </li>
-            <li>
-              <a href="#likes">いいね数</a>
-            </li>
-          </ul>
-        </details>
-      </li>
-    </ul>
+    <li>
+      <details>
+        <summary>Menu</summary>
+        <ul class="p-2 bg-base-200 rounded-t-none w-56">
+          <li>
+            <a href="#posts">投稿数</a>
+          </li>
+          <li>
+            <a href="#likes">いいね数</a>
+          </li>
+        </ul>
+      </details>
+    </li>
   );
 };
