@@ -29,6 +29,7 @@ export const Ranking: FC<{
                       className="link link-primary"
                       href={`https://qiita.com/${user.userId}`}
                       target="_blank"
+                      rel="noopener noreferrer"
                     >
                       {user.userId}
                       <span>{user.userName != "" && `(${user.userName})`}</span>
@@ -60,6 +61,7 @@ export const Ranking: FC<{
                     <a
                       className="link link-primary"
                       href={`https://qiita.com/${user.userId}`}
+                      rel="noopener noreferrer"
                     >
                       {user.userId}
                       <span>{user.userName != "" && `(${user.userName})`}</span>

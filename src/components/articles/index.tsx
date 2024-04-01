@@ -23,6 +23,7 @@ export const ArticlesTable: FC<{ articles: Array<Article> }> = ({
                 className="link link-primary"
                 href={`https://qiita.com/${article.userId}/items/${article.id}`}
                 target="_blank"
+                rel="noopener noreferrer"
               >
                 {article.title}
               </a>
@@ -32,6 +33,7 @@ export const ArticlesTable: FC<{ articles: Array<Article> }> = ({
                 className="link link-secondary"
                 href={`https://qiita.com/${article.userId}`}
                 target="_blank"
+                rel="noopener noreferrer"
               >
                 {article.userId}
                 <span>{article.userName != "" && `(${article.userName})`}</span>
@@ -47,6 +49,7 @@ export const ArticlesTable: FC<{ articles: Array<Article> }> = ({
                     <a
                       href={`https://qiita.com/tags/${tag.name}`}
                       target="_blank"
+                      rel="noopener noreferrer"
                     >
                       {tag.name}
                     </a>
