@@ -5,7 +5,7 @@ export const ArticlesTable: FC<{ articles: Array<Article> }> = ({
   articles,
 }) => {
   return (
-    <table class="table overflow-x-auto table-zebra">
+    <table class="table overflow-x-auto">
       <thead>
         <tr>
           <th>タイトル</th>
@@ -20,7 +20,7 @@ export const ArticlesTable: FC<{ articles: Array<Article> }> = ({
           <tr key={article.id} className="hover">
             <td>
               <a
-                className="link link-primary"
+                className="link"
                 href={`https://qiita.com/${article.userId}/items/${article.id}`}
                 target="_blank"
                 rel="noopener noreferrer"
@@ -30,7 +30,7 @@ export const ArticlesTable: FC<{ articles: Array<Article> }> = ({
             </td>
             <td>
               <a
-                className="link link-secondary"
+                className="link"
                 href={`https://qiita.com/${article.userId}`}
                 target="_blank"
                 rel="noopener noreferrer"
