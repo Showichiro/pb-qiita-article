@@ -37,3 +37,4 @@ jobs:
           directory: dist
           branch: production
           gitHubToken: ${{ secrets.GITHUB_TOKEN }}
+          wranglerVersion: "3"

@@ -36,3 +36,4 @@ jobs:
           projectName: pb-qiita-articles
           directory: dist
           gitHubToken: ${{ secrets.GITHUB_TOKEN }}
+          wranglerVersion: "3"
