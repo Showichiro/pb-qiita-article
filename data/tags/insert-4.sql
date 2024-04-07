@@ -1,4 +1,5 @@
-DELETE FROM tags WHERE article_id in ('1c6394abba968cd7722a','ca4c504e290d088aaa4c','4e273be640d2716a7b91','0cc1ef1d6c001954e14f','cf817514cbd55a027d70','d457c4a79715115e1a42','139ed17f65f2581f8de9','7887d619856d0ead13e1'); 
+DELETE FROM tags WHERE article_id in ('d62bd409b58cf5e248c0','1c6394abba968cd7722a','ca4c504e290d088aaa4c','4e273be640d2716a7b91','0cc1ef1d6c001954e14f','cf817514cbd55a027d70','d457c4a79715115e1a42','139ed17f65f2581f8de9','7887d619856d0ead13e1'); 
+INSERT OR REPLACE INTO tags(article_id,name) VALUES('d62bd409b58cf5e248c0','Java'); 
 INSERT OR REPLACE INTO tags(article_id,name) VALUES('1c6394abba968cd7722a','Java'); 
 INSERT OR REPLACE INTO tags(article_id,name) VALUES('ca4c504e290d088aaa4c','Git'); 
 INSERT OR REPLACE INTO tags(article_id,name) VALUES('4e273be640d2716a7b91','Linuxコマンド'); 
