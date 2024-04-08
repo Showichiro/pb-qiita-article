@@ -18,10 +18,10 @@ jobs:
         run: bun run scripts/updateArticles.ts
         env:
           QIITA_API_KEY: ${{secrets.QIITA_API}}
-      # - name: exec-updated-sql
-      #   run: for sql in data/**/*.sql; do bun wrangler d1 execute pb-qiita-articles --remote --file $sql; done
-      #   env:
-      #     CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      - name: exec-updated-sql
+        run: for sql in data/**/*.sql; do bun wrangler d1 execute pb-qiita-articles --remote --file $sql; done
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
       - name: Commit & Create PR
         uses: peter-evans/create-pull-request@v6
         with:
