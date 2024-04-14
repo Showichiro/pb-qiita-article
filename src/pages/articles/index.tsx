@@ -3,6 +3,7 @@ import {
   PageLayout,
   Pagenation,
   PageTitle,
+  SelectBoxPageLimit,
   Spinner,
 } from "@/components";
 import { ArticlesContainer } from "@/containers";
@@ -24,8 +25,13 @@ export const ArticlesPage: FC<{
         <Suspense fallback={<Spinner />}>
           <ArticlesContainer db={db} config={config} />
         </Suspense>
-        <div class="my-4">
-          <Pagenation page={page} limit={limit} />
+        <div class="my-4 flex">
+          <div>
+            <Pagenation page={page} limit={limit} />
+          </div>
+          <div class="ml-2">
+            <SelectBoxPageLimit page={page} limit={limit} />
+          </div>
         </div>
       </PageLayout>
     </>

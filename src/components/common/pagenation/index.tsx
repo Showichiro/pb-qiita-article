@@ -7,6 +7,7 @@ export const Pagenation: FC<{
   return (
     <div className="join">
       <form action="/articles" method="get">
+        <input type="hidden" name="limit" value={limit} />
         <button
           type="submit"
           name="offset"

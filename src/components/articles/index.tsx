@@ -1,4 +1,5 @@
 import { Article } from "@/schemas";
+import { html } from "hono/html";
 import { FC } from "hono/jsx";
 
 export const ArticlesTable: FC<{ articles: Array<Article> }> = ({
@@ -63,5 +64,41 @@ export const ArticlesTable: FC<{ articles: Array<Article> }> = ({
         ))}
       </tbody>
     </table>
+  );
+};
+
+export const SelectBoxPageLimit: FC<{ page: number; limit: number }> = ({
+  page,
+  limit,
+}) => {
+  const script = html`
+    <script>
+      const page = ${page};
+      const handleSelect = (e) => {
+        const limit = e.target.value;
+        const offset = (page - 1) * limit;
+        const url = new URL(location.href);
+        url.searchParams.set("limit", limit);
+        url.searchParams.set("offset", offset);
+        location.href = url.href;
+      };
+      const select = document.querySelector("select#page-limit");
+      select.addEventListener("change", handleSelect);
+    </script>
+  `;
+  return (
+    <>
+      <select
+        class="select select-bordered"
+        aria-label="page-limit"
+        id="page-limit"
+        name="page-limit"
+      >
+        {[10, 20, 30].map((l) => (
+          <option selected={limit === l}>{l}</option>
+        ))}
+      </select>
+      {script}
+    </>
   );
 };
