@@ -8,6 +8,8 @@ export const articlesQuery = z.object({
   until: z.coerce.string().datetime().nullish(),
 });
 
+export type ArticlesQuery = z.infer<typeof articlesQuery>;
+
 export const articleSchema = z.object({
   id: z.string(),
   title: z.string(),

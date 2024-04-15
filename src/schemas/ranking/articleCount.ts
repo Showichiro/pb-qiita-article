@@ -5,6 +5,8 @@ export const countQuery = z.object({
   until: z.coerce.date().nullish().or(z.string().length(0)),
 });
 
+export type CountQuery = z.infer<typeof countQuery>;
+
 export const articleCountGroupByUserSchema = z.object({
   userId: z.string(),
   userName: z.string(),
