@@ -8,7 +8,7 @@ import { createRoute, z } from "@hono/zod-openapi";
 export const postCountsRankingRoute = createRoute({
   method: "get",
   path: "/api/ranking/post-counts",
-  tags: ["article"],
+  tags: ["ranking"],
   request: {
     query: countQuery,
   },
@@ -30,7 +30,7 @@ export const postCountsRankingRoute = createRoute({
 export const likesCountsRankingRoute = createRoute({
   method: "get",
   path: "/api/ranking/likes-counts",
-  tags: ["article"],
+  tags: ["ranking"],
   request: {
     query: countQuery,
   },
