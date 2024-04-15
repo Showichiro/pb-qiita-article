@@ -13,6 +13,8 @@
     "test:ci": "vitest --bail 1 --silent --run"
   },
   "dependencies": {
+    "@hono/swagger-ui": "^0.2.1",
+    "@hono/zod-openapi": "^0.11.0",
     "@hono/zod-validator": "^0.2.0",
     "drizzle-orm": "^0.30.4",
     "hono": "^4.1.3",
