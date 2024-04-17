@@ -1,7 +1,5 @@
 import { renderer } from "@/renderer";
 import { zValidator, logger } from "@/lib";
-import { OpenAPIHono } from "@hono/zod-openapi";
-import { Bindings } from "@/types";
 import { articlesQuery, countQuery } from "@/schemas";
 import { swaggerUI } from "@hono/swagger-ui";
 import {
@@ -16,10 +14,9 @@ import {
   postCountsHandler,
   rankingPageHandler,
 } from "@/handlers";
+import { createHonoWithDBAndOpenAPI } from "./util/factory";
 
-const app = new OpenAPIHono<{ Bindings: Bindings }>();
-
-app
+export default createHonoWithDBAndOpenAPI()
   // openapi
   .doc("/doc", {
     openapi: "3.0.0",
@@ -57,5 +54,3 @@ app
     zValidator("query", countQuery),
     likesCountsRankingHandler
   );
-
-export default app;

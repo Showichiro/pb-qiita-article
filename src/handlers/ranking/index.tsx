@@ -1,17 +1,12 @@
-import { drizzle } from "@/lib";
 import { CountQuery } from "@/schemas";
 import { Handler } from "hono";
-import { Bindings } from "@/types";
-import {
-  getArticleCountGroupByUser,
-  getLikesCountGroupByUser,
-  schema,
-} from "@/db";
+import { getArticleCountGroupByUser, getLikesCountGroupByUser } from "@/db";
 import { dateToDatetimeString } from "@/util";
 import { RankingPage } from "@/pages";
+import { Env } from "@/util";
 
 export const postCountsHandler: Handler<
-  { Bindings: Bindings },
+  Env,
   "/api/ranking/post-counts",
   {
     in: { query: CountQuery };
@@ -19,8 +14,7 @@ export const postCountsHandler: Handler<
   }
 > = async (c) => {
   const query = c.req.valid("query");
-  const db = drizzle(c.env.DB, { schema, logger: true });
-  const results = await getArticleCountGroupByUser(db, {
+  const results = await getArticleCountGroupByUser(c.var.db, {
     since:
       typeof query.since === "string"
         ? query.since
@@ -38,7 +32,7 @@ export const postCountsHandler: Handler<
 };
 
 export const likesCountsRankingHandler: Handler<
-  { Bindings: Bindings },
+  Env,
   "/api/ranking/likes-counts",
   {
     in: { query: CountQuery };
@@ -46,8 +40,7 @@ export const likesCountsRankingHandler: Handler<
   }
 > = async (c) => {
   const query = c.req.valid("query");
-  const db = drizzle(c.env.DB, { schema, logger: true });
-  const results = await getLikesCountGroupByUser(db, {
+  const results = await getLikesCountGroupByUser(c.var.db, {
     since:
       typeof query.since === "string"
         ? query.since
@@ -65,7 +58,7 @@ export const likesCountsRankingHandler: Handler<
 };
 
 export const rankingPageHandler: Handler<
-  { Bindings: Bindings },
+  Env,
   "/ranking",
   {
     in: { query: CountQuery };
@@ -73,10 +66,9 @@ export const rankingPageHandler: Handler<
   }
 > = (c) => {
   const query = c.req.valid("query");
-  const db = drizzle(c.env.DB, { schema, logger: true });
   return c.render(
     <RankingPage
-      db={db}
+      db={c.var.db}
       config={{
         ...query,
         since:
