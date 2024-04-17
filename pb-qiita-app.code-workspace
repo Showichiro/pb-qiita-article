@@ -1,0 +1,27 @@
+{
+	"folders": [
+		{
+			"path": ".",
+			"name": "root"
+		}
+	],
+	"settings": {
+		"editor.formatOnSave": true,
+		"[javascript]": {
+			"editor.defaultFormatter": "biomejs.biome",
+		},
+		"[github-actions-workflow]": {
+			"editor.defaultFormatter": "esbenp.prettier-vscode"
+		},
+		"[css]": {
+			"editor.defaultFormatter": "vscode.css-language-features"
+		},
+	},
+	"extensions": {
+		"recommendations": [
+			"biomejs.biome",
+			"vitest.explorer",
+			"bierner.lit-html"
+		]
+	}
+}

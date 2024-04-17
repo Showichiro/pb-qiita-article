@@ -1,12 +1,11 @@
-import { findAllArticles, schema } from "@/db";
-import { drizzle } from "@/lib";
+import { findAllArticles } from "@/db";
 import { ArticlesPage } from "@/pages";
 import { ArticlesQuery } from "@/schemas";
-import { Bindings } from "@/types";
+import { Env } from "@/util";
 import { Handler } from "hono";
 
 export const articleApiHandler: Handler<
-  { Bindings: Bindings },
+  Env,
   "/api/articles",
   {
     in: {
@@ -18,8 +17,7 @@ export const articleApiHandler: Handler<
   }
 > = async (c) => {
   const query = c.req.valid("query");
-  const db = drizzle(c.env.DB, { schema, logger: true });
-  const results = await findAllArticles(db, {
+  const results = await findAllArticles(c.var.db, {
     ...query,
     since: query.since || null,
     until: query.until || null,
@@ -28,7 +26,7 @@ export const articleApiHandler: Handler<
 };
 
 export const articlePageHandler: Handler<
-  { Bindings: Bindings },
+  Env,
   "/articles",
   {
     in: {
@@ -40,10 +38,9 @@ export const articlePageHandler: Handler<
   }
 > = (c) => {
   const query = c.req.valid("query");
-  const db = drizzle(c.env.DB, { schema, logger: true });
   return c.render(
     <ArticlesPage
-      db={db}
+      db={c.var.db}
       config={{
         ...query,
         since: query.since ?? null,
