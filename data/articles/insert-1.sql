@@ -1,4 +1,5 @@
-INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('901ee2837401750dfdad','『Winny』の金子勇さんの失われたED法を求めて','kanekanekaneko','aro kaneko','2024-04-16T07:38:22+09:00',124,67); 
+INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('36b524a4a686e8bee99d','VSCodeから開くファイルの言語モードとエンコーディングを設定する','dev-cho','','2024-04-19T23:41:19+09:00',0,0); 
+INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('901ee2837401750dfdad','『Winny』の金子勇さんの失われたED法を求めて...いたら見つかりました','kanekanekaneko','aro kaneko','2024-04-16T07:38:22+09:00',204,121); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('9fb4efa8d42cd6296622','新しいTeamsのチャネルのコネクタ設定方法','dev-cho','','2024-04-15T09:01:27+09:00',0,0); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('3fb6e474b01a4db04b49','Pythonを用いてURLからファイルをダウンロードする','dev-cho','','2024-04-14T13:04:23+09:00',0,0); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('3ad72284bbae8f30e0b6','VSCodeのデフォルトターミナルを変更する','dev-cho','','2024-04-07T22:14:43+09:00',0,0); 
@@ -97,4 +98,3 @@ INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_coun
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('6f3e52208132d44a9b09','VBA公式ドキュメントの読み方 ~"Microsoft語”に負けない解読ポイント~','pbk-sato','昂大 佐藤','2022-10-03T19:01:03+09:00',10,6); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('a7afb6282287da67dd40','[UiPath] Cloud Orchestrator (Enterprise Edition)のモダンフォルダー移行機能','nakawodayo','中尾 幸志郎','2022-09-30T21:13:51+09:00',9,1); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('f87b630a29fcc7eac31a','単体テスト入門','pbueoka','上岡 颯人','2022-09-05T22:22:53+09:00',6,4); 
-INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('83deaea6d841e8e51315','[UiPath] よくわかるモダンフォルダ(ジョブ/スケジュール設定OC2022.4編)','masatomix','Masatomi KINO','2022-08-29T01:12:52+09:00',7,1); 
