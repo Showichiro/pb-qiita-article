@@ -1,7 +1,11 @@
-import { renderer } from "@/renderer";
-import { zValidator, logger } from "@/lib";
-import { articlesQuery, countQuery } from "@/schemas";
-import { swaggerUI } from "@hono/swagger-ui";
+import { zValidator } from "@/lib";
+import {
+  articleCountGroupByUserSchema,
+  articleSchema,
+  articlesQuery,
+  countQuery,
+  likesCountSchema,
+} from "@/schemas";
 import {
   articlesRoute,
   likesCountsRankingRoute,
@@ -15,42 +19,35 @@ import {
   rankingPageHandler,
 } from "@/handlers";
 import { createHonoWithDBAndOpenAPI } from "./util/factory";
+import { BadRequestHandler } from "./handlers/common/badRequestHandler";
 
-export default createHonoWithDBAndOpenAPI()
-  // openapi
-  .doc("/doc", {
-    openapi: "3.0.0",
-    info: {
-      version: "1.0.0",
-      title: "PB Qiita API",
-    },
-  })
-  .openapi(articlesRoute, articleApiHandler)
-  .openapi(postCountsRankingRoute, postCountsHandler)
-  .openapi(likesCountsRankingRoute, likesCountsRankingHandler)
-  .get(
-    "/ui",
-    swaggerUI({
-      url: "/doc",
-    })
+const app = createHonoWithDBAndOpenAPI();
+
+// openapi settings
+app.openAPIRegistry.register("Article", articleSchema);
+app.openAPIRegistry.register("ArticleCount", articleCountGroupByUserSchema);
+app.openAPIRegistry.register("LikesCount", likesCountSchema);
+
+export default app
+  // api
+  .openapi(articlesRoute, articleApiHandler, BadRequestHandler)
+  .openapi(postCountsRankingRoute, postCountsHandler, BadRequestHandler)
+  .openapi(
+    likesCountsRankingRoute,
+    likesCountsRankingHandler,
+    BadRequestHandler
   )
-  // openapi end
-  .use(renderer)
-  .use(logger())
+  // view
   .get("/", (c) => {
     return c.redirect("/articles");
   })
-  .get("/articles", zValidator("query", articlesQuery), articlePageHandler)
-  .get("/ranking", zValidator("query", countQuery), rankingPageHandler)
-  // API
-  .get("/api/articles", zValidator("query", articlesQuery), articleApiHandler)
   .get(
-    "/api/ranking/post-counts",
-    zValidator("query", countQuery),
-    postCountsHandler
+    "/articles",
+    zValidator("query", articlesQuery, BadRequestHandler),
+    articlePageHandler
   )
   .get(
-    "/api/ranking/likes-counts",
-    zValidator("query", countQuery),
-    likesCountsRankingHandler
+    "/ranking",
+    zValidator("query", countQuery, BadRequestHandler),
+    rankingPageHandler
   );
