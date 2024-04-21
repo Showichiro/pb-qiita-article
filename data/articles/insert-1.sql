@@ -1,5 +1,5 @@
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('36b524a4a686e8bee99d','VSCodeから開くファイルの言語モードとエンコーディングを設定する','dev-cho','','2024-04-19T23:41:19+09:00',0,0); 
-INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('901ee2837401750dfdad','『Winny』の金子勇さんの失われたED法を求めて...いたら見つかりました','kanekanekaneko','aro kaneko','2024-04-16T07:38:22+09:00',204,121); 
+INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('901ee2837401750dfdad','『Winny』の金子勇さんの失われたED法を求めて...いたら見つかりました','kanekanekaneko','aro kaneko','2024-04-16T07:38:22+09:00',290,185); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('9fb4efa8d42cd6296622','新しいTeamsのチャネルのコネクタ設定方法','dev-cho','','2024-04-15T09:01:27+09:00',0,0); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('3fb6e474b01a4db04b49','Pythonを用いてURLからファイルをダウンロードする','dev-cho','','2024-04-14T13:04:23+09:00',0,0); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('3ad72284bbae8f30e0b6','VSCodeのデフォルトターミナルを変更する','dev-cho','','2024-04-07T22:14:43+09:00',0,0); 
@@ -36,7 +36,7 @@ INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_coun
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('bbc856ffc50273e42179','Eclipse ショートカット チートシート','iketo','','2023-10-29T12:21:51+09:00',4,2); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('bdae4066c11adde68f23','図として貼り付けで「時々」起こる実行時エラー（１００４）に負けない','pbueoka','上岡 颯人','2023-10-29T11:40:46+09:00',4,1); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('f2cec1f5adec121e5ae9','突然キーボード入力がおかしくなった','A_Este','','2023-10-15T11:54:13+09:00',8,2); 
-INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('8ea74d8308b6c096368d','AWS CDK で Infrastructure as Code する: SpringBoot編2','masatomix','Masatomi KINO','2023-10-11T22:35:43+09:00',3,1); 
+INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('8ea74d8308b6c096368d','AWS CDK で Infrastructure as Code する: SpringBoot編2','masatomix','Masatomi KINO','2023-10-11T22:35:43+09:00',4,2); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('63b2b10a25578aeceee8','OpenSSLでオレオレ証明書を作成','dev-cho','','2023-10-11T19:08:06+09:00',4,1); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('445335b5c216f10485c5','AWS CDK で Infrastructure as Code する: SpringBoot編1','masatomix','Masatomi KINO','2023-10-10T08:35:36+09:00',1,0); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('81c5beb912ee22ca784d','Linux TerminalにGitのBranch名を表示','dev-cho','','2023-10-06T18:44:53+09:00',1,0); 
