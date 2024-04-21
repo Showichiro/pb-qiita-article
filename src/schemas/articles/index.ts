@@ -1,11 +1,34 @@
-import { z } from "@/lib";
+import { z } from "@hono/zod-openapi";
 import { tagSchema } from "../tags";
 
 export const articlesQuery = z.object({
-  limit: z.coerce.number().max(100).default(10).nullable(),
-  offset: z.coerce.number().default(0).nullable(),
-  since: z.coerce.string().datetime().nullish(),
-  until: z.coerce.string().datetime().nullish(),
+  limit: z.coerce
+    .number({
+      invalid_type_error: "Limit must be a number",
+    })
+    .max(100, {
+      message: "Limit must be less than or equal to 100",
+    })
+    .default(10)
+    .nullable(),
+  offset: z.coerce
+    .number({
+      invalid_type_error: "Offset must be a number",
+    })
+    .default(0)
+    .nullable(),
+  since: z.coerce
+    .string()
+    .datetime({
+      message: "since must be a date",
+    })
+    .nullish(),
+  until: z.coerce
+    .string()
+    .datetime({
+      message: "until must be a date",
+    })
+    .nullish(),
 });
 
 export type ArticlesQuery = z.infer<typeof articlesQuery>;
