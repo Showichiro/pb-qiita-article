@@ -1,5 +1,5 @@
-INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('36b524a4a686e8bee99d','VSCodeから開くファイルの言語モードとエンコーディングを設定する','dev-cho','','2024-04-19T23:41:19+09:00',0,0); 
-INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('901ee2837401750dfdad','『Winny』の金子勇さんの失われたED法を求めて...いたら見つかりました','kanekanekaneko','aro kaneko','2024-04-16T07:38:22+09:00',290,185); 
+INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('36b524a4a686e8bee99d','VSCodeから開くファイルの言語モードとエンコーディングを設定する','dev-cho','','2024-04-19T23:41:19+09:00',1,1); 
+INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('901ee2837401750dfdad','『Winny』の金子勇さんの失われたED法を求めて...いたら見つかりました','kanekanekaneko','aro kaneko','2024-04-16T07:38:22+09:00',374,254); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('9fb4efa8d42cd6296622','新しいTeamsのチャネルのコネクタ設定方法','dev-cho','','2024-04-15T09:01:27+09:00',0,0); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('3fb6e474b01a4db04b49','Pythonを用いてURLからファイルをダウンロードする','dev-cho','','2024-04-14T13:04:23+09:00',0,0); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('3ad72284bbae8f30e0b6','VSCodeのデフォルトターミナルを変更する','dev-cho','','2024-04-07T22:14:43+09:00',0,0); 
