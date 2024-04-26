@@ -1,3 +1,4 @@
+INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('b4b244bf31a54400b9f9','aptを、Proxy環境化で使う','ryotaro76','riga','2019-07-05T09:43:26+09:00',0,0); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('0413ac967d7b4cf30370','jenvを使って、複数バージョンのJavaを使えるようにする','ryotaro76','riga','2019-06-25T14:07:17+09:00',1,1); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('7e7c15a3c127c25350bd','sudoを実行するときに環境変数を引き継ぐ','ryotaro76','riga','2019-06-25T13:10:29+09:00',1,0); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('13f3239a99c922726224','UiPath Robot 単独インストールからワークフロー実行までのハンズオン。またプロキシを入れるなど、デバッグに便利なTIPSのご紹介。','masatomix','Masatomi KINO','2019-06-24T08:22:51+09:00',8,14); 
@@ -97,4 +98,3 @@ INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_coun
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('d16d0944fce939d95e41','GradleとEclipseを使う場合のTips','ryotaro76','riga','2017-07-18T19:42:54+09:00',0,0); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('d4b6e426d9aaba99343d','SQLチューニング（Oracle)','ryotaro76','riga','2017-06-19T18:51:56+09:00',0,3); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('d5573e9cd4a14fe01ee3','SourceTree のユーザ情報に関する覚え書き','masatomix','Masatomi KINO','2017-03-07T14:00:03+09:00',1,5); 
-INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('5e520591695f21769f11','SourceTree上でGit Flowを動かしてみる ','masatomix','Masatomi KINO','2017-02-23T12:53:21+09:00',22,38); 
