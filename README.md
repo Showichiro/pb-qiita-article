@@ -76,6 +76,6 @@ Format code.
 bun run format
 ```
 
-## production
+## Production
 
 [Production Link](https://pb-qiita-articles.pages.dev)
