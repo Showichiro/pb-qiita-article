@@ -49,7 +49,7 @@ bun run schema:apply
 for sql in ../../data/**/*.sql; do bun wrangler d1 execute pb-qiita-articles --local --file $sql; done
 ```
 
-### dev server
+### Start the development server.
  Start the development server.
 ```shell
 bun run dev
