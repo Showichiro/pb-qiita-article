@@ -1,3 +1,4 @@
+INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('d5573e9cd4a14fe01ee3','SourceTree のユーザ情報に関する覚え書き','masatomix','Masatomi KINO','2017-03-07T14:00:03+09:00',1,5); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('5e520591695f21769f11','SourceTree上でGit Flowを動かしてみる ','masatomix','Masatomi KINO','2017-02-23T12:53:21+09:00',22,38); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('19f4604c939567929ee8','Gitでリモートのリポジトリをローカルに作成する','masatomix','Masatomi KINO','2017-02-04T20:34:17+09:00',26,34); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('1a02c767a949959c0b3b','WindowsのリモートデスクトップでCtrl＋Alt＋Delを送信する','ryotaro76','riga','2017-01-31T10:04:11+09:00',0,0); 

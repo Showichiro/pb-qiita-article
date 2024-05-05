@@ -1,3 +1,4 @@
+INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('7c90f1a625c736af5a81','AWS Certificate Managerを使って無料でSSL証明書を発行する','masatomix','Masatomi KINO','2019-07-06T16:12:36+09:00',17,17); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('b4b244bf31a54400b9f9','aptを、Proxy環境化で使う','ryotaro76','riga','2019-07-05T09:43:26+09:00',0,0); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('0413ac967d7b4cf30370','jenvを使って、複数バージョンのJavaを使えるようにする','ryotaro76','riga','2019-06-25T14:07:17+09:00',1,1); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('7e7c15a3c127c25350bd','sudoを実行するときに環境変数を引き継ぐ','ryotaro76','riga','2019-06-25T13:10:29+09:00',1,0); 
@@ -97,4 +98,3 @@ INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_coun
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('54b35d8cb23b10f08882','Gitを使うためのクライアント','ryotaro76','riga','2017-09-01T14:29:30+09:00',1,0); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('d16d0944fce939d95e41','GradleとEclipseを使う場合のTips','ryotaro76','riga','2017-07-18T19:42:54+09:00',0,0); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('d4b6e426d9aaba99343d','SQLチューニング（Oracle)','ryotaro76','riga','2017-06-19T18:51:56+09:00',0,3); 
-INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('d5573e9cd4a14fe01ee3','SourceTree のユーザ情報に関する覚え書き','masatomix','Masatomi KINO','2017-03-07T14:00:03+09:00',1,5); 
