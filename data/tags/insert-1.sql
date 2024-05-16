@@ -2,8 +2,8 @@ DELETE FROM tags WHERE article_id in ('c6a9dbdc1d362d2cd6b8','2111569216dd93ee65
 INSERT OR REPLACE INTO tags(article_id,name) VALUES('c6a9dbdc1d362d2cd6b8','初心者'); 
 INSERT OR REPLACE INTO tags(article_id,name) VALUES('c6a9dbdc1d362d2cd6b8','マネジメント'); 
 INSERT OR REPLACE INTO tags(article_id,name) VALUES('c6a9dbdc1d362d2cd6b8','タスク管理'); 
-INSERT OR REPLACE INTO tags(article_id,name) VALUES('c6a9dbdc1d362d2cd6b8','pm'); 
 INSERT OR REPLACE INTO tags(article_id,name) VALUES('c6a9dbdc1d362d2cd6b8','生産性向上'); 
+INSERT OR REPLACE INTO tags(article_id,name) VALUES('c6a9dbdc1d362d2cd6b8','モチベーション'); 
 INSERT OR REPLACE INTO tags(article_id,name) VALUES('2111569216dd93ee65a0','React'); 
 INSERT OR REPLACE INTO tags(article_id,name) VALUES('2111569216dd93ee65a0','react-router-dom'); 
 INSERT OR REPLACE INTO tags(article_id,name) VALUES('294364dbe781d7579943','TypeScript'); 
