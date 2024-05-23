@@ -1,3 +1,4 @@
+INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('e220d09f5de1341e0494','EC2で構築したUiPath Orchestrator サーバを、自己署名じゃない証明書でSSLで公開する(Certificate ManagerとELBを使用) ','masatomix','Masatomi KINO','2019-07-07T10:21:26+09:00',2,4); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('91c7d056f484e3fa42a3','UiPath Orchestrator向けのElasticsearch/Kibanaの構築メモ','masatomix','Masatomi KINO','2019-07-06T21:42:46+09:00',7,6); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('7c90f1a625c736af5a81','AWS Certificate Managerを使って無料でSSL証明書を発行する','masatomix','Masatomi KINO','2019-07-06T16:12:36+09:00',17,17); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('b4b244bf31a54400b9f9','aptを、Proxy環境化で使う','ryotaro76','riga','2019-07-05T09:43:26+09:00',0,0); 
@@ -97,4 +98,3 @@ INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_coun
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('d9a72d50d9dacfe9939c','VirtualBox にインストールした Ubuntu の画面サイズ（解像度）を変更する方法','ryotaro76','riga','2017-09-14T10:54:36+09:00',39,33); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('91c486f40ce3120a4686','Authleteを使った認可サーバの構築と、OAuthクライアント(Webアプリケーション)からの疎通','masatomix','Masatomi KINO','2017-09-13T15:52:54+09:00',26,27); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('54b35d8cb23b10f08882','Gitを使うためのクライアント','ryotaro76','riga','2017-09-01T14:29:30+09:00',1,0); 
-INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('d16d0944fce939d95e41','GradleとEclipseを使う場合のTips','ryotaro76','riga','2017-07-18T19:42:54+09:00',0,0); 
