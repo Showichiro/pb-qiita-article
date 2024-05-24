@@ -1,3 +1,4 @@
+INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('54b35d8cb23b10f08882','Gitを使うためのクライアント','ryotaro76','riga','2017-09-01T14:29:30+09:00',1,0); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('d16d0944fce939d95e41','GradleとEclipseを使う場合のTips','ryotaro76','riga','2017-07-18T19:42:54+09:00',0,0); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('d4b6e426d9aaba99343d','SQLチューニング（Oracle)','ryotaro76','riga','2017-06-19T18:51:56+09:00',0,3); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('d5573e9cd4a14fe01ee3','SourceTree のユーザ情報に関する覚え書き','masatomix','Masatomi KINO','2017-03-07T14:00:03+09:00',1,5); 
