@@ -1,3 +1,11 @@
+INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('822aeb67f3b9521d26fb','Chromeの便利なプラグイン','ryotaro76','riga','2017-12-25T07:53:30+09:00',2,4); 
+INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('50c1da605b4e461db43c','MySQLのTips集','ryotaro76','riga','2017-12-19T15:18:06+09:00',1,1); 
+INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('9e1d5c75d6e16a8da5fa','ToodoistのTips集','ryotaro76','riga','2017-12-07T08:44:51+09:00',0,0); 
+INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('6c7e19e960370e07697b','Eclipseを使っていて便利だったショートカットの忘備録','toshiki_takatsuki','toshiki takatsuki','2017-12-01T18:10:44+09:00',5,6); 
+INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('c37a00ba81a00249c1c4','Redisコマンド Tips集','ryotaro76','riga','2017-11-29T14:14:02+09:00',0,0); 
+INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('6257e1e5b3218576de8b','GAS(Google Apps Scripts)でスプレッドシートを利用する','ryotaro76','riga','2017-10-10T16:39:31+09:00',0,2); 
+INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('97f2abf0c4e6c3637876','GAS(Google Apps Script)のUtilitiesに関するTips','ryotaro76','riga','2017-10-10T16:39:28+09:00',0,1); 
+INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('0e40ffb6173b1580e671','GitコマンドをProxy環境可で利用する。','ryotaro76','riga','2017-09-19T13:07:30+09:00',69,72); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('6aa9d3187d742eed0325','Heroku CLI を ubuntuに入れる','ryotaro76','riga','2017-09-15T13:15:05+09:00',34,29); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('d9a72d50d9dacfe9939c','VirtualBox にインストールした Ubuntu の画面サイズ（解像度）を変更する方法','ryotaro76','riga','2017-09-14T10:54:36+09:00',39,33); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('91c486f40ce3120a4686','Authleteを使った認可サーバの構築と、OAuthクライアント(Webアプリケーション)からの疎通','masatomix','Masatomi KINO','2017-09-13T15:52:54+09:00',26,27); 
