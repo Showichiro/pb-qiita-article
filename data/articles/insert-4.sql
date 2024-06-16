@@ -1,3 +1,10 @@
+INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('ecbb452aed44712a466d','Linuxコマンド Tips','ryotaro76','riga','2018-04-03T11:37:23+09:00',0,0); 
+INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('48212bce4f4f60756f81','gitの設定に関して','toshiki_takatsuki','toshiki takatsuki','2018-03-30T11:20:14+09:00',1,1); 
+INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('7473c8d5567c6bea9c1b','Spring Batch','ryotaro76','riga','2018-03-02T19:12:50+09:00',3,3); 
+INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('45632ff117cc19544959','Spring Cloudを使ってみる。','ryotaro76','riga','2018-02-02T18:44:32+09:00',9,19); 
+INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('856021285e9a2f80a481','DockerfileからDockerイメージを作成する','ryotaro76','riga','2018-01-30T14:52:04+09:00',1,3); 
+INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('63ada28e4ae9acf835ca','LinuxでIPアドレスを追加する','ryotaro76','riga','2018-01-30T14:51:59+09:00',2,2); 
+INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('637fb215f3f30ac7cc21','Windows10 のTips','ryotaro76','riga','2018-01-05T15:22:34+09:00',1,4); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('822aeb67f3b9521d26fb','Chromeの便利なプラグイン','ryotaro76','riga','2017-12-25T07:53:30+09:00',2,4); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('50c1da605b4e461db43c','MySQLのTips集','ryotaro76','riga','2017-12-19T15:18:06+09:00',1,1); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('9e1d5c75d6e16a8da5fa','ToodoistのTips集','ryotaro76','riga','2017-12-07T08:44:51+09:00',0,0); 
