@@ -1,3 +1,4 @@
+INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('76c7b1c83b35b192b91c','mySQLで日本語入力できなくて詰まった','y-hys','','2023-02-04T01:06:06+09:00',1,0); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('081c5a89236a62d8e478','SPFx環境構築','kanekanekaneko','aro kaneko','2023-02-03T19:15:16+09:00',5,3); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('d410cdd4661a548db222','【内定者向け】Excelの基礎知識','pbuchiumi','','2023-01-25T20:35:41+09:00',3,1); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('3f068d3ab4260dd9e4f6','viで複数行末に文字を結合','y-hys','','2023-01-06T19:42:42+09:00',2,0); 
@@ -97,4 +98,3 @@ INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_coun
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('2eab174dbcffca925f29','Jarファイルの中身を差し替える','ryotaro76','riga','2019-11-07T15:43:00+09:00',1,2); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('ab4f0488083554f5fceb','Vue.jsで、親コンポーネントからもらった変数を子コンポーネントで更新したいときの対処法','masatomix','Masatomi KINO','2019-11-06T19:17:13+09:00',96,72); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('e1273309ceab87eaf585','MySQLでエクスポート、インポート','ryotaro76','riga','2019-11-05T13:57:53+09:00',0,0); 
-INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('993c27f6f7615c48ebf4','FirebaseアプリからSlackへ通知を行う。Slack AppのWEBへのデプロイ編。','masatomix','Masatomi KINO','2019-09-23T13:30:23+09:00',3,2); 
