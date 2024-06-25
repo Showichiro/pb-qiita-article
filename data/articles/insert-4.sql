@@ -1,3 +1,11 @@
+INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('72422148ea8353662eb1','UiPath Developer Community 第6回ワークショップ 覚え書き「出現するタイミングが不定のポップアップを処理する」','masatomix','Masatomi KINO','2018-08-30T15:50:58+09:00',3,5); 
+INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('035540ddda232907439b','独自ドメイン取得からメール運用までの手順(ドメイン取得〜DNS設定まで)','masatomix','Masatomi KINO','2018-08-20T02:03:46+09:00',3,5); 
+INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('910a8faf4ec761ded04b','Vagrantのコマンドメモ','ryotaro76','riga','2018-08-16T14:55:13+09:00',4,2); 
+INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('51afae59064709fb033b','MESHのイベントを、IFTTTのWebhooks経由でSlackに通知する。','masatomix','Masatomi KINO','2018-08-06T01:28:36+09:00',5,5); 
+INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('94218643edadd0a97680','PythonでSSLでRESTを投げるときに、プロキシを通す方法','masatomix','Masatomi KINO','2018-07-31T14:17:15+09:00',3,1); 
+INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('075430f34352b6bfd510','GradleをProxy環境で利用する','ryotaro76','riga','2018-06-28T11:38:10+09:00',0,0); 
+INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('3c6bc3f76fafb9f7e0fb','Docker Toolbox をProxy環境下で利用する。','ryotaro76','riga','2018-06-07T08:44:53+09:00',0,0); 
+INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('50bfef18f1f6b7a9c156','Git Addを対話式でやる','ryotaro76','riga','2018-04-05T18:40:10+09:00',2,1); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('30449a335a94c608c308','JUnit4のメモ','ryotaro76','riga','2018-04-03T11:38:11+09:00',2,2); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('ecbb452aed44712a466d','Linuxコマンド Tips','ryotaro76','riga','2018-04-03T11:37:23+09:00',0,0); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('48212bce4f4f60756f81','gitの設定に関して','toshiki_takatsuki','toshiki takatsuki','2018-03-30T11:20:14+09:00',1,1); 
