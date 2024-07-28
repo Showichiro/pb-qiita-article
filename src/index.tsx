@@ -17,9 +17,9 @@ import {
   likesCountsRankingHandler,
   postCountsHandler,
   rankingPageHandler,
+  BadRequestHandler,
 } from "@/handlers";
 import { createHonoWithDBAndOpenAPI } from "./util/factory";
-import { BadRequestHandler } from "./handlers/common/badRequestHandler";
 
 const app = createHonoWithDBAndOpenAPI();
 
