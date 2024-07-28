@@ -1,6 +1,6 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`ArticleTable > should render articles html 1`] = `"<table class="table overflow-x-auto"><thead><tr><th>タイトル</th><th>執筆者</th><th>タグ</th><th>いいね数</th><th>ストック数</th></tr></thead><tbody><tr class="hover"><td><a href="https://qiita.com/userId/items/123456" target="_blank" rel="noopener noreferrer" class="link">test-title</a></td><td><a href="https://qiita.com/userId" target="_blank" rel="noopener noreferrer" class="link">userId<span>(userName)</span></a></td><td><ul></ul></td><td>1</td><td>2</td></tr></tbody></table>"`;
+exports[`ArticleTable > should render articles html 1`] = `"<table class="table overflow-x-auto"><thead><tr><th>タイトル</th><th>執筆者</th><th>タグ</th><th>いいね数</th><th>ストック数</th></tr></thead><tbody><tr class="hover"><td><a class="link" href="https://qiita.com/userId/items/123456" target="_blank" rel="noopener noreferrer">test-title</a></td><td><a class="link" href="https://qiita.com/userId" target="_blank" rel="noopener noreferrer">userId<span>(userName)</span></a></td><td><ul></ul></td><td>1</td><td>2</td></tr></tbody></table>"`;
 
 exports[`SelectBoxPageLimit > should render selectbox page limit 1`] = `
 "<select class="select select-bordered" aria-label="page-limit" id="page-limit" name="page-limit"><option selected="">10</option><option>20</option><option>30</option></select>
