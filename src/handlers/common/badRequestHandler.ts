@@ -1,5 +1,5 @@
-import { Context } from "hono";
-import { ZodError } from "zod";
+import type { Context } from "hono";
+import type { ZodError } from "zod";
 
 export const BadRequestHandler = <T>(
   result: { success: true; data: T } | { success: false; error: ZodError },
