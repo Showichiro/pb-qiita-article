@@ -1,4 +1,4 @@
-INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('07a37ee8d141ceb4fa6f','SourceTreeで、マージとリベースを行う','masatomix','Masatomi KINO','2018-09-25T16:11:48+09:00',97,105); 
+INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('07a37ee8d141ceb4fa6f','SourceTreeで、マージとリベースを行う','masatomix','Masatomi KINO','2018-09-25T16:11:48+09:00',97,106); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('6ba8126c9adca4e9cb5d','独自ドメイン取得からメール運用までの手順3(アドレス作成とMXレコード設定、メール送受信)','masatomix','Masatomi KINO','2018-09-17T20:41:21+09:00',10,11); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('da8efe3691758ebcafe0','UiPathでJSON文字列をDictionaryで生成する','masatomix','Masatomi KINO','2018-09-13T19:56:56+09:00',9,5); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('ae619eed7699e677338d','UiPath Studio 2018.3 Early access - Beta release をさわってみた2 (カスタムアクティビティ)','masatomix','Masatomi KINO','2018-09-12T15:21:44+09:00',2,2); 
