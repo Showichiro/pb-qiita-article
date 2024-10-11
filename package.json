@@ -13,27 +13,27 @@
     "test:ci": "vitest --bail 1 --silent --run"
   },
   "dependencies": {
-    "@hono/swagger-ui": "^0.4.0",
-    "@hono/zod-openapi": "^0.15.1",
+    "@hono/swagger-ui": "^0.4.1",
+    "@hono/zod-openapi": "^0.15.3",
     "@hono/zod-validator": "^0.2.2",
-    "drizzle-orm": "^0.32.1",
-    "hono": "^4.5.2",
+    "drizzle-orm": "^0.32.2",
+    "hono": "^4.6.4",
     "zod": "^3.23.8"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "^4.20240725.0",
+    "@cloudflare/workers-types": "^4.20241004.0",
     "@hono/vite-cloudflare-pages": "^0.4.2",
     "@hono/vite-dev-server": "^0.13.1",
-    "autoprefixer": "^10.4.19",
+    "autoprefixer": "^10.4.20",
     "biome": "^0.3.3",
-    "bun-types": "^1.1.21",
-    "daisyui": "^4.12.10",
-    "drizzle-kit": "^0.23.0",
-    "miniflare": "^3.20240718.1",
-    "postcss": "^8.4.40",
-    "tailwindcss": "^3.4.7",
-    "vite": "^5.3.5",
-    "vitest": "^2.0.4",
-    "wrangler": "^3.67.1"
+    "bun-types": "^1.1.30",
+    "daisyui": "^4.12.13",
+    "drizzle-kit": "^0.23.2",
+    "miniflare": "^3.20241004.0",
+    "postcss": "^8.4.47",
+    "tailwindcss": "^3.4.13",
+    "vite": "^5.4.8",
+    "vitest": "^2.1.2",
+    "wrangler": "^3.80.4"
   }
 }
