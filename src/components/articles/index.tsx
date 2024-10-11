@@ -1,4 +1,5 @@
 import { Article } from "@/schemas";
+import { dateTimetoDateString } from "@/util";
 import { html } from "hono/html";
 import { FC } from "hono/jsx";
 
@@ -14,6 +15,7 @@ export const ArticlesTable: FC<{ articles: Array<Article> }> = ({
           <th>タグ</th>
           <th>いいね数</th>
           <th>ストック数</th>
+          <th>投稿日</th>
         </tr>
       </thead>
       <tbody>
@@ -60,6 +62,7 @@ export const ArticlesTable: FC<{ articles: Array<Article> }> = ({
             </td>
             <td>{article.likesCount}</td>
             <td>{article.stocksCount}</td>
+            <td>{dateTimetoDateString(article.createdAt)}</td>
           </tr>
         ))}
       </tbody>
