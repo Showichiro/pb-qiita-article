@@ -1,3 +1,4 @@
+INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('74b06dbaee45da385a2d','UiPathやUiPath OrchestratorのTIPS集(不定期更新)','masatomix','Masatomi KINO','2020-07-15T14:11:42+09:00',13,11); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('afbd5325799db241fc8f','Postmanで UiPath Orchestrator APIを操作する件 つづき','masatomix','Masatomi KINO','2020-07-07T09:46:02+09:00',3,1); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('5e6fa9d51ab8090fd1d3','UiPathのワークフロー実行時に、パラメタを渡す方法あれこれ','masatomix','Masatomi KINO','2020-07-02T23:17:53+09:00',5,4); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('a3f99a1700a835e845dd','GitHubでソースコード管理するハンズオン','masatomix','Masatomi KINO','2020-06-07T21:20:50+09:00',18,23); 
@@ -97,4 +98,3 @@ INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_coun
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('b747d1532529f9a2977d','UiPathのカスタムアクティビティ開発で、リソースの外部化とローカライズを行う(XAML版)','masatomix','Masatomi KINO','2018-11-07T16:31:44+09:00',0,1); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('96d997608c02ca37a0d9','UiPathのカスタムアクティビティ開発で、リソースの外部化とローカライズを行う','masatomix','Masatomi KINO','2018-11-05T10:02:55+09:00',2,3); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('f3c5a36755860dba63ca','UiPathのカスタムアクティビティ開発で、見た目のカスタマイズを行う','masatomix','Masatomi KINO','2018-11-02T18:27:55+09:00',0,5); 
-INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('2d6ac698ce14dd1e3324','UiPath Developer Community 第7回ワークショップ 覚え書き「カスタム入力アクティビティ」','masatomix','Masatomi KINO','2018-10-29T15:13:44+09:00',4,7); 

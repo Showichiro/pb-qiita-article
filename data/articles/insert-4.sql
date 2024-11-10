@@ -1,3 +1,4 @@
+INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('2d6ac698ce14dd1e3324','UiPath Developer Community 第7回ワークショップ 覚え書き「カスタム入力アクティビティ」','masatomix','Masatomi KINO','2018-10-29T15:13:44+09:00',4,7); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('a801ac6668075b46f17c','UiPath StudioのPublish時のバージョンの算出方法について','masatomix','Masatomi KINO','2018-10-25T18:21:41+09:00',0,0); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('61024a6b9294a1707d23','UiPathのカスタムアクティビティ開発で、外部ライブラリを使用する','masatomix','Masatomi KINO','2018-10-19T18:34:26+09:00',2,6); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('d62683a158da6d35f24d','UiPathのカスタムアクティビティのnupkgの作り方(元記事の訂正)','masatomix','Masatomi KINO','2018-10-18T18:21:39+09:00',2,3); 
