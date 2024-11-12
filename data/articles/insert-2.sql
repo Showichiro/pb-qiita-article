@@ -1,3 +1,4 @@
+INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('09d2ee6beaf40a91ef25','ネットワークセキュリティについて整理③','UroTanKe_DaSoHo','細田 顕太郎','2023-10-04T20:35:12+09:00',1,0); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('e77e9c2946df79bf1a24','ネットワークセキュリティについて整理②','UroTanKe_DaSoHo','細田 顕太郎','2023-10-02T23:59:11+09:00',2,1); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('5c4bb0397d59197bc363','ネットワークセキュリティについて整理①','UroTanKe_DaSoHo','細田 顕太郎','2023-10-01T10:18:43+09:00',2,1); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('1d8463c917f59ab08eaf','VSCodeにスニペットを登録する方法','y-hys','','2023-09-26T00:04:26+09:00',2,0); 
@@ -14,7 +15,7 @@ INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_coun
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('fc414e98d6d0091db90d','AWS CDK で Infrastructure as Code する: VPC編','masatomix','Masatomi KINO','2023-08-15T02:46:06+09:00',5,1); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('7087e7813637ff5e9c36','AWS CDKのTIPS集','masatomix','Masatomi KINO','2023-08-09T00:52:21+09:00',4,5); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('8fc3d52ee89489967c09',' AWS CDK で Infrastructure as Code する','masatomix','Masatomi KINO','2023-08-05T20:39:39+09:00',1,1); 
-INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('5d4e473f092bf96a51a8','Git for Windows アップデート','dev-cho','','2023-08-05T01:00:40+09:00',13,12); 
+INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('5d4e473f092bf96a51a8','Git for Windows アップデート','dev-cho','','2023-08-05T01:00:40+09:00',14,12); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('d69ac664a2fcbdb98f6c','WSL環境にNode.js環境を構築する','masatomix','Masatomi KINO','2023-08-04T22:06:48+09:00',0,0); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('7a1af1f6fc28258927ae','WSL環境にAWS コマンドラインインターフェイス(AWS CLI)を構築する','masatomix','Masatomi KINO','2023-08-04T21:12:18+09:00',1,0); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('290d78d45b67e046c125','ExtendScript Toolkit(ESTK)のダウンロード先のリンク','dev-cho','','2023-07-25T20:14:30+09:00',0,0); 
@@ -97,4 +98,3 @@ INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_coun
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('9b67e40ba3ba9f4eb660','クライアントアプリから Google Cloud Speech-to-Text を使ってみた','masatomix','Masatomi KINO','2020-07-25T16:10:29+09:00',12,17); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('22fa5e877eaab8b567e1','Docker上にGrafanaとInfluxDBを構築する','ryotaro76','riga','2020-07-25T07:48:44+09:00',9,18); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('305d4d61dfd82e3f2bfa','Docker Desktop をWSL2で利用する。','ryotaro76','riga','2020-07-24T22:53:12+09:00',0,1); 
-INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('cec9cbd24ca404bdf9da','Windows10でWSL2を使う','ryotaro76','riga','2020-07-24T22:11:38+09:00',2,4); 
