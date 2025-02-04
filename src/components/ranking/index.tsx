@@ -82,7 +82,7 @@ export const RankingRange: FC<{
   default: { since: string | null; until: string | null };
 }> = ({ default: { since, until } }) => {
   return (
-    <form action="/ranking" method="GET">
+    <form action="/ranking" method="get">
       <label>
         <span class="mr-2">since:</span>
         <input type="date" name="since" value={since ?? undefined} />
