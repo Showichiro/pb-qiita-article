@@ -1,3 +1,4 @@
+import { OrderByField, OrderDirection } from "@/db";
 import { Article } from "@/schemas";
 import { dateTimetoDateString } from "@/util";
 import { html } from "hono/html";
@@ -112,8 +113,12 @@ export const ArticleRangeAndOrder: FC<{
     until: string | null;
     page: number;
     limit: number;
+    orderField?: OrderByField | null;
+    orderDirection?: OrderDirection | null;
   };
-}> = ({ default: { since, until, limit, page } }) => {
+}> = ({
+  default: { since, until, limit, page, orderField, orderDirection },
+}) => {
   return (
     <form action="/articles" method="get">
       <label>
@@ -133,7 +138,7 @@ export const ArticleRangeAndOrder: FC<{
 
       <label class="ml-2">
         <span class="mr-2">orderField:</span>
-        <select name="orderField">
+        <select name="orderField" value={orderField ?? undefined}>
           <option value="likesCount">いいね数</option>
           <option value="stocksCount">ストック数</option>
           <option value="createdAt">投稿日</option>
@@ -142,7 +147,7 @@ export const ArticleRangeAndOrder: FC<{
 
       <label class="ml-2">
         <span class="mr-2">orderDirection:</span>
-        <select name="orderDirection">
+        <select name="orderDirection" value={orderDirection ?? undefined}>
           <option value="asc">昇順</option>
           <option value="desc">降順</option>
         </select>
