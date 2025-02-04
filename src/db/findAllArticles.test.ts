@@ -424,7 +424,7 @@ describe("findAllArticles", async () => {
           since: null,
           until: null,
           orderDirection,
-          orderField: "likesCount",
+          orderField: "stocksCount",
         });
         expect(results.length).toBe(record);
         expect(results).toEqual([
@@ -456,7 +456,7 @@ describe("findAllArticles", async () => {
           since: null,
           until: null,
           orderDirection,
-          orderField: "likesCount",
+          orderField: "createdAt",
         });
         expect(results.length).toBe(record);
         expect(results).toEqual([
