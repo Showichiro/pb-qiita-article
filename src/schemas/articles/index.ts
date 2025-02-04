@@ -29,6 +29,13 @@ export const articlesQuery = z.object({
       message: "until must be a date",
     })
     .nullish(),
+  orderField: z.enum(["likesCount", "createdAt", "stocksCount"], {
+    invalid_type_error:
+      "orderField must be likesCount, createdAt or stocksCount",
+  }).nullish(),
+  orderDirection: z.enum(["asc", "desc"], {
+    invalid_type_error: "orderDirection must be asc or desc",
+  }).nullish(),
 });
 
 export type ArticlesQuery = z.infer<typeof articlesQuery>;
