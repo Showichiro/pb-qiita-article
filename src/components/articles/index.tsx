@@ -1,3 +1,4 @@
+import { OrderByField, OrderDirection } from "@/db";
 import { Article } from "@/schemas";
 import { dateTimetoDateString } from "@/util";
 import { html } from "hono/html";
@@ -103,5 +104,60 @@ export const SelectBoxPageLimit: FC<{ page: number; limit: number }> = ({
       </select>
       {script}
     </>
+  );
+};
+
+export const ArticleRangeAndOrder: FC<{
+  default: {
+    since: string | null;
+    until: string | null;
+    page: number;
+    limit: number;
+    orderField?: OrderByField | null;
+    orderDirection?: OrderDirection | null;
+  };
+}> = ({
+  default: { since, until, limit, page, orderField, orderDirection },
+}) => {
+  return (
+    <form action="/articles" method="get">
+      <label>
+        <input type="hidden" name="limit" value={limit} />
+      </label>
+      <label>
+        <input type="hidden" name="page" value={page} />
+      </label>
+      <label>
+        <span class="mr-2">since:</span>
+        <input type="date" name="since" value={since ?? undefined} />
+      </label>
+      <label class="ml-2">
+        <span class="mr-2">until:</span>
+        <input type="date" name="until" value={until ?? undefined} />
+      </label>
+
+      <label class="ml-2">
+        <span class="mr-2">orderField:</span>
+        <select name="orderField" value={orderField ?? undefined}>
+          <option value="likesCount">いいね数</option>
+          <option value="stocksCount">ストック数</option>
+          <option value="createdAt">投稿日</option>
+        </select>
+      </label>
+
+      <label class="ml-2">
+        <span class="mr-2">orderDirection:</span>
+        <select name="orderDirection" value={orderDirection ?? undefined}>
+          <option value="asc">昇順</option>
+          <option value="desc">降順</option>
+        </select>
+      </label>
+
+      <div class="pt-4">
+        <button class="btn btn-primary btn-sm" type="submit">
+          検索する
+        </button>
+      </div>
+    </form>
   );
 };

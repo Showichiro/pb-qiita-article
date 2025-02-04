@@ -46,7 +46,7 @@ bun run schema:apply
 5. Insert data into DB.
 
 ```shell
-for sql in ../../data/**/*.sql; do bun wrangler d1 execute pb-qiita-articles --local --file $sql; done
+for sql in data/**/*.sql; do bun wrangler d1 execute pb-qiita-articles --local --file $sql; done
 ```
 
 ### Start the development server.

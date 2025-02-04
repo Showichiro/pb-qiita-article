@@ -1,7 +1,8 @@
 import { findAllArticles } from "@/db";
 import { ArticlesPage } from "@/pages";
 import { ArticlesQuery } from "@/schemas";
-import { Env } from "@/util";
+import { dateToDatetimeString, Env } from "@/util";
+import { processDateParam } from "@/util";
 import { Handler } from "hono";
 
 export const articleApiHandler: Handler<
@@ -19,8 +20,8 @@ export const articleApiHandler: Handler<
   const query = c.req.valid("query");
   const results = await findAllArticles(c.var.db, {
     ...query,
-    since: query.since || null,
-    until: query.until || null,
+    since: processDateParam(query.since),
+    until: processDateParam(query.until),
   });
   return c.json(results);
 };
@@ -43,12 +44,12 @@ export const articlePageHandler: Handler<
       db={c.var.db}
       config={{
         ...query,
-        since: query.since ?? null,
-        until: query.until ?? null,
+        since: processDateParam(query.since),
+        until: processDateParam(query.until),
       }}
     />,
     {
       title: "記事一覧",
-    }
+    },
   );
 };

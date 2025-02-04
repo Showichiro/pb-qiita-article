@@ -16,15 +16,15 @@ describe("findAllArticles", async () => {
 
   beforeAll(async () => {
     await db.exec(
-      "CREATE TABLE `articles` (`id` text PRIMARY KEY NOT NULL,`title` text NOT NULL,`user_id` text NOT NULL,`user_name` text NOT NULL,`created_at` text NOT NULL,`likes_count` integer NOT NULL,`stocks_count` integer NOT NULL);"
+      "CREATE TABLE `articles` (`id` text PRIMARY KEY NOT NULL,`title` text NOT NULL,`user_id` text NOT NULL,`user_name` text NOT NULL,`created_at` text NOT NULL,`likes_count` integer NOT NULL,`stocks_count` integer NOT NULL);",
     );
     await db.exec(
-      "CREATE TABLE `tags` (`article_id` text,`id` integer PRIMARY KEY NOT NULL,`name` text NOT NULL,FOREIGN KEY (`article_id`) REFERENCES `articles`(`id`) ON UPDATE cascade ON DELETE cascade);"
+      "CREATE TABLE `tags` (`article_id` text,`id` integer PRIMARY KEY NOT NULL,`name` text NOT NULL,FOREIGN KEY (`article_id`) REFERENCES `articles`(`id`) ON UPDATE cascade ON DELETE cascade);",
     );
     const promises = [...Array(record)].map(async (_, index) => {
       return await db
         .prepare(
-          "INSERT INTO `articles` (`id`, `title`, `user_id`, `user_name`, `created_at`, `likes_count`, `stocks_count`) VALUES (?, ?, ?, ?, ?, ?, ?);"
+          "INSERT INTO `articles` (`id`, `title`, `user_id`, `user_name`, `created_at`, `likes_count`, `stocks_count`) VALUES (?, ?, ?, ?, ?, ?, ?);",
         )
         .bind(
           `${index}`,
@@ -32,8 +32,8 @@ describe("findAllArticles", async () => {
           `user-${index}`,
           `user-${index}`,
           new Date(index).toISOString(),
-          0,
-          0
+          index,
+          index + 1,
         )
         .run()
         .then(async () => {
@@ -64,8 +64,8 @@ describe("findAllArticles", async () => {
       {
         createdAt: expect.any(String),
         id: "9",
-        likesCount: 0,
-        stocksCount: 0,
+        likesCount: 9,
+        stocksCount: 10,
         tags: [
           {
             name: "tag-9",
@@ -78,8 +78,8 @@ describe("findAllArticles", async () => {
       {
         createdAt: expect.any(String),
         id: "8",
-        likesCount: 0,
-        stocksCount: 0,
+        likesCount: 8,
+        stocksCount: 9,
         tags: [
           {
             name: "tag-8",
@@ -108,8 +108,8 @@ describe("findAllArticles", async () => {
           return {
             createdAt: expect.any(String),
             id: `${index}`,
-            likesCount: 0,
-            stocksCount: 0,
+            likesCount: index,
+            stocksCount: index + 1,
             tags: [
               {
                 name: `tag-${index}`,
@@ -138,8 +138,8 @@ describe("findAllArticles", async () => {
       {
         createdAt: expect.any(String),
         id: "8",
-        likesCount: 0,
-        stocksCount: 0,
+        likesCount: 8,
+        stocksCount: 9,
         tags: [
           {
             name: "tag-8",
@@ -166,8 +166,8 @@ describe("findAllArticles", async () => {
       {
         createdAt: expect.any(String),
         id: "9",
-        likesCount: 0,
-        stocksCount: 0,
+        likesCount: 9,
+        stocksCount: 10,
         tags: [
           {
             name: "tag-9",
@@ -194,8 +194,8 @@ describe("findAllArticles", async () => {
       {
         createdAt: expect.any(String),
         id: "9",
-        likesCount: 0,
-        stocksCount: 0,
+        likesCount: 9,
+        stocksCount: 10,
         tags: [
           {
             name: "tag-9",
@@ -223,7 +223,7 @@ describe("findAllArticles", async () => {
         createdAt: expect.any(String),
         id: "0",
         likesCount: 0,
-        stocksCount: 0,
+        stocksCount: 1,
         tags: [
           {
             name: "tag-0",
@@ -250,8 +250,8 @@ describe("findAllArticles", async () => {
       {
         createdAt: expect.any(String),
         id: "1",
-        likesCount: 0,
-        stocksCount: 0,
+        likesCount: 1,
+        stocksCount: 2,
         tags: [
           {
             name: "tag-1",
@@ -265,7 +265,7 @@ describe("findAllArticles", async () => {
         createdAt: expect.any(String),
         id: "0",
         likesCount: 0,
-        stocksCount: 0,
+        stocksCount: 1,
         tags: [
           {
             name: "tag-0",
@@ -276,5 +276,206 @@ describe("findAllArticles", async () => {
         userName: "user-0",
       },
     ]);
+  });
+
+  describe("orderField", () => {
+    describe("orderDirection = desc", () => {
+      const orderDirection = "desc";
+      test("likesCount", async () => {
+        const db = await mf.getD1Database("DB");
+        const instance = drizzle(db, { schema, logger: true });
+        const results = await findAllArticles(instance, {
+          limit: null,
+          offset: null,
+          since: null,
+          until: null,
+          orderDirection,
+          orderField: "likesCount",
+        });
+        expect(results.length).toBe(record);
+        expect(results).toEqual([
+          ...[...Array(record)]
+            .map((_, index) => {
+              return {
+                createdAt: expect.any(String),
+                id: `${index}`,
+                likesCount: index,
+                stocksCount: index + 1,
+                tags: [
+                  {
+                    name: `tag-${index}`,
+                  },
+                ],
+                title: `title-${index}`,
+                userId: `user-${index}`,
+                userName: `user-${index}`,
+              };
+            })
+            .reverse(),
+        ]);
+      });
+      test("stocksCount", async () => {
+        const db = await mf.getD1Database("DB");
+        const instance = drizzle(db, { schema, logger: true });
+        const results = await findAllArticles(instance, {
+          limit: null,
+          offset: null,
+          since: null,
+          until: null,
+          orderDirection,
+          orderField: "likesCount",
+        });
+        expect(results.length).toBe(record);
+        expect(results).toEqual([
+          ...[...Array(record)]
+            .map((_, index) => {
+              return {
+                createdAt: expect.any(String),
+                id: `${index}`,
+                likesCount: index,
+                stocksCount: index + 1,
+                tags: [
+                  {
+                    name: `tag-${index}`,
+                  },
+                ],
+                title: `title-${index}`,
+                userId: `user-${index}`,
+                userName: `user-${index}`,
+              };
+            })
+            .reverse(),
+        ]);
+      });
+      test("createdAt", async () => {
+        const db = await mf.getD1Database("DB");
+        const instance = drizzle(db, { schema, logger: true });
+        const results = await findAllArticles(instance, {
+          limit: null,
+          offset: null,
+          since: null,
+          until: null,
+          orderDirection,
+          orderField: "likesCount",
+        });
+        expect(results.length).toBe(record);
+        expect(results).toEqual([
+          ...[...Array(record)]
+            .map((_, index) => {
+              return {
+                createdAt: expect.any(String),
+                id: `${index}`,
+                likesCount: index,
+                stocksCount: index + 1,
+                tags: [
+                  {
+                    name: `tag-${index}`,
+                  },
+                ],
+                title: `title-${index}`,
+                userId: `user-${index}`,
+                userName: `user-${index}`,
+              };
+            })
+            .reverse(),
+        ]);
+      });
+    });
+    describe("orderDirection = asc", () => {
+      const orderDirection = "asc";
+      test("likesCount", async () => {
+        const db = await mf.getD1Database("DB");
+        const instance = drizzle(db, { schema, logger: true });
+        const results = await findAllArticles(instance, {
+          limit: null,
+          offset: null,
+          since: null,
+          until: null,
+          orderDirection,
+          orderField: "likesCount",
+        });
+        expect(results.length).toBe(record);
+        expect(results).toEqual([
+          ...[...Array(record)].map((_, index) => {
+            return {
+              createdAt: expect.any(String),
+              id: `${index}`,
+              likesCount: index,
+              stocksCount: index + 1,
+              tags: [
+                {
+                  name: `tag-${index}`,
+                },
+              ],
+              title: `title-${index}`,
+              userId: `user-${index}`,
+              userName: `user-${index}`,
+            };
+          }),
+        ]);
+      });
+      test("stocksCount", async () => {
+        const db = await mf.getD1Database("DB");
+        const instance = drizzle(db, { schema, logger: true });
+        const results = await findAllArticles(instance, {
+          limit: null,
+          offset: null,
+          since: null,
+          until: null,
+          orderDirection,
+          orderField: "stocksCount",
+        });
+        expect(results.length).toBe(record);
+        expect(results).toEqual([
+          ...[...Array(record)].map((_, index) => {
+            return {
+              createdAt: expect.any(String),
+              id: `${index}`,
+              likesCount: index,
+              stocksCount: index + 1,
+              tags: [
+                {
+                  name: `tag-${index}`,
+                },
+              ],
+              title: `title-${index}`,
+              userId: `user-${index}`,
+              userName: `user-${index}`,
+            };
+          }),
+        ]);
+      });
+      test("createdAt", async () => {
+        const db = await mf.getD1Database("DB");
+        const instance = drizzle(db, { schema, logger: true });
+        const results = await findAllArticles(instance, {
+          limit: null,
+          offset: null,
+          since: null,
+          until: null,
+          orderDirection,
+          orderField: "createdAt",
+        });
+        expect(results.length).toBe(record);
+        expect(results).toEqual([
+          ...[...Array(record)].map((_, index) => {
+            return {
+              createdAt: expect.any(String),
+              id: `${index}`,
+              likesCount: index,
+              stocksCount: index + 1,
+              tags: [
+                {
+                  name: `tag-${index}`,
+                },
+              ],
+              title: `title-${index}`,
+              userId: `user-${index}`,
+              userName: `user-${index}`,
+            };
+          }),
+        ]);
+      });
+    });
   });
 });

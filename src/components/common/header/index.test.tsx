@@ -11,7 +11,7 @@ describe("Header", () => {
     const { text } = await renderer(
       <Header>
         <>menu</>
-      </Header>
+      </Header>,
     );
     expect(text).toMatchSnapshot();
   });

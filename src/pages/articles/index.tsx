@@ -1,4 +1,5 @@
 import {
+  ArticleRangeAndOrder,
   Header,
   PageLayout,
   Pagenation,
@@ -22,12 +23,13 @@ export const ArticlesPage: FC<{
       <Header />
       <PageTitle label="記事一覧" />
       <PageLayout>
+        <ArticleRangeAndOrder default={{ ...config, page, limit }} />
         <Suspense fallback={<Spinner />}>
           <ArticlesContainer db={db} config={config} />
         </Suspense>
         <div class="my-4 flex">
           <div>
-            <Pagenation page={page} limit={limit} />
+            <Pagenation {...config} page={page} limit={limit} />
           </div>
           <div class="ml-2">
             <SelectBoxPageLimit page={page} limit={limit} />

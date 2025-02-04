@@ -22,7 +22,7 @@ export const createHonoWithDBAndOpenAPI = () => {
     "*",
     cors({
       origin: ["http://localhost:5173"],
-    })
+    }),
   );
   // openapi
   app
@@ -49,7 +49,7 @@ export const createHonoWithDBAndOpenAPI = () => {
       "/ui",
       swaggerUI({
         url: "/doc",
-      })
+      }),
     );
   app.use(async (c, next) => {
     const db = drizzle(c.env.DB, { schema, logger: true });

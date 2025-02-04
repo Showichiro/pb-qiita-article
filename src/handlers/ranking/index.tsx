@@ -1,7 +1,7 @@
 import { CountQuery } from "@/schemas";
 import { Handler } from "hono";
 import { getArticleCountGroupByUser, getLikesCountGroupByUser } from "@/db";
-import { dateToDatetimeString } from "@/util";
+import { dateToDatetimeString, processDateParam } from "@/util";
 import { RankingPage } from "@/pages";
 import { Env } from "@/util";
 
@@ -19,14 +19,14 @@ export const postCountsHandler: Handler<
       typeof query.since === "string"
         ? query.since
         : query.since == null
-        ? null
-        : dateToDatetimeString(query.since),
+          ? null
+          : dateToDatetimeString(query.since),
     until:
       typeof query.until === "string"
         ? query.until
         : query.until == null
-        ? null
-        : dateToDatetimeString(query.until),
+          ? null
+          : dateToDatetimeString(query.until),
   });
   return c.json(results);
 };
@@ -41,18 +41,8 @@ export const likesCountsRankingHandler: Handler<
 > = async (c) => {
   const query = c.req.valid("query");
   const results = await getLikesCountGroupByUser(c.var.db, {
-    since:
-      typeof query.since === "string"
-        ? query.since
-        : query.since == null
-        ? null
-        : dateToDatetimeString(query.since),
-    until:
-      typeof query.until === "string"
-        ? query.until
-        : query.until == null
-        ? null
-        : dateToDatetimeString(query.until),
+    since: processDateParam(query.since),
+    until: processDateParam(query.until),
   });
   return c.json(results);
 };
@@ -71,22 +61,12 @@ export const rankingPageHandler: Handler<
       db={c.var.db}
       config={{
         ...query,
-        since:
-          typeof query.since === "string"
-            ? query.since
-            : query.since == null
-            ? null
-            : dateToDatetimeString(query.since),
-        until:
-          typeof query.until === "string"
-            ? query.until
-            : query.until == null
-            ? null
-            : dateToDatetimeString(query.until),
+        since: processDateParam(query.since),
+        until: processDateParam(query.until),
       }}
     />,
     {
       title: "ランキング",
-    }
+    },
   );
 };

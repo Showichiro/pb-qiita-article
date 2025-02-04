@@ -18,15 +18,15 @@ describe("ArticlesContainer", async () => {
   const record = 10;
   beforeAll(async () => {
     await db.exec(
-      "CREATE TABLE `articles` (`id` text PRIMARY KEY NOT NULL,`title` text NOT NULL,`user_id` text NOT NULL,`user_name` text NOT NULL,`created_at` text NOT NULL,`likes_count` integer NOT NULL,`stocks_count` integer NOT NULL);"
+      "CREATE TABLE `articles` (`id` text PRIMARY KEY NOT NULL,`title` text NOT NULL,`user_id` text NOT NULL,`user_name` text NOT NULL,`created_at` text NOT NULL,`likes_count` integer NOT NULL,`stocks_count` integer NOT NULL);",
     );
     await db.exec(
-      "CREATE TABLE `tags` (`article_id` text,`id` integer PRIMARY KEY NOT NULL,`name` text NOT NULL,FOREIGN KEY (`article_id`) REFERENCES `articles`(`id`) ON UPDATE cascade ON DELETE cascade);"
+      "CREATE TABLE `tags` (`article_id` text,`id` integer PRIMARY KEY NOT NULL,`name` text NOT NULL,FOREIGN KEY (`article_id`) REFERENCES `articles`(`id`) ON UPDATE cascade ON DELETE cascade);",
     );
     const promises = [...Array(record)].map(async (_, index) => {
       return await db
         .prepare(
-          "INSERT INTO `articles` (`id`, `title`, `user_id`, `user_name`, `created_at`, `likes_count`, `stocks_count`) VALUES (?, ?, ?, ?, ?, ?, ?);"
+          "INSERT INTO `articles` (`id`, `title`, `user_id`, `user_name`, `created_at`, `likes_count`, `stocks_count`) VALUES (?, ?, ?, ?, ?, ?, ?);",
         )
         .bind(
           `${index}`,
@@ -35,7 +35,7 @@ describe("ArticlesContainer", async () => {
           `user-${index % 2 == 0 ? 0 : index}`,
           new Date(index).toISOString(),
           0,
-          0
+          0,
         )
         .run()
         .then(async () => {
@@ -59,7 +59,7 @@ describe("ArticlesContainer", async () => {
       <ArticlesContainer
         db={instance}
         config={{ limit: null, offset: null, since: null, until: null }}
-      />
+      />,
     );
     expect(text).toMatchSnapshot();
   });

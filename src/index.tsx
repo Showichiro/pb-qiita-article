@@ -35,7 +35,7 @@ export default app
   .openapi(
     likesCountsRankingRoute,
     likesCountsRankingHandler,
-    BadRequestHandler
+    BadRequestHandler,
   )
   // view
   .get("/", (c) => {
@@ -44,10 +44,10 @@ export default app
   .get(
     "/articles",
     zValidator("query", articlesQuery, BadRequestHandler),
-    articlePageHandler
+    articlePageHandler,
   )
   .get(
     "/ranking",
     zValidator("query", countQuery, BadRequestHandler),
-    rankingPageHandler
+    rankingPageHandler,
   );

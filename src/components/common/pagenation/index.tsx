@@ -1,12 +1,25 @@
+import { OrderByField, OrderDirection } from "@/db";
 import { FC } from "hono/jsx";
 
 export const Pagenation: FC<{
   page: number;
   limit: number;
-}> = ({ page, limit }) => {
+  since: string | null;
+  until: string | null;
+  orderField?: OrderByField | null;
+  orderDirection?: OrderDirection | null;
+}> = ({ page, limit, since, until, orderDirection, orderField }) => {
   return (
     <div className="join">
       <form action="/articles" method="get">
+        <input type="hidden" name="since" value={since ?? ""} />
+        <input type="hidden" name="until" value={until ?? ""} />
+        <input
+          type="hidden"
+          name="orderDirection"
+          value={orderDirection ?? ""}
+        />
+        <input type="hidden" name="orderField" value={orderField ?? ""} />
         <input type="hidden" name="limit" value={limit} />
         <button
           type="submit"

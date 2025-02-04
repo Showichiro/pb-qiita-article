@@ -19,7 +19,7 @@ describe("Ranking", () => {
             userName: "userName2",
           },
         ]}
-      />
+      />,
     );
     expect(text).toMatchSnapshot();
   });
@@ -28,7 +28,7 @@ describe("Ranking", () => {
 describe("RankingRange", () => {
   it("renders ranking date range", async () => {
     const { text } = await renderer(
-      <RankingRange default={{ since: "2024-02-21", until: "2024-04-01" }} />
+      <RankingRange default={{ since: "2024-02-21", until: "2024-04-01" }} />,
     );
     expect(text).toMatchSnapshot();
   });

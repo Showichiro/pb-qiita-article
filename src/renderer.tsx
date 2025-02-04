@@ -18,5 +18,5 @@ export const renderer = jsxRenderer(
   },
   {
     stream: true,
-  }
+  },
 );
