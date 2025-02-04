@@ -10,7 +10,7 @@ export const countQuery = z.object({
     .or(
       z.string().length(0, {
         message: "since must be a date",
-      })
+      }),
     ),
   until: z.coerce
     .date({
@@ -21,7 +21,7 @@ export const countQuery = z.object({
     .or(
       z.string().length(0, {
         message: "until must be a date",
-      })
+      }),
     ),
 });
 

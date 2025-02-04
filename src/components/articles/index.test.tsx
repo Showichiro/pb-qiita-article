@@ -17,7 +17,7 @@ describe("ArticleTable", () => {
             userName: "userName",
           },
         ]}
-      />
+      />,
     );
     expect(text).toMatchSnapshot();
   });

@@ -396,23 +396,22 @@ describe("findAllArticles", async () => {
         });
         expect(results.length).toBe(record);
         expect(results).toEqual([
-          ...[...Array(record)]
-            .map((_, index) => {
-              return {
-                createdAt: expect.any(String),
-                id: `${index}`,
-                likesCount: index,
-                stocksCount: index + 1,
-                tags: [
-                  {
-                    name: `tag-${index}`,
-                  },
-                ],
-                title: `title-${index}`,
-                userId: `user-${index}`,
-                userName: `user-${index}`,
-              };
-            }),
+          ...[...Array(record)].map((_, index) => {
+            return {
+              createdAt: expect.any(String),
+              id: `${index}`,
+              likesCount: index,
+              stocksCount: index + 1,
+              tags: [
+                {
+                  name: `tag-${index}`,
+                },
+              ],
+              title: `title-${index}`,
+              userId: `user-${index}`,
+              userName: `user-${index}`,
+            };
+          }),
         ]);
       });
       test("stocksCount", async () => {
@@ -428,23 +427,22 @@ describe("findAllArticles", async () => {
         });
         expect(results.length).toBe(record);
         expect(results).toEqual([
-          ...[...Array(record)]
-            .map((_, index) => {
-              return {
-                createdAt: expect.any(String),
-                id: `${index}`,
-                likesCount: index,
-                stocksCount: index + 1,
-                tags: [
-                  {
-                    name: `tag-${index}`,
-                  },
-                ],
-                title: `title-${index}`,
-                userId: `user-${index}`,
-                userName: `user-${index}`,
-              };
-            }),
+          ...[...Array(record)].map((_, index) => {
+            return {
+              createdAt: expect.any(String),
+              id: `${index}`,
+              likesCount: index,
+              stocksCount: index + 1,
+              tags: [
+                {
+                  name: `tag-${index}`,
+                },
+              ],
+              title: `title-${index}`,
+              userId: `user-${index}`,
+              userName: `user-${index}`,
+            };
+          }),
         ]);
       });
       test("createdAt", async () => {
@@ -460,23 +458,22 @@ describe("findAllArticles", async () => {
         });
         expect(results.length).toBe(record);
         expect(results).toEqual([
-          ...[...Array(record)]
-            .map((_, index) => {
-              return {
-                createdAt: expect.any(String),
-                id: `${index}`,
-                likesCount: index,
-                stocksCount: index + 1,
-                tags: [
-                  {
-                    name: `tag-${index}`,
-                  },
-                ],
-                title: `title-${index}`,
-                userId: `user-${index}`,
-                userName: `user-${index}`,
-              };
-            }),
+          ...[...Array(record)].map((_, index) => {
+            return {
+              createdAt: expect.any(String),
+              id: `${index}`,
+              likesCount: index,
+              stocksCount: index + 1,
+              tags: [
+                {
+                  name: `tag-${index}`,
+                },
+              ],
+              title: `title-${index}`,
+              userId: `user-${index}`,
+              userName: `user-${index}`,
+            };
+          }),
         ]);
       });
     });

@@ -16,7 +16,7 @@ type FindAllArticlesReturnType = Array<Article>;
 /**
  * Field to order articles by.
  */
-type OrderByField = keyof Pick<
+export type OrderByField = keyof Pick<
   Article,
   "createdAt" | "likesCount" | "stocksCount"
 >;
@@ -24,7 +24,7 @@ type OrderByField = keyof Pick<
 /**
  * Direction to order articles.
  */
-type OrderDirection = "asc" | "desc";
+export type OrderDirection = "asc" | "desc";
 
 /**
  * Configuration object.
@@ -66,23 +66,26 @@ export const findAllArticles = async (
   const results = await db.query.articles.findMany({
     limit: limit ?? defaultLimit,
     offset: offset ?? defaultOffset,
-    where: !since && !until ? undefined : (fileds, { between, gte, lte }) => {
-      if (since && until) {
-        return between(fileds.createdAt, since, until);
-      }
-      if (since) {
-        return gte(fileds.createdAt, since);
-      }
-      if (until) {
-        return lte(fileds.createdAt, until);
-      }
-    },
+    where:
+      !since && !until
+        ? undefined
+        : (fileds, { between, gte, lte }) => {
+            if (since && until) {
+              return between(fileds.createdAt, since, until);
+            }
+            if (since) {
+              return gte(fileds.createdAt, since);
+            }
+            if (until) {
+              return lte(fileds.createdAt, until);
+            }
+          },
     orderBy: orderField
       ? (fields, { asc, desc }) => {
-        return orderDirection === "asc"
-          ? asc(fields[orderField])
-          : desc(fields[orderField]);
-      }
+          return orderDirection === "asc"
+            ? asc(fields[orderField])
+            : desc(fields[orderField]);
+        }
       : (fileds, { desc }) => [desc(fileds.createdAt)],
     with: {
       tags: {

@@ -6,10 +6,13 @@ export const BadRequestHandler = <T>(
   c: Context,
 ) => {
   if (!result.success) {
-    return c.json({
-      title: "Bad Request",
-      detail: result.error.format(),
-      status: 400,
-    }, 400);
+    return c.json(
+      {
+        title: "Bad Request",
+        detail: result.error.format(),
+        status: 400,
+      },
+      400,
+    );
   }
 };

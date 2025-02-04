@@ -21,11 +21,11 @@
     "zod": "^3.23.8"
   },
   "devDependencies": {
+    "@biomejs/biome": "1.9.4",
     "@cloudflare/workers-types": "^4.20241004.0",
     "@hono/vite-cloudflare-pages": "^0.4.2",
     "@hono/vite-dev-server": "^0.13.1",
     "autoprefixer": "^10.4.20",
-    "biome": "^0.3.3",
     "bun-types": "^1.1.30",
     "daisyui": "^4.12.13",
     "drizzle-kit": "^0.23.2",

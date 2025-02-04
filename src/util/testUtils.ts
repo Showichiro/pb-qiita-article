@@ -9,7 +9,7 @@ import { HtmlEscapedString } from "hono/utils/html";
  * @returns string
  */
 export const renderer = async (
-  component: HtmlEscapedString | Promise<HtmlEscapedString>
+  component: HtmlEscapedString | Promise<HtmlEscapedString>,
 ): Promise<{ status: number; text: string }> => {
   const app = new Hono().get("/test", (c) => c.html(component));
   const res = await testClient(app).test.$get();

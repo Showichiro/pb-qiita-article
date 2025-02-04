@@ -19,14 +19,14 @@ export const postCountsHandler: Handler<
       typeof query.since === "string"
         ? query.since
         : query.since == null
-        ? null
-        : dateToDatetimeString(query.since),
+          ? null
+          : dateToDatetimeString(query.since),
     until:
       typeof query.until === "string"
         ? query.until
         : query.until == null
-        ? null
-        : dateToDatetimeString(query.until),
+          ? null
+          : dateToDatetimeString(query.until),
   });
   return c.json(results);
 };
@@ -45,14 +45,14 @@ export const likesCountsRankingHandler: Handler<
       typeof query.since === "string"
         ? query.since
         : query.since == null
-        ? null
-        : dateToDatetimeString(query.since),
+          ? null
+          : dateToDatetimeString(query.since),
     until:
       typeof query.until === "string"
         ? query.until
         : query.until == null
-        ? null
-        : dateToDatetimeString(query.until),
+          ? null
+          : dateToDatetimeString(query.until),
   });
   return c.json(results);
 };
@@ -75,18 +75,18 @@ export const rankingPageHandler: Handler<
           typeof query.since === "string"
             ? query.since
             : query.since == null
-            ? null
-            : dateToDatetimeString(query.since),
+              ? null
+              : dateToDatetimeString(query.since),
         until:
           typeof query.until === "string"
             ? query.until
             : query.until == null
-            ? null
-            : dateToDatetimeString(query.until),
+              ? null
+              : dateToDatetimeString(query.until),
       }}
     />,
     {
       title: "ランキング",
-    }
+    },
   );
 };

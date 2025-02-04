@@ -47,7 +47,7 @@ export type RankingConfig = {
  */
 export const getArticleCountGroupByUser = async (
   db: DrizzleD1Database<typeof schema>,
-  { since, until, sort = "desc" }: RankingConfig
+  { since, until, sort = "desc" }: RankingConfig,
 ): Promise<Array<ArticleCountGroupByUser>> => {
   const results = await db
     .select({
@@ -70,7 +70,7 @@ export const getArticleCountGroupByUser = async (
             if (until) {
               return lte(fileds.createdAt, until);
             }
-          }
+          },
     )
     .groupBy((fileds) => fileds.userId)
     .orderBy((fileds) => [

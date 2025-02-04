@@ -105,3 +105,54 @@ export const SelectBoxPageLimit: FC<{ page: number; limit: number }> = ({
     </>
   );
 };
+
+export const ArticleRangeAndOrder: FC<{
+  default: {
+    since: string | null;
+    until: string | null;
+    page: number;
+    limit: number;
+  };
+}> = ({ default: { since, until, limit, page } }) => {
+  return (
+    <form action="/articles" method="get">
+      <label>
+        <input type="hidden" name="limit" value={limit} />
+      </label>
+      <label>
+        <input type="hidden" name="page" value={page} />
+      </label>
+      <label>
+        <span class="mr-2">since:</span>
+        <input type="date" name="since" value={since ?? undefined} />
+      </label>
+      <label class="ml-2">
+        <span class="mr-2">until:</span>
+        <input type="date" name="until" value={until ?? undefined} />
+      </label>
+
+      <label class="ml-2">
+        <span class="mr-2">orderField:</span>
+        <select name="orderField">
+          <option value="likesCount">いいね数</option>
+          <option value="stocksCount">ストック数</option>
+          <option value="createdAt">投稿日</option>
+        </select>
+      </label>
+
+      <label class="ml-2">
+        <span class="mr-2">orderDirection:</span>
+        <select name="orderDirection">
+          <option value="asc">昇順</option>
+          <option value="desc">降順</option>
+        </select>
+      </label>
+
+      <div class="pt-4">
+        <button class="btn btn-primary btn-sm" type="submit">
+          検索する
+        </button>
+      </div>
+    </form>
+  );
+};

@@ -18,24 +18,38 @@ export const articlesQuery = z.object({
     .default(0)
     .nullable(),
   since: z.coerce
-    .string()
-    .datetime({
-      message: "since must be a date",
+    .date({
+      description: "ISO 8601 date",
+      invalid_type_error: "since must be a date",
     })
-    .nullish(),
+    .nullish()
+    .or(
+      z.string().length(0, {
+        message: "since must be a date",
+      }),
+    ),
   until: z.coerce
-    .string()
-    .datetime({
-      message: "until must be a date",
+    .date({
+      description: "ISO 8601 date",
+      invalid_type_error: "until must be a date",
+    })
+    .nullish()
+    .or(
+      z.string().length(0, {
+        message: "until must be a date",
+      }),
+    ),
+  orderField: z
+    .enum(["likesCount", "createdAt", "stocksCount"], {
+      invalid_type_error:
+        "orderField must be likesCount, createdAt or stocksCount",
     })
     .nullish(),
-  orderField: z.enum(["likesCount", "createdAt", "stocksCount"], {
-    invalid_type_error:
-      "orderField must be likesCount, createdAt or stocksCount",
-  }).nullish(),
-  orderDirection: z.enum(["asc", "desc"], {
-    invalid_type_error: "orderDirection must be asc or desc",
-  }).nullish(),
+  orderDirection: z
+    .enum(["asc", "desc"], {
+      invalid_type_error: "orderDirection must be asc or desc",
+    })
+    .nullish(),
 });
 
 export type ArticlesQuery = z.infer<typeof articlesQuery>;
