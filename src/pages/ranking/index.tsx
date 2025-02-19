@@ -8,10 +8,10 @@ import {
   ToTopButton,
 } from "@/components";
 import { RankningContainer } from "@/containers";
-import { RankingConfig, schema } from "@/db";
-import { DrizzleD1Database } from "@/lib";
+import type { RankingConfig, schema } from "@/db";
+import type { DrizzleD1Database } from "@/lib";
 import { dateTimetoDateString } from "@/util/dateFormatUtils";
-import { FC, Suspense } from "hono/jsx";
+import { type FC, Suspense } from "hono/jsx";
 
 export const RankingPage: FC<{
   db: DrizzleD1Database<typeof schema>;

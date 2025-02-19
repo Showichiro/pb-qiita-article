@@ -8,9 +8,9 @@ import {
   Spinner,
 } from "@/components";
 import { ArticlesContainer } from "@/containers";
-import { FindAllArticlesConfig, schema } from "@/db";
-import { DrizzleD1Database } from "@/lib";
-import { FC, Suspense } from "hono/jsx";
+import type { FindAllArticlesConfig, schema } from "@/db";
+import type { DrizzleD1Database } from "@/lib";
+import { type FC, Suspense } from "hono/jsx";
 
 export const ArticlesPage: FC<{
   db: DrizzleD1Database<typeof schema>;

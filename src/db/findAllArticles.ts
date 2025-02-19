@@ -1,6 +1,6 @@
-import { DrizzleD1Database } from "@/lib";
-import * as schema from "./schema";
-import { Article } from "@/schemas";
+import type { DrizzleD1Database } from "@/lib";
+import type * as schema from "./schema";
+import type { Article } from "@/schemas";
 
 /**
  * Find all articles.

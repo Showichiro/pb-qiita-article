@@ -1,6 +1,6 @@
 import { Hono } from "@/lib";
 import { testClient } from "hono/testing";
-import { HtmlEscapedString } from "hono/utils/html";
+import type { HtmlEscapedString } from "hono/utils/html";
 
 /**
  * @description

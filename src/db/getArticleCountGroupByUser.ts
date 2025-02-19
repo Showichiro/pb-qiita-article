@@ -1,6 +1,6 @@
-import { DrizzleD1Database, asc, count, desc, between, gte, lte } from "@/lib";
+import { type DrizzleD1Database, asc, count, desc, between, gte, lte } from "@/lib";
 import { schema } from "@/db";
-import { ArticleCountGroupByUser } from "@/schemas";
+import type { ArticleCountGroupByUser } from "@/schemas";
 
 /**
  * Config for getArticleCountGroupByUser.

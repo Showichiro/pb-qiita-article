@@ -2,11 +2,11 @@ import { Ranking } from "@/components";
 import {
   getArticleCountGroupByUser,
   getLikesCountGroupByUser,
-  RankingConfig,
-  schema,
+  type RankingConfig,
+  type schema,
 } from "@/db";
-import { DrizzleD1Database } from "@/lib";
-import { FC } from "hono/jsx";
+import type { DrizzleD1Database } from "@/lib";
+import type { FC } from "hono/jsx";
 
 export const RankningContainer: FC<{
   db: DrizzleD1Database<typeof schema>;

@@ -1,8 +1,8 @@
-import { OrderByField, OrderDirection } from "@/db";
-import { Article } from "@/schemas";
+import type { OrderByField, OrderDirection } from "@/db";
+import type { Article } from "@/schemas";
 import { dateTimetoDateString } from "@/util";
 import { html } from "hono/html";
-import { FC } from "hono/jsx";
+import type { FC } from "hono/jsx";
 
 export const ArticlesTable: FC<{ articles: Array<Article> }> = ({
   articles,
