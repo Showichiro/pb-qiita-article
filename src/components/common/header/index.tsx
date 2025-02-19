@@ -5,9 +5,9 @@ export const Header: FC<{ children?: Child }> = ({ children }) => {
     <div class="navbar bg-base-100">
       <div class="navbar-start">
         <div class="dropdown">
-          <div
+          <button
             tabindex={0}
-            role="button"
+            type="button"
             aria-label="navbar-button"
             class="btn btn-ghost btn-circle"
           >
@@ -18,6 +18,7 @@ export const Header: FC<{ children?: Child }> = ({ children }) => {
               viewBox="0 0 24 24"
               stroke="currentColor"
             >
+              <title>header menu icon</title>
               <path
                 stroke-linecap="round"
                 stroke-linejoin="round"
@@ -25,7 +26,7 @@ export const Header: FC<{ children?: Child }> = ({ children }) => {
                 d="M4 6h16M4 12h16M4 18h7"
               />
             </svg>
-          </div>
+          </button>
           <ul
             tabindex={0}
             class="menu menu-sm dropdown-content mt-3 z-1 p-2 shadow-sm bg-base-100 rounded-box w-52"

@@ -32,7 +32,9 @@ export const Ranking: FC<{
                       rel="noopener noreferrer"
                     >
                       {user.userId}
-                      <span>{user.userName != "" && `(${user.userName})`}</span>
+                      <span>
+                        {user.userName !== "" && `(${user.userName})`}
+                      </span>
                     </a>
                   </td>
                   <td>{user.count}</td>
@@ -64,7 +66,9 @@ export const Ranking: FC<{
                       rel="noopener noreferrer"
                     >
                       {user.userId}
-                      <span>{user.userName != "" && `(${user.userName})`}</span>
+                      <span>
+                        {user.userName !== "" && `(${user.userName})`}
+                      </span>
                     </a>
                   </td>
                   <td>{user.totalLikesCount}</td>

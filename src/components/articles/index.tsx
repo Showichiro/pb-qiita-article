@@ -40,7 +40,9 @@ export const ArticlesTable: FC<{ articles: Array<Article> }> = ({
                 rel="noopener noreferrer"
               >
                 {article.userId}
-                <span>{article.userName != "" && `(${article.userName})`}</span>
+                <span>
+                  {article.userName !== "" && `(${article.userName})`}
+                </span>
               </a>
             </td>
             <td>
@@ -99,7 +101,9 @@ export const SelectBoxPageLimit: FC<{ page: number; limit: number }> = ({
         name="page-limit"
       >
         {[10, 20, 30].map((l) => (
-          <option selected={limit === l}>{l}</option>
+          <option key={`page-limit-${l}`} selected={limit === l}>
+            {l}
+          </option>
         ))}
       </select>
       {script}
