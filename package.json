@@ -27,7 +27,7 @@
     "@hono/vite-dev-server": "^0.13.1",
     "autoprefixer": "^10.4.20",
     "bun-types": "^1.2.2",
-    "daisyui": "^4.12.23",
+    "daisyui": "^5.0.0-beta.8",
     "drizzle-kit": "^0.23.2",
     "miniflare": "^3.20250214.0",
     "postcss": "^8.5.2",
