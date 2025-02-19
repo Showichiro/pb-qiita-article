@@ -31,8 +31,8 @@ describe("ArticlesPage", async () => {
         .bind(
           `${index}`,
           `title-${index}`,
-          `user-${index % 2 == 0 ? 0 : index}`,
-          `user-${index % 2 == 0 ? 0 : index}`,
+          `user-${index % 2 === 0 ? 0 : index}`,
+          `user-${index % 2 === 0 ? 0 : index}`,
           new Date(index).toISOString(),
           0,
           0,

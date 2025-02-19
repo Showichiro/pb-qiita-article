@@ -8,11 +8,7 @@ describe("Header", () => {
   });
 
   it("renders Header with Custom Menu", async () => {
-    const { text } = await renderer(
-      <Header>
-        <>menu</>
-      </Header>,
-    );
+    const { text } = await renderer(<Header>menu</Header>);
     expect(text).toMatchSnapshot();
   });
 });
