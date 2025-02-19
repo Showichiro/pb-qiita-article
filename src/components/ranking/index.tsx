@@ -1,5 +1,5 @@
-import { ArticleCountGroupByUser, LikesCountSchema } from "@/schemas";
-import { FC } from "hono/jsx";
+import type { ArticleCountGroupByUser, LikesCountSchema } from "@/schemas";
+import type { FC } from "hono/jsx";
 
 export const Ranking: FC<{
   articleCountGroupByUsers: Array<ArticleCountGroupByUser>;

@@ -1,5 +1,5 @@
-import { OrderByField, OrderDirection } from "@/db";
-import { FC } from "hono/jsx";
+import type { OrderByField, OrderDirection } from "@/db";
+import type { FC } from "hono/jsx";
 
 export const Pagenation: FC<{
   page: number;

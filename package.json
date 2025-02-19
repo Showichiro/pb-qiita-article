@@ -17,23 +17,23 @@
     "@hono/zod-openapi": "^0.15.3",
     "@hono/zod-validator": "^0.2.2",
     "drizzle-orm": "^0.32.2",
-    "hono": "^4.6.4",
-    "zod": "^3.23.8"
+    "hono": "^4.7.2",
+    "zod": "^3.24.2"
   },
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
-    "@cloudflare/workers-types": "^4.20241004.0",
+    "@cloudflare/workers-types": "^4.20250214.0",
     "@hono/vite-cloudflare-pages": "^0.4.2",
     "@hono/vite-dev-server": "^0.13.1",
-    "autoprefixer": "^10.4.20",
-    "bun-types": "^1.1.30",
-    "daisyui": "^4.12.13",
+    "@tailwindcss/postcss": "^4.0.7",
+    "bun-types": "^1.2.2",
+    "daisyui": "^5.0.0-beta.8",
     "drizzle-kit": "^0.23.2",
-    "miniflare": "^3.20241004.0",
-    "postcss": "^8.4.47",
-    "tailwindcss": "^3.4.13",
-    "vite": "^5.4.8",
-    "vitest": "^2.1.2",
-    "wrangler": "^3.80.4"
+    "miniflare": "^3.20250214.0",
+    "postcss": "^8.5.2",
+    "tailwindcss": "^4.0.7",
+    "vite": "^6.1.0",
+    "vitest": "^3.0.6",
+    "wrangler": "^3.109.2"
   }
 }

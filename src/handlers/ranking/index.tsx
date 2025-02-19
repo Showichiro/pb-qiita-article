@@ -1,9 +1,9 @@
-import { CountQuery } from "@/schemas";
-import { Handler } from "hono";
+import type { CountQuery } from "@/schemas";
+import type { Handler } from "hono";
 import { getArticleCountGroupByUser, getLikesCountGroupByUser } from "@/db";
 import { dateToDatetimeString, processDateParam } from "@/util";
 import { RankingPage } from "@/pages";
-import { Env } from "@/util";
+import type { Env } from "@/util";
 
 export const postCountsHandler: Handler<
   Env,

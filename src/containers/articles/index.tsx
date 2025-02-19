@@ -1,7 +1,7 @@
 import { ArticlesTable } from "@/components";
-import { findAllArticles, FindAllArticlesConfig, schema } from "@/db";
-import { DrizzleD1Database } from "@/lib";
-import { FC } from "hono/jsx";
+import { findAllArticles, type FindAllArticlesConfig, type schema } from "@/db";
+import type { DrizzleD1Database } from "@/lib";
+import type { FC } from "hono/jsx";
 
 export const ArticlesContainer: FC<{
   db: DrizzleD1Database<typeof schema>;

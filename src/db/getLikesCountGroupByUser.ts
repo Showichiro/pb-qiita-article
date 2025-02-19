@@ -1,6 +1,6 @@
-import { asc, between, desc, DrizzleD1Database, gte, lte, sum } from "@/lib";
-import { LikesCountSchema } from "@/schemas";
-import { RankingConfig, schema } from "@/db";
+import { asc, between, desc, type DrizzleD1Database, gte, lte, sum } from "@/lib";
+import type { LikesCountSchema } from "@/schemas";
+import { type RankingConfig, schema } from "@/db";
 
 /**
  * Get likes count group by user

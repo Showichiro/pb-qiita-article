@@ -2,7 +2,7 @@ import { schema } from "@/db";
 import { renderer } from "@/renderer";
 import { swaggerUI } from "@hono/swagger-ui";
 import { OpenAPIHono } from "@hono/zod-openapi";
-import { drizzle, DrizzleD1Database } from "drizzle-orm/d1";
+import { drizzle, type DrizzleD1Database } from "drizzle-orm/d1";
 import { cors } from "hono/cors";
 import { logger } from "hono/logger";
 
