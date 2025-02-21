@@ -34,7 +34,7 @@ Please refer to the official documentation for instructions on installing Bun.
 3. Install dependencies.
 
 ```shell
-bun install
+bun install --frozen-lockfile
 ```
 
 4. DB setup
