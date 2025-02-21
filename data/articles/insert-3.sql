@@ -1,3 +1,5 @@
+INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('7575580f1bd8633839c4','「Apach POI」を使ってJavaでExcelファイルを操作してみた','y-hys','','2022-10-21T19:05:22+09:00',1,0); 
+INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('98fff963cb7a74ca68ce','PowerAutomateで全角を半角に一括変換する','pbuchiumi','','2022-10-20T20:22:04+09:00',6,5); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('2babe450ed1cbaf32e9d','PowerQueryでテンプレートファイルにマスタデータを自動反映させる　～クエリでデータ取得から結合まで～','pbmisonou','','2022-10-18T23:09:15+09:00',4,3); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('cfd87adf9844439b65b0','Excelで必要な列のみ抽出するスピル関数を作ってみた','ryotaro76','riga','2022-10-07T19:53:23+09:00',3,2); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('9a619bf1e31836d762ee','ExcelでSUMIFのように条件に一致するセルを文字列連結する','ryotaro76','riga','2022-10-07T15:08:38+09:00',1,0); 
@@ -96,5 +98,3 @@ INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_coun
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('1d96169a7c423b1939b0','UiPathの Attended Framework テンプレートを使ってみた','masatomix','Masatomi KINO','2019-08-04T14:46:40+09:00',15,19); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('6d751d361af760346383','Vagrant環境のDockerでJenkinsサーバを構築し、スレーブのWindowsマシンを接続する(後半)','masatomix','Masatomi KINO','2019-07-29T14:44:06+09:00',6,6); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('4607065c309c6034a6a1','Vagrant環境のDockerでJenkinsサーバを構築し、スレーブのWindowsマシンを接続する(前半)','masatomix','Masatomi KINO','2019-07-29T14:41:43+09:00',2,1); 
-INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('8ad9d45399ef01d73d4c','Vagrant環境のDockerで、Zabbixサーバとエージェントを構築する','masatomix','Masatomi KINO','2019-07-24T17:36:25+09:00',1,3); 
-INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('44d11218bd47cbd0beb0','Pythonの開発環境の管理をPipenvに任せることにした','toshiki_takatsuki','toshiki takatsuki','2019-07-17T14:52:12+09:00',4,11); 

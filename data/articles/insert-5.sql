@@ -1,3 +1,5 @@
+INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('97f2abf0c4e6c3637876','GAS(Google Apps Script)のUtilitiesに関するTips','ryotaro76','riga','2017-10-10T16:39:28+09:00',0,1); 
+INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('0e40ffb6173b1580e671','GitコマンドをProxy環境可で利用する。','ryotaro76','riga','2017-09-19T13:07:30+09:00',72,72); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('6aa9d3187d742eed0325','Heroku CLI を ubuntuに入れる','ryotaro76','riga','2017-09-15T13:15:05+09:00',34,29); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('d9a72d50d9dacfe9939c','VirtualBox にインストールした Ubuntu の画面サイズ（解像度）を変更する方法','ryotaro76','riga','2017-09-14T10:54:36+09:00',40,33); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('91c486f40ce3120a4686','Authleteを使った認可サーバの構築と、OAuthクライアント(Webアプリケーション)からの疎通','masatomix','Masatomi KINO','2017-09-13T15:52:54+09:00',26,27); 
