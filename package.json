@@ -24,7 +24,7 @@
     "@biomejs/biome": "1.9.4",
     "@cloudflare/workers-types": "^4.20250214.0",
     "@hono/vite-cloudflare-pages": "^0.4.2",
-    "@hono/vite-dev-server": "^0.18.1",
+    "@hono/vite-dev-server": "^0.18.2",
     "@tailwindcss/postcss": "^4.0.7",
     "bun-types": "^1.2.2",
     "daisyui": "^5.0.0-beta.8",
