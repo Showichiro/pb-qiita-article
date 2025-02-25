@@ -1,3 +1,4 @@
+INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('1ea053b751629b6e7730','[SEカレッジ]リーダーが知るべきメンバー別コミュニケーション','sawa_toru','','2022-10-25T22:56:19+09:00',2,1); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('7575580f1bd8633839c4','「Apach POI」を使ってJavaでExcelファイルを操作してみた','y-hys','','2022-10-21T19:05:22+09:00',1,0); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('98fff963cb7a74ca68ce','PowerAutomateで全角を半角に一括変換する','pbuchiumi','','2022-10-20T20:22:04+09:00',6,5); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('2babe450ed1cbaf32e9d','PowerQueryでテンプレートファイルにマスタデータを自動反映させる　～クエリでデータ取得から結合まで～','pbmisonou','','2022-10-18T23:09:15+09:00',4,3); 
@@ -97,4 +98,3 @@ INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_coun
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('8ef146486a87686a9345','Attended Framework テンプレートを使ってみた(Slide版)','masatomix','Masatomi KINO','2019-08-05T16:00:32+09:00',5,5); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('1d96169a7c423b1939b0','UiPathの Attended Framework テンプレートを使ってみた','masatomix','Masatomi KINO','2019-08-04T14:46:40+09:00',15,19); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('6d751d361af760346383','Vagrant環境のDockerでJenkinsサーバを構築し、スレーブのWindowsマシンを接続する(後半)','masatomix','Masatomi KINO','2019-07-29T14:44:06+09:00',6,6); 
-INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('4607065c309c6034a6a1','Vagrant環境のDockerでJenkinsサーバを構築し、スレーブのWindowsマシンを接続する(前半)','masatomix','Masatomi KINO','2019-07-29T14:41:43+09:00',2,1); 
