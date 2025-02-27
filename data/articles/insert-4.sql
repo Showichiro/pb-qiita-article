@@ -1,3 +1,5 @@
+INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('6d751d361af760346383','Vagrant環境のDockerでJenkinsサーバを構築し、スレーブのWindowsマシンを接続する(後半)','masatomix','Masatomi KINO','2019-07-29T14:44:06+09:00',6,6); 
+INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('4607065c309c6034a6a1','Vagrant環境のDockerでJenkinsサーバを構築し、スレーブのWindowsマシンを接続する(前半)','masatomix','Masatomi KINO','2019-07-29T14:41:43+09:00',2,1); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('8ad9d45399ef01d73d4c','Vagrant環境のDockerで、Zabbixサーバとエージェントを構築する','masatomix','Masatomi KINO','2019-07-24T17:36:25+09:00',1,3); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('44d11218bd47cbd0beb0','Pythonの開発環境の管理をPipenvに任せることにした','toshiki_takatsuki','toshiki takatsuki','2019-07-17T14:52:12+09:00',4,11); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('33be7e4e1d3eadc49918','ELB(SSL)の内側に配置したEC2のUiPath Orchestrator(IISサーバ)をポート80で運用したい→ 妥協','masatomix','Masatomi KINO','2019-07-15T17:05:22+09:00',1,1); 
@@ -96,5 +98,3 @@ INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_coun
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('50c1da605b4e461db43c','MySQLのTips集','ryotaro76','riga','2017-12-19T15:18:06+09:00',1,1); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('9e1d5c75d6e16a8da5fa','ToodoistのTips集','ryotaro76','riga','2017-12-07T08:44:51+09:00',0,0); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('6c7e19e960370e07697b','Eclipseを使っていて便利だったショートカットの忘備録','toshiki_takatsuki','toshiki takatsuki','2017-12-01T18:10:44+09:00',6,6); 
-INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('c37a00ba81a00249c1c4','Redisコマンド Tips集','ryotaro76','riga','2017-11-29T14:14:02+09:00',0,0); 
-INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('6257e1e5b3218576de8b','GAS(Google Apps Scripts)でスプレッドシートを利用する','ryotaro76','riga','2017-10-10T16:39:31+09:00',0,2); 
