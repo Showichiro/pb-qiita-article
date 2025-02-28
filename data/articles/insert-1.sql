@@ -1,9 +1,11 @@
-INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('cf430e29cd4dbe3d6027','視覚的にGitを学べるサイト','dev-cho','','2025-02-21T00:16:30+09:00',0,0); 
+INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('0215cd9c54e85805aeb8','TS×React×Express×Firebase×Render でアプリケーションを作りました','ko-sato-primebrains','晃季 佐藤','2025-02-26T21:20:14+09:00',2,0); 
+INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('0ee94071e289fc47afac','jakarta.validationでカスタムアノテーションを作ってみる','pbogawa','ogawa shotaro','2025-02-24T16:15:04+09:00',0,0); 
+INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('cf430e29cd4dbe3d6027','視覚的にGitを学べるサイト','dev-cho','','2025-02-21T00:16:30+09:00',1,3); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('523c6a314f539e7cacf6','GA4カスタムイベントにオプション情報を付与して追加の情報を得る方法','y-hys','','2025-02-19T22:37:35+09:00',0,1); 
-INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('0ab3ae22d06d6a6003bb','GoogleAnalyticsのカスタムイベントを使って離脱率を計測したい！','y-hys','','2025-02-11T13:41:52+09:00',5,1); 
+INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('0ab3ae22d06d6a6003bb','GoogleAnalyticsのカスタムイベントを使って離脱率を計測したい！','y-hys','','2025-02-11T13:41:52+09:00',5,2); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('db5c9bd6742f8a26faad','GithubPagesにSPAで公開する','y-hys','','2025-02-11T03:49:40+09:00',1,0); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('0e824cc1bb69b13913a7','Cloudflare Workersの自動デプロイの失敗を解決した','dev-cho','','2025-02-09T18:32:22+09:00',1,1); 
-INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('2b73adb53d2837299060','AIにコードを書いてもらう時代の仕事についての考察','umiushi_1','','2025-02-07T03:23:57+09:00',9,4); 
+INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('2b73adb53d2837299060','AIにコードを書いてもらう時代の仕事についての考察','umiushi_1','','2025-02-07T03:23:57+09:00',10,8); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('99026282bdcd2196d3c5','dnfをProxy環境下で使う','y-hys','','2025-02-05T23:06:52+09:00',1,1); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('22871bae4523c05946f4','Gitの基本的なワークフロー','dev-cho','','2025-02-02T21:13:53+09:00',1,0); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('39677c667497ce9f7eb2','【React】DogAPIで癒されようPart2','mk3kohei','','2025-02-01T14:58:51+09:00',2,1); 
@@ -18,15 +20,15 @@ INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_coun
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('4da68614fae3c0d033a3','JavaでCLIツールを作る','umiushi_1','','2025-01-15T18:37:51+09:00',7,3); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('436413d4a6a9949f9543','docker image buildをしたらexit code: 100というエラーが発生した。','mk3kohei','','2025-01-12T10:58:57+09:00',2,0); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('b4767ae7d14924a0f28a','今更だけど、Dockerを使ってGitLabを立ち上げる','ryotaro76','riga','2025-01-10T13:12:53+09:00',2,1); 
-INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('e6998b684ccc39267aa4','【初心者】Dockerコンテナ内でDockerコマンドを使いたい！','mk3kohei','','2025-01-10T07:07:41+09:00',4,1); 
+INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('e6998b684ccc39267aa4','【初心者】Dockerコンテナ内でDockerコマンドを使いたい！','mk3kohei','','2025-01-10T07:07:41+09:00',4,2); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('04debd43e9a3853edf1a','XAMPP環境でOCI8拡張を使用したOracle接続に失敗する時の対処法','y-hys','','2025-01-07T22:30:07+09:00',4,2); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('50cf20cf514f81d55b5b','技術記事や手順書での括弧で記載する際の慣習','y-hys','','2025-01-03T00:32:50+09:00',63,36); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('6f1c486db733571fbb21','【R6秋】情報処理安全確保支援士~合格体験記~','kanekanekaneko','aro kaneko','2025-01-02T19:11:14+09:00',7,1); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('5901c7ed24c0120364cd','Podmanコマンド備忘録','y-hys','','2025-01-02T15:00:26+09:00',2,1); 
-INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('c17828ca70a605723567','なぜ、プロジェクトは予定どおりに進まないのか？―進捗管理で意識している5つのこと','nakawodayo','中尾 幸志郎','2024-12-25T22:53:45+09:00',13,8); 
+INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('c17828ca70a605723567','なぜ、プロジェクトは予定どおりに進まないのか？―進捗管理で意識している5つのこと','nakawodayo','中尾 幸志郎','2024-12-25T22:53:45+09:00',14,8); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('7fbc6974ee1df710c2d1','Chrome拡張機能って案外簡単に作れます','toshiki_takatsuki','toshiki takatsuki','2024-12-23T22:42:23+09:00',12,4); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('01b61f297065e9c671e4','【SELinux】初心者によるSELinuxの概要覚書&再帰的なコンテキストの設定','Bigmountain218','','2024-12-23T21:16:42+09:00',8,0); 
-INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('f4c9e766170e9e85f456','GitHub Actionsを使ってCloudflare Workersを自動にデプロイする','dev-cho','','2024-12-22T23:03:44+09:00',5,0); 
+INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('f4c9e766170e9e85f456','GitHub Actionsを使ってCloudflare Workersを自動にデプロイする','dev-cho','','2024-12-22T23:03:44+09:00',6,0); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('24f9dd54963124429791','Dog APIというAPIを叩いて癒されよう','mk3kohei','','2024-12-21T22:14:32+09:00',8,1); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('ef244519e79f5dc0ca9e','【VBA初心者必見】まずはじめにやるべきエディター設定集','hino_kinoko','','2024-12-21T08:14:20+09:00',10,5); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('c6b7752df5a6240f8664','○○年△月形式のデータをYYYYMM形式に変換する方法','iketo','','2024-12-20T18:25:00+09:00',2,0); 
@@ -88,7 +90,7 @@ INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_coun
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('279c529610cedfc6f7a0','3層ニューラルネットワークを理解する','kanekanekaneko','aro kaneko','2024-06-24T07:33:39+09:00',5,5); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('b0f5574689d9e28c844c','GithubにSSH Keyを設定する','dev-cho','','2024-06-23T14:54:32+09:00',3,0); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('9cd539a8f1356ecee61e','SpringBootを使って、タダ（無償）でHTMLファイルをPDFにする','ryotaro76','riga','2024-06-21T21:22:56+09:00',8,1); 
-INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('57706a527d58bae8790c','検索王になるためのGoogle検索テクニック','iketo','','2024-06-21T13:30:44+09:00',30,31); 
+INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('57706a527d58bae8790c','検索王になるためのGoogle検索テクニック','iketo','','2024-06-21T13:30:44+09:00',30,32); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('1d937bcaceda2841b7b5','「VBAでInteger型は使わない」って、知ってた！？','redwings_a','','2024-06-21T12:38:25+09:00',17,7); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('f51f9fb891cc55dada16','GraphQLで引数の書き方を忘れちゃうので備忘','masatomix','Masatomi KINO','2024-06-20T08:47:55+09:00',4,3); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('bde84beecfa9ef09d983','ghq+pecoでリポジトリ管理','dev-cho','','2024-06-18T01:51:04+09:00',5,1); 
@@ -96,5 +98,3 @@ INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_coun
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('ced2d4527fd9b4df3f96','Ubuntu環境でOpenJDKインストール','dev-cho','','2024-06-15T20:53:12+09:00',4,2); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('25782a258affa14a7a8f','買って得したアイテムたち【エンジニア1年目】','redwings_a','','2024-06-14T09:26:06+09:00',6,1); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('859172887388556eed40','技術選定において重要な観点の説明と技術選定の手順について','umiushi_1','','2024-06-14T04:07:09+09:00',9,8); 
-INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('95b0a00e4de78107f1b0','腰、　イ　タ　ス　ギ　‼️ ～健康になろうエンジニア～','redwings_a','','2024-06-13T09:12:07+09:00',26,12); 
-INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('d52ef0bdeb131f9dd6f7','GraphQLサーバとRESTサーバをさっと立ちあげて、実際に触ってみる。つづき。関連のあるデータの取得','masatomix','Masatomi KINO','2024-06-13T08:45:37+09:00',9,5); 

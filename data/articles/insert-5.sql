@@ -1,3 +1,5 @@
+INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('c37a00ba81a00249c1c4','Redisコマンド Tips集','ryotaro76','riga','2017-11-29T14:14:02+09:00',0,0); 
+INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('6257e1e5b3218576de8b','GAS(Google Apps Scripts)でスプレッドシートを利用する','ryotaro76','riga','2017-10-10T16:39:31+09:00',0,2); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('97f2abf0c4e6c3637876','GAS(Google Apps Script)のUtilitiesに関するTips','ryotaro76','riga','2017-10-10T16:39:28+09:00',0,1); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('0e40ffb6173b1580e671','GitコマンドをProxy環境可で利用する。','ryotaro76','riga','2017-09-19T13:07:30+09:00',72,72); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('6aa9d3187d742eed0325','Heroku CLI を ubuntuに入れる','ryotaro76','riga','2017-09-15T13:15:05+09:00',34,29); 
@@ -8,7 +10,7 @@ INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_coun
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('d4b6e426d9aaba99343d','SQLチューニング（Oracle)','ryotaro76','riga','2017-06-19T18:51:56+09:00',0,3); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('d5573e9cd4a14fe01ee3','SourceTree のユーザ情報に関する覚え書き','masatomix','Masatomi KINO','2017-03-07T14:00:03+09:00',1,5); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('5e520591695f21769f11','SourceTree上でGit Flowを動かしてみる ','masatomix','Masatomi KINO','2017-02-23T12:53:21+09:00',22,38); 
-INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('19f4604c939567929ee8','Gitでリモートのリポジトリをローカルに作成する','masatomix','Masatomi KINO','2017-02-04T20:34:17+09:00',29,35); 
+INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('19f4604c939567929ee8','Gitでリモートのリポジトリをローカルに作成する','masatomix','Masatomi KINO','2017-02-04T20:34:17+09:00',30,35); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('1a02c767a949959c0b3b','WindowsのリモートデスクトップでCtrl＋Alt＋Delを送信する','ryotaro76','riga','2017-01-31T10:04:11+09:00',0,0); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('c1f8674213500f54df0f','JavaでSSLでRESTを投げるときに、プロキシを通す方法','masatomix','Masatomi KINO','2017-01-03T12:51:04+09:00',4,6); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('4bdb5f25de632c97f37f','GitHubのマージとリベースについて','masatomix','Masatomi KINO','2016-12-29T07:35:47+09:00',13,12); 
