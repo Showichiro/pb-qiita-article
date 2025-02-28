@@ -1,4 +1,4 @@
-INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('0215cd9c54e85805aeb8','TS×React×Express×Firebase×Render でアプリケーションを作りました','ko-sato-primebrains','晃季 佐藤','2025-02-26T21:20:14+09:00',2,0); 
+INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('0215cd9c54e85805aeb8','TS×React×Express×Firebase×Render でアプリケーションを作りました','ko-sato-primebrains','晃季 佐藤','2025-02-26T21:20:14+09:00',4,0); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('0ee94071e289fc47afac','jakarta.validationでカスタムアノテーションを作ってみる','pbogawa','ogawa shotaro','2025-02-24T16:15:04+09:00',0,0); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('cf430e29cd4dbe3d6027','視覚的にGitを学べるサイト','dev-cho','','2025-02-21T00:16:30+09:00',1,3); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('523c6a314f539e7cacf6','GA4カスタムイベントにオプション情報を付与して追加の情報を得る方法','y-hys','','2025-02-19T22:37:35+09:00',0,1); 
@@ -73,7 +73,7 @@ INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_coun
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('f9eacabe88a021db737a','Excel VBAでEdge操作するための方法','y-hys','','2024-08-12T19:37:04+09:00',4,1); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('ac2b72e80763a2345233','腰痛に悩めるハードワーカーへ贈る','shu_osawa','','2024-07-21T22:30:44+09:00',28,11); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('3b2615d4aeac2be7fee4','脱運用管理システム… xxを使わずに、Azureでアプリのログを監視する','ryotaro76','riga','2024-07-16T16:23:23+09:00',4,1); 
-INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('c42c713a9eb69d17e547','A5:SQLを使って簡単にER図からテーブル定義書を作成する','haruki_nakayama','中山 晴貴','2024-07-11T00:06:52+09:00',14,10); 
+INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('c42c713a9eb69d17e547','A5:SQLを使って簡単にER図からテーブル定義書を作成する','haruki_nakayama','中山 晴貴','2024-07-11T00:06:52+09:00',14,11); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('a8fbbfab3c55bedce4f4','Azure CLIを使ってAzureVMにRDPする','ryotaro76','riga','2024-07-10T08:07:10+09:00',2,0); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('36cfdaf7acc21ea8f450','TS×React Tailwind CSS + daisyUIの環境構築','ko-sato-primebrains','晃季 佐藤','2024-07-08T09:04:36+09:00',5,1); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('7797a889449a46ecc05b','リンク先をBigに表示するChrome拡張機能を作った！','y-hys','','2024-07-04T01:11:45+09:00',5,2); 
