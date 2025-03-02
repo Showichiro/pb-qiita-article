@@ -1,3 +1,5 @@
+INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('9aa368db8df2ee1aeb0b','WSLからWindowsのローカルサーバへHTTPリクエストする','y-hys','','2022-11-04T22:44:08+09:00',3,2); 
+INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('15c8f56b30eca0cd0ba0','SvelteKit を使った静的サイトへのデプロイ','ryotaro76','riga','2022-11-02T08:23:15+09:00',3,2); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('38875593509e69c60d69','SvelteKit ＋ TypeScript ＋ tailwindcssを使って半日でプロトタイプを作る','ryotaro76','riga','2022-10-28T17:30:26+09:00',14,3); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('1ea053b751629b6e7730','[SEカレッジ]リーダーが知るべきメンバー別コミュニケーション','sawa_toru','','2022-10-25T22:56:19+09:00',2,1); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('7575580f1bd8633839c4','「Apach POI」を使ってJavaでExcelファイルを操作してみた','y-hys','','2022-10-21T19:05:22+09:00',1,0); 
@@ -96,5 +98,3 @@ INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_coun
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('d8eedef13ab66e823404','Jenkins自動起動設定で失敗','sawa_toru','','2019-08-14T14:58:21+09:00',1,3); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('35812af3aa97d42de9b4','UiPathの RE Frameworkでも使われている、ステートマシンを理解する','masatomix','Masatomi KINO','2019-08-12T22:12:00+09:00',12,9); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('d8839b21cb09513e19ef','UiPath Developer Community 第12回ワークショップ 覚え書き。例外処理のfinally節問題。','masatomix','Masatomi KINO','2019-08-07T02:24:10+09:00',10,9); 
-INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('8ef146486a87686a9345','Attended Framework テンプレートを使ってみた(Slide版)','masatomix','Masatomi KINO','2019-08-05T16:00:32+09:00',5,5); 
-INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('1d96169a7c423b1939b0','UiPathの Attended Framework テンプレートを使ってみた','masatomix','Masatomi KINO','2019-08-04T14:46:40+09:00',15,19); 

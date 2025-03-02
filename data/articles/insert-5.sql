@@ -1,3 +1,5 @@
+INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('9e1d5c75d6e16a8da5fa','ToodoistのTips集','ryotaro76','riga','2017-12-07T08:44:51+09:00',0,0); 
+INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('6c7e19e960370e07697b','Eclipseを使っていて便利だったショートカットの忘備録','toshiki_takatsuki','toshiki takatsuki','2017-12-01T18:10:44+09:00',6,6); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('c37a00ba81a00249c1c4','Redisコマンド Tips集','ryotaro76','riga','2017-11-29T14:14:02+09:00',0,0); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('6257e1e5b3218576de8b','GAS(Google Apps Scripts)でスプレッドシートを利用する','ryotaro76','riga','2017-10-10T16:39:31+09:00',0,2); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('97f2abf0c4e6c3637876','GAS(Google Apps Script)のUtilitiesに関するTips','ryotaro76','riga','2017-10-10T16:39:28+09:00',0,1); 
