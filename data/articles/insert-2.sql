@@ -1,3 +1,5 @@
+INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('25782a258affa14a7a8f','買って得したアイテムたち【エンジニア1年目】','redwings_a','','2024-06-14T09:26:06+09:00',6,1); 
+INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('859172887388556eed40','技術選定において重要な観点の説明と技術選定の手順について','umiushi_1','','2024-06-14T04:07:09+09:00',9,8); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('95b0a00e4de78107f1b0','腰、　イ　タ　ス　ギ　‼️ ～健康になろうエンジニア～','redwings_a','','2024-06-13T09:12:07+09:00',26,13); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('d52ef0bdeb131f9dd6f7','GraphQLサーバとRESTサーバをさっと立ちあげて、実際に触ってみる。つづき。関連のあるデータの取得','masatomix','Masatomi KINO','2024-06-13T08:45:37+09:00',9,5); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('76afa551a636506e2f31','PR,MR提出時のコミット整理方法 #Git','iketo','','2024-06-13T07:49:42+09:00',11,6); 
@@ -96,5 +98,3 @@ INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_coun
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('e8369ebf84d562c01251','文字コードで躓いた話','pbuchiumi','','2022-12-16T13:26:09+09:00',6,2); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('76cb1cc5ab5cdff12a31','Power AutomateとUiPathを連携する(Orchestrator API とくにWebhook APIの活用方法)','masatomix','Masatomi KINO','2022-12-13T00:52:05+09:00',14,5); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('6d96784edb62ec8fc90a','Kali Linux をWSL2にインストールする','ryotaro76','riga','2022-11-24T15:45:48+09:00',2,1); 
-INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('9aa368db8df2ee1aeb0b','WSLからWindowsのローカルサーバへHTTPリクエストする','y-hys','','2022-11-04T22:44:08+09:00',3,2); 
-INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('15c8f56b30eca0cd0ba0','SvelteKit を使った静的サイトへのデプロイ','ryotaro76','riga','2022-11-02T08:23:15+09:00',3,2); 
