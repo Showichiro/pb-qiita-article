@@ -10,7 +10,7 @@ INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_coun
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('a9ef84ecc692b0752cc2','やらかし注意！linuxタイポ3選','iketo','','2024-06-11T18:01:04+09:00',8,0); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('1e74655c88842ce0e6f5','組織で立場を築くため、新人がすべき立ち回り2選。','redwings_a','','2024-06-11T11:02:57+09:00',36,17); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('545e5a59a9ed7283f35e','Qiita予約投稿機能を作ってみた','iketo','','2024-06-11T08:06:42+09:00',10,3); 
-INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('4aa25df3343c5b2be62d','TypeScriptを導入する意味と限界、型レベルプログラミングの紹介','umiushi_1','','2024-06-10T08:51:47+09:00',182,203); 
+INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('4aa25df3343c5b2be62d','TypeScriptを導入する意味と限界、型レベルプログラミングの紹介','umiushi_1','','2024-06-10T08:51:47+09:00',183,203); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('50c167ea0b75cd1aacb8','TS×React componentをunmountせずに、非表示にしつつも入力内容を保持したい男','ko-sato-primebrains','晃季 佐藤','2024-06-08T21:50:05+09:00',6,2); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('487fdcfcf5caf7a9a3c0','JavaScriptの便利な記法や関数の紹介およびそれらの注意点について','umiushi_1','','2024-06-07T08:46:59+09:00',176,193); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('2f2f98c9833659da66f0','GraphQLにおけるN+1問題の解決策','nakawodayo','中尾 幸志郎','2024-06-05T21:37:32+09:00',8,5); 
@@ -48,7 +48,6 @@ INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_coun
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('81e65cbe6d8c6a161449','Reactでカウントダウン/ストップウォッチアプリを作って、不定期的にメンテナンスしています','umiushi_1','','2023-11-11T22:52:55+09:00',7,2); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('6179ef4d9213af34f97d','Deno+HonoでWebサーバを立てる ~DenoKVを添えて','umiushi_1','','2023-11-01T21:33:47+09:00',6,0); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('bf9fad3b72b4a3e9aeaa','VBAでDBを操作するならこれを使え！','sawa_toru','','2023-11-01T17:21:35+09:00',13,15); 
-INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('aaaa867f81058f5424f9','ChatGPT先生に、VBAの面倒くさいマッピング処理を記述してもらった','shu_osawa','','2023-10-31T22:24:13+09:00',9,4); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('27f74a467dc42a9f80cc','シーケンス(serial)が上手くいかず、INSERTできなかった話','redwings_a','','2023-10-31T22:10:07+09:00',3,1); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('6d5cf1aca79b542866c8','図形の入った資料を高速で書く試み','pbk-sato','昂大 佐藤','2023-10-31T21:42:29+09:00',12,15); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('3c28a0b919f30571cdce','WordVBA汎用関数 (画像操作、文字列操作、テーブル操作)','pbtang','','2023-10-30T18:56:13+09:00',6,2); 
@@ -98,3 +97,4 @@ INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_coun
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('e8369ebf84d562c01251','文字コードで躓いた話','pbuchiumi','','2022-12-16T13:26:09+09:00',6,2); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('76cb1cc5ab5cdff12a31','Power AutomateとUiPathを連携する(Orchestrator API とくにWebhook APIの活用方法)','masatomix','Masatomi KINO','2022-12-13T00:52:05+09:00',14,5); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('6d96784edb62ec8fc90a','Kali Linux をWSL2にインストールする','ryotaro76','riga','2022-11-24T15:45:48+09:00',2,1); 
+INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('9aa368db8df2ee1aeb0b','WSLからWindowsのローカルサーバへHTTPリクエストする','y-hys','','2022-11-04T22:44:08+09:00',3,2); 
