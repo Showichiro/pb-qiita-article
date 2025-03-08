@@ -1,3 +1,4 @@
+INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('8ef146486a87686a9345','Attended Framework テンプレートを使ってみた(Slide版)','masatomix','Masatomi KINO','2019-08-05T16:00:32+09:00',5,5); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('1d96169a7c423b1939b0','UiPathの Attended Framework テンプレートを使ってみた','masatomix','Masatomi KINO','2019-08-04T14:46:40+09:00',15,19); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('6d751d361af760346383','Vagrant環境のDockerでJenkinsサーバを構築し、スレーブのWindowsマシンを接続する(後半)','masatomix','Masatomi KINO','2019-07-29T14:44:06+09:00',6,6); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('4607065c309c6034a6a1','Vagrant環境のDockerでJenkinsサーバを構築し、スレーブのWindowsマシンを接続する(前半)','masatomix','Masatomi KINO','2019-07-29T14:41:43+09:00',2,1); 
@@ -97,4 +98,3 @@ INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_coun
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('637fb215f3f30ac7cc21','Windows10 のTips','ryotaro76','riga','2018-01-05T15:22:34+09:00',1,4); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('822aeb67f3b9521d26fb','Chromeの便利なプラグイン','ryotaro76','riga','2017-12-25T07:53:30+09:00',2,4); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('50c1da605b4e461db43c','MySQLのTips集','ryotaro76','riga','2017-12-19T15:18:06+09:00',1,1); 
-INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('9e1d5c75d6e16a8da5fa','ToodoistのTips集','ryotaro76','riga','2017-12-07T08:44:51+09:00',0,0); 
