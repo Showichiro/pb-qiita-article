@@ -1,3 +1,6 @@
+INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('f51f9fb891cc55dada16','GraphQLで引数の書き方を忘れちゃうので備忘','masatomix','Masatomi KINO','2024-06-20T08:47:55+09:00',4,3); 
+INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('bde84beecfa9ef09d983','ghq+pecoでリポジトリ管理','dev-cho','','2024-06-18T01:51:04+09:00',5,1); 
+INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('7a75e3852c4074a7db63','UbuntuでHomebrewをインストールする','dev-cho','','2024-06-16T01:32:10+09:00',6,1); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('ced2d4527fd9b4df3f96','Ubuntu環境でOpenJDKインストール','dev-cho','','2024-06-15T20:53:12+09:00',4,2); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('25782a258affa14a7a8f','買って得したアイテムたち【エンジニア1年目】','redwings_a','','2024-06-14T09:26:06+09:00',6,1); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('859172887388556eed40','技術選定において重要な観点の説明と技術選定の手順について','umiushi_1','','2024-06-14T04:07:09+09:00',9,8); 
@@ -95,6 +98,3 @@ INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_coun
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('081c5a89236a62d8e478','SPFx環境構築','kanekanekaneko','aro kaneko','2023-02-03T19:15:16+09:00',5,5); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('d410cdd4661a548db222','【内定者向け】Excelの基礎知識','pbuchiumi','','2023-01-25T20:35:41+09:00',3,1); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('3f068d3ab4260dd9e4f6','viで複数行末に文字を結合','y-hys','','2023-01-06T19:42:42+09:00',2,0); 
-INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('e8369ebf84d562c01251','文字コードで躓いた話','pbuchiumi','','2022-12-16T13:26:09+09:00',6,2); 
-INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('76cb1cc5ab5cdff12a31','Power AutomateとUiPathを連携する(Orchestrator API とくにWebhook APIの活用方法)','masatomix','Masatomi KINO','2022-12-13T00:52:05+09:00',14,5); 
-INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('6d96784edb62ec8fc90a','Kali Linux をWSL2にインストールする','ryotaro76','riga','2022-11-24T15:45:48+09:00',2,1); 
