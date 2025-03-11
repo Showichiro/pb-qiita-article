@@ -1,3 +1,6 @@
+INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('d8eedef13ab66e823404','Jenkins自動起動設定で失敗','sawa_toru','','2019-08-14T14:58:21+09:00',1,3); 
+INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('35812af3aa97d42de9b4','UiPathの RE Frameworkでも使われている、ステートマシンを理解する','masatomix','Masatomi KINO','2019-08-12T22:12:00+09:00',12,9); 
+INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('d8839b21cb09513e19ef','UiPath Developer Community 第12回ワークショップ 覚え書き。例外処理のfinally節問題。','masatomix','Masatomi KINO','2019-08-07T02:24:10+09:00',10,9); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('8ef146486a87686a9345','Attended Framework テンプレートを使ってみた(Slide版)','masatomix','Masatomi KINO','2019-08-05T16:00:32+09:00',5,5); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('1d96169a7c423b1939b0','UiPathの Attended Framework テンプレートを使ってみた','masatomix','Masatomi KINO','2019-08-04T14:46:40+09:00',15,19); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('6d751d361af760346383','Vagrant環境のDockerでJenkinsサーバを構築し、スレーブのWindowsマシンを接続する(後半)','masatomix','Masatomi KINO','2019-07-29T14:44:06+09:00',6,6); 
@@ -95,6 +98,3 @@ INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_coun
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('45632ff117cc19544959','Spring Cloudを使ってみる。','ryotaro76','riga','2018-02-02T18:44:32+09:00',10,20); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('856021285e9a2f80a481','DockerfileからDockerイメージを作成する','ryotaro76','riga','2018-01-30T14:52:04+09:00',1,3); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('63ada28e4ae9acf835ca','LinuxでIPアドレスを追加する','ryotaro76','riga','2018-01-30T14:51:59+09:00',2,2); 
-INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('637fb215f3f30ac7cc21','Windows10 のTips','ryotaro76','riga','2018-01-05T15:22:34+09:00',1,4); 
-INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('822aeb67f3b9521d26fb','Chromeの便利なプラグイン','ryotaro76','riga','2017-12-25T07:53:30+09:00',2,4); 
-INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('50c1da605b4e461db43c','MySQLのTips集','ryotaro76','riga','2017-12-19T15:18:06+09:00',1,1); 

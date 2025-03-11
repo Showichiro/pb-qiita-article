@@ -1,3 +1,6 @@
+INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('e8369ebf84d562c01251','文字コードで躓いた話','pbuchiumi','','2022-12-16T13:26:09+09:00',6,2); 
+INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('76cb1cc5ab5cdff12a31','Power AutomateとUiPathを連携する(Orchestrator API とくにWebhook APIの活用方法)','masatomix','Masatomi KINO','2022-12-13T00:52:05+09:00',14,5); 
+INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('6d96784edb62ec8fc90a','Kali Linux をWSL2にインストールする','ryotaro76','riga','2022-11-24T15:45:48+09:00',2,1); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('9aa368db8df2ee1aeb0b','WSLからWindowsのローカルサーバへHTTPリクエストする','y-hys','','2022-11-04T22:44:08+09:00',3,2); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('15c8f56b30eca0cd0ba0','SvelteKit を使った静的サイトへのデプロイ','ryotaro76','riga','2022-11-02T08:23:15+09:00',3,2); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('38875593509e69c60d69','SvelteKit ＋ TypeScript ＋ tailwindcssを使って半日でプロトタイプを作る','ryotaro76','riga','2022-10-28T17:30:26+09:00',14,3); 
@@ -95,6 +98,3 @@ INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_coun
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('9e3cf53cde54bc45dea7','MySQL8にJavaで接続する','ryotaro76','riga','2019-09-10T11:16:27+09:00',2,6); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('f935b6d3600cedea0b62','非同期関数を同期関数のように扱えるawait機構をさわってみた','masatomix','Masatomi KINO','2019-09-04T15:22:58+09:00',0,1); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('791699b3de3486618dd7','Firebase や Google Cloud Platformの初回のサインアップその他の備忘メモ','masatomix','Masatomi KINO','2019-09-01T20:55:00+09:00',3,3); 
-INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('d8eedef13ab66e823404','Jenkins自動起動設定で失敗','sawa_toru','','2019-08-14T14:58:21+09:00',1,3); 
-INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('35812af3aa97d42de9b4','UiPathの RE Frameworkでも使われている、ステートマシンを理解する','masatomix','Masatomi KINO','2019-08-12T22:12:00+09:00',12,9); 
-INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('d8839b21cb09513e19ef','UiPath Developer Community 第12回ワークショップ 覚え書き。例外処理のfinally節問題。','masatomix','Masatomi KINO','2019-08-07T02:24:10+09:00',10,9); 

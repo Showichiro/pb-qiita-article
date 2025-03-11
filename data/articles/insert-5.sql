@@ -1,3 +1,6 @@
+INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('637fb215f3f30ac7cc21','Windows10 のTips','ryotaro76','riga','2018-01-05T15:22:34+09:00',1,4); 
+INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('822aeb67f3b9521d26fb','Chromeの便利なプラグイン','ryotaro76','riga','2017-12-25T07:53:30+09:00',2,4); 
+INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('50c1da605b4e461db43c','MySQLのTips集','ryotaro76','riga','2017-12-19T15:18:06+09:00',1,1); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('9e1d5c75d6e16a8da5fa','ToodoistのTips集','ryotaro76','riga','2017-12-07T08:44:51+09:00',0,0); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('6c7e19e960370e07697b','Eclipseを使っていて便利だったショートカットの忘備録','toshiki_takatsuki','toshiki takatsuki','2017-12-01T18:10:44+09:00',6,6); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('c37a00ba81a00249c1c4','Redisコマンド Tips集','ryotaro76','riga','2017-11-29T14:14:02+09:00',0,0); 
