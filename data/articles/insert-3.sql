@@ -1,3 +1,8 @@
+INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('18bdb0729253bf4c437e','経費申請モバイルアプリをつくってみた【構造・テンプレート準備編】','pbuchiumi','','2023-02-06T10:51:58+09:00',5,5); 
+INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('76c7b1c83b35b192b91c','mySQLで日本語入力できなくて詰まった','y-hys','','2023-02-04T01:06:06+09:00',1,0); 
+INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('081c5a89236a62d8e478','SPFx環境構築','kanekanekaneko','aro kaneko','2023-02-03T19:15:16+09:00',5,5); 
+INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('d410cdd4661a548db222','【内定者向け】Excelの基礎知識','pbuchiumi','','2023-01-25T20:35:41+09:00',3,1); 
+INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('3f068d3ab4260dd9e4f6','viで複数行末に文字を結合','y-hys','','2023-01-06T19:42:42+09:00',2,0); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('e8369ebf84d562c01251','文字コードで躓いた話','pbuchiumi','','2022-12-16T13:26:09+09:00',6,2); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('76cb1cc5ab5cdff12a31','Power AutomateとUiPathを連携する(Orchestrator API とくにWebhook APIの活用方法)','masatomix','Masatomi KINO','2022-12-13T00:52:05+09:00',14,5); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('6d96784edb62ec8fc90a','Kali Linux をWSL2にインストールする','ryotaro76','riga','2022-11-24T15:45:48+09:00',2,1); 
@@ -93,8 +98,3 @@ INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_coun
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('e1273309ceab87eaf585','MySQLでエクスポート、インポート','ryotaro76','riga','2019-11-05T13:57:53+09:00',0,0); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('993c27f6f7615c48ebf4','FirebaseアプリからSlackへ通知を行う。Slack AppのWEBへのデプロイ編。','masatomix','Masatomi KINO','2019-09-23T13:30:23+09:00',3,2); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('57891a026856f5c39a7e','Google Cloud SDK のインストール/アンインストールメモ(公式バージョン)','masatomix','Masatomi KINO','2019-09-21T22:56:54+09:00',2,0); 
-INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('151c201e057b621aa866','いろいろなUiPath構成(Studio単体からOrchestratorまで)を速攻解説(Slide版)','masatomix','Masatomi KINO','2019-09-11T17:08:37+09:00',4,6); 
-INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('a1ce4f5a92d17c4208ae','いろいろなUiPath構成(Studio単体からOrchestratorまで)を速攻解説','masatomix','Masatomi KINO','2019-09-10T15:31:39+09:00',23,28); 
-INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('9e3cf53cde54bc45dea7','MySQL8にJavaで接続する','ryotaro76','riga','2019-09-10T11:16:27+09:00',2,6); 
-INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('f935b6d3600cedea0b62','非同期関数を同期関数のように扱えるawait機構をさわってみた','masatomix','Masatomi KINO','2019-09-04T15:22:58+09:00',0,1); 
-INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('791699b3de3486618dd7','Firebase や Google Cloud Platformの初回のサインアップその他の備忘メモ','masatomix','Masatomi KINO','2019-09-01T20:55:00+09:00',3,3); 
