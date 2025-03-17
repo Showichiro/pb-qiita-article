@@ -1,3 +1,4 @@
+INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('9b3aefa12d00e27c3729','GraphAPIを使用し、PowerAutomateでTeamsのチャネル全体をメンションする','pbuchiumi','','2025-03-17T11:35:27+09:00',0,0); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('5cf13c38d21b01e24181','Spring Bootのstatic/に Reactをビルドしたモジュールを配置し、ビルドまでを1つのコンテナで実行する','y-hys','','2025-03-14T22:21:15+09:00',0,0); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('f4c1b3e8814fd2adc371','Reactプロジェクトをコンテナ環境でビルドしてみる','y-hys','','2025-03-13T20:57:41+09:00',0,0); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('972289c5d14e5b667fd0','Eclipseで作成したSpringBootプロジェクトをコンテナ環境下でビルドする','y-hys','','2025-03-12T21:46:52+09:00',0,0); 
@@ -56,7 +57,7 @@ INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_coun
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('d352759f40081e296657','git rebase -i の exec って何だ？ #Git','iketo','','2024-12-08T22:35:46+09:00',6,1); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('3d35eed0c6f95ffbc89c','読む気を失わせない、伝わるドキュメント作成術','A_Este','','2024-12-08T03:00:07+09:00',14,6); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('e91674ee3f6f546b67bc','自己複製するプログラムがどのように自然発生するか（論文解説）','kanekanekaneko','aro kaneko','2024-12-07T14:50:51+09:00',8,2); 
-INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('1cab9ba77a08621bb721','2024年版　Obsidianコミュニティプラグイン個人的レビュー','pbuchiumi','','2024-12-06T20:01:33+09:00',23,13); 
+INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('1cab9ba77a08621bb721','2024年版　Obsidianコミュニティプラグイン個人的レビュー','pbuchiumi','','2024-12-06T20:01:33+09:00',24,13); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('61970f6d8b92a28afd47','TS×React styled-componentsとTailwind CSSを使ってみての感想','ko-sato-primebrains','晃季 佐藤','2024-12-05T18:50:04+09:00',5,0); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('c442b78f22ce508ad3c0','[GraphQL] Query/Mutationで受け取った引数を、後続のResolverで利用する','nakawodayo','中尾 幸志郎','2024-12-04T19:28:07+09:00',5,1); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('69acaf210c41fb4877cf','GraphQLで正規化されていないデータを整形する　――Resolverの責務について――','nakawodayo','中尾 幸志郎','2024-12-04T18:44:52+09:00',7,2); 
@@ -97,4 +98,3 @@ INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_coun
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('4c57819b051a55c7cbd1','copainterのAIペン入れ機能を妨害するフィルター作ってみた','kanekanekaneko','aro kaneko','2024-06-27T00:01:19+09:00',12,3); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('3e817b51c46963ab108d','共有ファイルサーバーでGit管理する！','y-hys','','2024-06-26T23:30:27+09:00',4,0); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('8c66395dda41db7543e2','Cloudflare Workersを触ってみた','dev-cho','','2024-06-25T02:09:15+09:00',5,0); 
-INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('a0e3fe3152e3a9eb64d6','GraphQLサーバとRESTサーバをさっと立ちあげて、実際に触ってみる。つづき。戻り電文の型を変更する','masatomix','Masatomi KINO','2024-06-24T13:21:40+09:00',4,0); 

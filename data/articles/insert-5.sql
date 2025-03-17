@@ -1,3 +1,4 @@
+INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('ecbb452aed44712a466d','Linuxコマンド Tips','ryotaro76','riga','2018-04-03T11:37:23+09:00',0,0); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('48212bce4f4f60756f81','gitの設定に関して','toshiki_takatsuki','toshiki takatsuki','2018-03-30T11:20:14+09:00',1,1); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('7473c8d5567c6bea9c1b','Spring Batch','ryotaro76','riga','2018-03-02T19:12:50+09:00',3,3); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('45632ff117cc19544959','Spring Cloudを使ってみる。','ryotaro76','riga','2018-02-02T18:44:32+09:00',10,20); 
