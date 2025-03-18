@@ -1,3 +1,4 @@
+INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('a0e3fe3152e3a9eb64d6','GraphQLサーバとRESTサーバをさっと立ちあげて、実際に触ってみる。つづき。戻り電文の型を変更する','masatomix','Masatomi KINO','2024-06-24T13:21:40+09:00',4,0); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('279c529610cedfc6f7a0','3層ニューラルネットワークを理解する','kanekanekaneko','aro kaneko','2024-06-24T07:33:39+09:00',5,5); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('b0f5574689d9e28c844c','GithubにSSH Keyを設定する','dev-cho','','2024-06-23T14:54:32+09:00',3,0); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('9cd539a8f1356ecee61e','SpringBootを使って、タダ（無償）でHTMLファイルをPDFにする','ryotaro76','riga','2024-06-21T21:22:56+09:00',8,1); 
@@ -97,4 +98,3 @@ INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_coun
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('5c27edaf271be1a8009f','経費申請モバイルアプリをつくってみた【PowerApps編】','pbuchiumi','','2023-04-04T19:41:05+09:00',2,7); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('2a80293c19e9b681c1d5','既存プロジェクトへPMOとして配属することが決まったら早急にやるべきこと一覧','UroTanKe_DaSoHo','細田 顕太郎','2023-03-27T20:22:35+09:00',4,2); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('2d0b1adbeb7680c539f0','Power Automate で無限に長いテーブルは参照できない(>_<)','kanekanekaneko','aro kaneko','2023-03-10T22:10:50+09:00',4,0); 
-INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('aca1baddc52fb57e60d9','SpringでMirage-SQLを使ってみた','y-hys','','2023-02-23T00:08:56+09:00',0,0); 
