@@ -9,7 +9,7 @@ INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_coun
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('7a75e3852c4074a7db63','UbuntuでHomebrewをインストールする','dev-cho','','2024-06-16T01:32:10+09:00',6,1); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('ced2d4527fd9b4df3f96','Ubuntu環境でOpenJDKインストール','dev-cho','','2024-06-15T20:53:12+09:00',4,2); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('25782a258affa14a7a8f','買って得したアイテムたち【エンジニア1年目】','redwings_a','','2024-06-14T09:26:06+09:00',6,1); 
-INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('859172887388556eed40','技術選定において重要な観点の説明と技術選定の手順について','umiushi_1','','2024-06-14T04:07:09+09:00',9,8); 
+INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('859172887388556eed40','技術選定において重要な観点の説明と技術選定の手順について','umiushi_1','','2024-06-14T04:07:09+09:00',9,9); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('95b0a00e4de78107f1b0','腰、　イ　タ　ス　ギ　‼️ ～健康になろうエンジニア～','redwings_a','','2024-06-13T09:12:07+09:00',26,13); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('d52ef0bdeb131f9dd6f7','GraphQLサーバとRESTサーバをさっと立ちあげて、実際に触ってみる。つづき。関連のあるデータの取得','masatomix','Masatomi KINO','2024-06-13T08:45:37+09:00',9,5); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('76afa551a636506e2f31','PR,MR提出時のコミット整理方法 #Git','iketo','','2024-06-13T07:49:42+09:00',11,6); 
@@ -20,7 +20,7 @@ INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_coun
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('a9ef84ecc692b0752cc2','やらかし注意！linuxタイポ3選','iketo','','2024-06-11T18:01:04+09:00',8,0); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('1e74655c88842ce0e6f5','組織で立場を築くため、新人がすべき立ち回り2選。','redwings_a','','2024-06-11T11:02:57+09:00',36,17); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('545e5a59a9ed7283f35e','Qiita予約投稿機能を作ってみた','iketo','','2024-06-11T08:06:42+09:00',10,3); 
-INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('4aa25df3343c5b2be62d','TypeScriptを導入する意味と限界、型レベルプログラミングの紹介','umiushi_1','','2024-06-10T08:51:47+09:00',185,203); 
+INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('4aa25df3343c5b2be62d','TypeScriptを導入する意味と限界、型レベルプログラミングの紹介','umiushi_1','','2024-06-10T08:51:47+09:00',185,204); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('50c167ea0b75cd1aacb8','TS×React componentをunmountせずに、非表示にしつつも入力内容を保持したい男','ko-sato-primebrains','晃季 佐藤','2024-06-08T21:50:05+09:00',6,2); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('487fdcfcf5caf7a9a3c0','JavaScriptの便利な記法や関数の紹介およびそれらの注意点について','umiushi_1','','2024-06-07T08:46:59+09:00',176,193); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('2f2f98c9833659da66f0','GraphQLにおけるN+1問題の解決策','nakawodayo','中尾 幸志郎','2024-06-05T21:37:32+09:00',8,5); 
