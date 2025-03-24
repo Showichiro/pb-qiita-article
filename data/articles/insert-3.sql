@@ -1,3 +1,4 @@
+INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('2d0b1adbeb7680c539f0','Power Automate で無限に長いテーブルは参照できない(>_<)','kanekanekaneko','aro kaneko','2023-03-10T22:10:50+09:00',4,0); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('aca1baddc52fb57e60d9','SpringでMirage-SQLを使ってみた','y-hys','','2023-02-23T00:08:56+09:00',0,0); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('18bdb0729253bf4c437e','経費申請モバイルアプリをつくってみた【構造・テンプレート準備編】','pbuchiumi','','2023-02-06T10:51:58+09:00',5,5); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('76c7b1c83b35b192b91c','mySQLで日本語入力できなくて詰まった','y-hys','','2023-02-04T01:06:06+09:00',1,0); 
@@ -9,7 +10,7 @@ INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_coun
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('6d96784edb62ec8fc90a','Kali Linux をWSL2にインストールする','ryotaro76','riga','2022-11-24T15:45:48+09:00',2,1); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('9aa368db8df2ee1aeb0b','WSLからWindowsのローカルサーバへHTTPリクエストする','y-hys','','2022-11-04T22:44:08+09:00',3,2); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('15c8f56b30eca0cd0ba0','SvelteKit を使った静的サイトへのデプロイ','ryotaro76','riga','2022-11-02T08:23:15+09:00',3,2); 
-INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('38875593509e69c60d69','SvelteKit ＋ TypeScript ＋ tailwindcssを使って半日でプロトタイプを作る','ryotaro76','riga','2022-10-28T17:30:26+09:00',14,3); 
+INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('38875593509e69c60d69','SvelteKit ＋ TypeScript ＋ tailwindcssを使って半日でプロトタイプを作る','ryotaro76','riga','2022-10-28T17:30:26+09:00',15,3); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('1ea053b751629b6e7730','[SEカレッジ]リーダーが知るべきメンバー別コミュニケーション','sawa_toru','','2022-10-25T22:56:19+09:00',2,1); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('7575580f1bd8633839c4','「Apach POI」を使ってJavaでExcelファイルを操作してみた','y-hys','','2022-10-21T19:05:22+09:00',1,0); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('98fff963cb7a74ca68ce','PowerAutomateで全角を半角に一括変換する','pbuchiumi','','2022-10-20T20:22:04+09:00',6,5); 
@@ -97,4 +98,3 @@ INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_coun
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('2eab174dbcffca925f29','Jarファイルの中身を差し替える','ryotaro76','riga','2019-11-07T15:43:00+09:00',1,2); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('ab4f0488083554f5fceb','Vue.jsで、親コンポーネントからもらった変数を子コンポーネントで更新したいときの対処法','masatomix','Masatomi KINO','2019-11-06T19:17:13+09:00',98,72); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('e1273309ceab87eaf585','MySQLでエクスポート、インポート','ryotaro76','riga','2019-11-05T13:57:53+09:00',0,0); 
-INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('993c27f6f7615c48ebf4','FirebaseアプリからSlackへ通知を行う。Slack AppのWEBへのデプロイ編。','masatomix','Masatomi KINO','2019-09-23T13:30:23+09:00',3,2); 
