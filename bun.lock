@@ -17,7 +17,7 @@
         "@hono/vite-dev-server": "^0.19.0",
         "@tailwindcss/postcss": "^4.0.14",
         "bun-types": "^1.2.5",
-        "daisyui": "^5.0.4",
+        "daisyui": "^5.0.9",
         "drizzle-kit": "^0.30.5",
         "miniflare": "^4.20250310.0",
         "postcss": "^8.5.3",
@@ -307,7 +307,7 @@
 
     "cookie": ["cookie@0.5.0", "", {}, "sha512-YZ3GUyn/o8gfKJlnlX7g7xq4gyO6OSuhGPKaaGssGB2qgDUS0gPgtTvoyZLTt9Ab6dC4hfc9dV5arkvc/OCmrw=="],
 
-    "daisyui": ["daisyui@5.0.4", "", {}, "sha512-9X3oX/k9hPBCslAECk8kYfvwgrz6Grs0lN7VI0/ZTM/hUfq1uFREHxCcBCCq0QROpN183N19B1hTNRWGipO2Eg=="],
+    "daisyui": ["daisyui@5.0.9", "", {}, "sha512-RsaehHh45f+0shWgZZaOY09/8eOae2voRsqJCD71j9yrnYgcke0Nj5ys0ZxrW4SPcc4+q96kWyJu0Z8P1zZdoA=="],
 
     "data-uri-to-buffer": ["data-uri-to-buffer@2.0.2", "", {}, "sha512-ND9qDTLc6diwj+Xe5cdAgVTbLVdXbtxTJRXRhli8Mowuaan+0EJOtdqJ0QCHNSSPyoXGx9HX2/VMnKeC34AChA=="],
 
