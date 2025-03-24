@@ -1,3 +1,4 @@
+INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('993c27f6f7615c48ebf4','FirebaseアプリからSlackへ通知を行う。Slack AppのWEBへのデプロイ編。','masatomix','Masatomi KINO','2019-09-23T13:30:23+09:00',3,2); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('57891a026856f5c39a7e','Google Cloud SDK のインストール/アンインストールメモ(公式バージョン)','masatomix','Masatomi KINO','2019-09-21T22:56:54+09:00',2,0); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('151c201e057b621aa866','いろいろなUiPath構成(Studio単体からOrchestratorまで)を速攻解説(Slide版)','masatomix','Masatomi KINO','2019-09-11T17:08:37+09:00',4,6); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('a1ce4f5a92d17c4208ae','いろいろなUiPath構成(Studio単体からOrchestratorまで)を速攻解説','masatomix','Masatomi KINO','2019-09-10T15:31:39+09:00',23,28); 
@@ -97,4 +98,3 @@ INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_coun
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('075430f34352b6bfd510','GradleをProxy環境で利用する','ryotaro76','riga','2018-06-28T11:38:10+09:00',0,0); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('3c6bc3f76fafb9f7e0fb','Docker Toolbox をProxy環境下で利用する。','ryotaro76','riga','2018-06-07T08:44:53+09:00',0,0); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('50bfef18f1f6b7a9c156','Git Addを対話式でやる','ryotaro76','riga','2018-04-05T18:40:10+09:00',2,1); 
-INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('30449a335a94c608c308','JUnit4のメモ','ryotaro76','riga','2018-04-03T11:38:11+09:00',2,3); 
