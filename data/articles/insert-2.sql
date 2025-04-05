@@ -1,3 +1,5 @@
+INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('533a22d7aee9bacc9e27','useRecoilを使ってみる','y-hys','','2024-07-01T18:18:51+09:00',5,0); 
+INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('bd9f7f47c5fec2260dcf','Denoで型レベルプログラミングの単体テストを書く','umiushi_1','','2024-06-28T19:41:35+09:00',5,0); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('f45d8e7dad4338c84203','Thymeleafを使って、画面の共通レイアウトを作る','ryotaro76','riga','2024-06-28T16:54:58+09:00',6,4); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('4c57819b051a55c7cbd1','copainterのAIペン入れ機能を妨害するフィルター作ってみた','kanekanekaneko','aro kaneko','2024-06-27T00:01:19+09:00',12,3); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('3e817b51c46963ab108d','共有ファイルサーバーでGit管理する！','y-hys','','2024-06-26T23:30:27+09:00',4,0); 
@@ -24,7 +26,7 @@ INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_coun
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('a9ef84ecc692b0752cc2','やらかし注意！linuxタイポ3選','iketo','','2024-06-11T18:01:04+09:00',8,0); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('1e74655c88842ce0e6f5','組織で立場を築くため、新人がすべき立ち回り2選。','redwings_a','','2024-06-11T11:02:57+09:00',36,17); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('545e5a59a9ed7283f35e','Qiita予約投稿機能を作ってみた','iketo','','2024-06-11T08:06:42+09:00',10,3); 
-INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('4aa25df3343c5b2be62d','TypeScriptを導入する意味と限界、型レベルプログラミングの紹介','umiushi_1','','2024-06-10T08:51:47+09:00',186,204); 
+INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('4aa25df3343c5b2be62d','TypeScriptを導入する意味と限界、型レベルプログラミングの紹介','umiushi_1','','2024-06-10T08:51:47+09:00',187,205); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('50c167ea0b75cd1aacb8','TS×React componentをunmountせずに、非表示にしつつも入力内容を保持したい男','ko-sato-primebrains','晃季 佐藤','2024-06-08T21:50:05+09:00',6,2); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('487fdcfcf5caf7a9a3c0','JavaScriptの便利な記法や関数の紹介およびそれらの注意点について','umiushi_1','','2024-06-07T08:46:59+09:00',176,193); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('2f2f98c9833659da66f0','GraphQLにおけるN+1問題の解決策','nakawodayo','中尾 幸志郎','2024-06-05T21:37:32+09:00',8,5); 
@@ -57,7 +59,7 @@ INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_coun
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('cdf3414ea67d5ccf58c0','redis 基本操作備忘録','iketo','','2023-11-28T17:37:49+09:00',3,1); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('76e26c01665289c01a17','Git 時空操作のススメ','ko-sato-primebrains','晃季 佐藤','2023-11-27T12:37:32+09:00',45,44); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('5cdbe957f4afd522e8e2','適格請求書発行事業者(インボイス)登録番号の調べ方','iketo','','2023-11-17T17:08:19+09:00',6,3); 
-INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('5f8ce746c51435d75f8f','自分のリポジトリをAIにコードレビューしてもらっていて快適です。','umiushi_1','','2023-11-17T13:07:07+09:00',19,16); 
+INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('5f8ce746c51435d75f8f','自分のリポジトリをAIにコードレビューしてもらっていて快適です。','umiushi_1','','2023-11-17T13:07:07+09:00',20,16); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('3c6e0e10b139e3149757','Bootstrap備忘録～グリッド～','PBKimura','','2023-11-16T13:58:32+09:00',3,0); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('81e65cbe6d8c6a161449','Reactでカウントダウン/ストップウォッチアプリを作って、不定期的にメンテナンスしています','umiushi_1','','2023-11-11T22:52:55+09:00',7,2); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('6179ef4d9213af34f97d','Deno+HonoでWebサーバを立てる ~DenoKVを添えて','umiushi_1','','2023-11-01T21:33:47+09:00',6,0); 
@@ -76,7 +78,7 @@ INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_coun
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('5c4bb0397d59197bc363','ネットワークセキュリティについて整理①','UroTanKe_DaSoHo','細田 顕太郎','2023-10-01T10:18:43+09:00',2,1); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('1d8463c917f59ab08eaf','VSCodeにスニペットを登録する方法','y-hys','','2023-09-26T00:04:26+09:00',2,0); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('2778d22095fdf83a96d4','インフラについて浅く整理','UroTanKe_DaSoHo','細田 顕太郎','2023-09-23T22:32:05+09:00',3,5); 
-INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('4ddb95e68ba55a31080e','WSLで起動しているWEBアプリを同一ネットワーク内の別端末で表示する方法','y-hys','','2023-09-23T20:27:48+09:00',1,3); 
+INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('4ddb95e68ba55a31080e','WSLで起動しているWEBアプリを同一ネットワーク内の別端末で表示する方法','y-hys','','2023-09-23T20:27:48+09:00',1,4); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('d4637532ffeb82017b4c','ReactプロジェクトでAPIモックサーバ「MSW」を使ってみた','y-hys','','2023-09-23T18:21:56+09:00',1,0); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('c62f2f8777ce6ecd870a','React×TypeScript×VSCodeの開発環境構築','y-hys','','2023-09-20T00:40:45+09:00',0,1); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('3b884f5cb3d31cad603c','【VBA Collection オブジェクト】 使い方 まとめ','haruki_nakayama','中山 晴貴','2023-09-15T18:51:22+09:00',2,1); 
@@ -96,5 +98,3 @@ INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_coun
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('e62bc4b3bdfe13ae82df','[Spring Data JPA] Specificationを利用して動的なクエリ生成を実現する','umiushi_1','','2023-07-18T01:58:48+09:00',9,5); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('f80ed5005ca417aff97b','InDesign のスクリプトでメニュー項目を開く/実行する方法','dev-cho','','2023-07-17T12:27:12+09:00',2,2); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('9ec08f35d464fb2ad777','InDesign、Illustratorの代替フォントのハイライト表示ON/OFF方法','dev-cho','','2023-07-17T11:00:38+09:00',0,0); 
-INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('b2441608f7b87a9fd1e2','[UiPath] オンプレ版Orchestratorのデータベースを別サーバーに移行する手順','nakawodayo','中尾 幸志郎','2023-06-28T21:53:51+09:00',6,1); 
-INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('2dfac6e4714201f7f6b0','[UiPath] オンプレ版OrchestratorでURL変更＆証明書差し替え','nakawodayo','中尾 幸志郎','2023-06-02T13:29:41+09:00',6,0); 
