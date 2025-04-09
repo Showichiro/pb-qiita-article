@@ -29,7 +29,7 @@
     "bun-types": "^1.2.8",
     "daisyui": "^5.0.17",
     "drizzle-kit": "^0.30.6",
-    "miniflare": "^4.20250321.1",
+    "miniflare": "^4.20250408.0",
     "postcss": "^8.5.3",
     "tailwindcss": "^4.1.3",
     "vite": "^6.2.5",
