@@ -1,3 +1,4 @@
+INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('72d657d0c0c60f5ea08b','CSSだけで、data属性の数値に基づいたヒートマップを実装する方法','kanekanekaneko','aro kaneko','2025-04-06T22:15:04+09:00',3,1); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('c6110246d802143ac4e6','TanStackRouterを用いたルーティングでパスパラメータをコンテキストとして利用する','y-hys','','2025-04-05T21:05:02+09:00',0,0); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('a32cd170a03fc2b4d0ad','ローカルブランチを掃除しよう','iketo','','2025-04-04T13:12:15+09:00',0,1); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('20bb1e58de5437e69e50','メールOTPを取得してjmeterで負荷をかける','pbogawa','ogawa shotaro','2025-03-28T19:20:30+09:00',1,2); 
@@ -82,13 +83,13 @@ INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_coun
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('140c169ec1e2a1a341af','生成AIの業務利用ガイドラインを作成するうえでの参考資料','hinoura','','2024-10-31T23:17:40+09:00',8,10); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('75217660b1612854426d','DBアクセスの単体テストを整理する（Spring Boot＋MyBatis）','ryotaro76','riga','2024-10-22T15:14:04+09:00',4,2); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('df2b82ec9be913d080ef','好きなエディタを使いたいじゃないですか。','ryotaro76','riga','2024-10-16T15:19:16+09:00',1,0); 
-INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('677b9c28f646557d16f3','【令和6年秋最新版】応用情報&高度情報午前問題に初登場した用語とその解説','kanekanekaneko','aro kaneko','2024-10-15T23:33:55+09:00',13,9); 
+INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('677b9c28f646557d16f3','【令和6年秋最新版】応用情報&高度情報午前問題に初登場した用語とその解説','kanekanekaneko','aro kaneko','2024-10-15T23:33:55+09:00',13,10); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('6bdc772de5b7c201fa05','【Excel】自作マクロをリボンに追加してちょっぴり業務効率化','y-hys','','2024-09-30T00:10:22+09:00',3,2); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('d06648c220cc0bbb15f3','VBAのエラー内部構造を解説する','pbk-sato','昂大 佐藤','2024-08-26T15:45:56+09:00',6,5); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('2a59aed00ecc636ff950','TinySeleniumVBAで別タブや別ウィンドウで開かれたEdgeを操作する方法','y-hys','','2024-08-14T00:26:24+09:00',4,0); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('6baeb4435137e072a62a','Selenium等インストール不要のTinySeleniumVBAで起動済みEdgeをExcelから操作する方法','y-hys','','2024-08-13T00:46:45+09:00',4,0); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('5ff278b41b7c4a351d78','起動済みのEdgeに対して、VBAから操作する方法(Selenium Basic)','y-hys','','2024-08-12T23:40:43+09:00',2,0); 
-INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('f9eacabe88a021db737a','Excel VBAでEdge操作するための方法','y-hys','','2024-08-12T19:37:04+09:00',4,1); 
+INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('f9eacabe88a021db737a','Excel VBAでEdge操作するための方法','y-hys','','2024-08-12T19:37:04+09:00',5,1); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('ac2b72e80763a2345233','腰痛に悩めるハードワーカーへ贈る','shu_osawa','','2024-07-21T22:30:44+09:00',28,11); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('3b2615d4aeac2be7fee4','脱運用管理システム… xxを使わずに、Azureでアプリのログを監視する','ryotaro76','riga','2024-07-16T16:23:23+09:00',4,1); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('c42c713a9eb69d17e547','A5:SQLを使って簡単にER図からテーブル定義書を作成する','haruki_nakayama','中山 晴貴','2024-07-11T00:06:52+09:00',15,11); 
@@ -97,4 +98,3 @@ INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_coun
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('7797a889449a46ecc05b','リンク先をBigに表示するChrome拡張機能を作った！','y-hys','','2024-07-04T01:11:45+09:00',5,2); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('6730c6d8572e713e79b9','詳細設計書なんて、書きたくない・・・・Doxygenを使って自動生成してみる','ryotaro76','riga','2024-07-03T13:40:26+09:00',165,172); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('29a9ad1dcd09986b89eb','焼きなまし法によるエンジニアライフプランニング','kanekanekaneko','aro kaneko','2024-07-02T07:28:57+09:00',7,2); 
-INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('ce46f52976e2ca7ab326','GraphQLサーバとRESTサーバをさっと立ちあげて、実際に触ってみる。つづき。クライアント側を実装してみる','masatomix','Masatomi KINO','2024-07-01T20:49:57+09:00',5,0); 
