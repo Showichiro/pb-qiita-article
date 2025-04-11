@@ -3,7 +3,7 @@ INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_coun
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('bd9f7f47c5fec2260dcf','Denoで型レベルプログラミングの単体テストを書く','umiushi_1','','2024-06-28T19:41:35+09:00',5,0); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('f45d8e7dad4338c84203','Thymeleafを使って、画面の共通レイアウトを作る','ryotaro76','riga','2024-06-28T16:54:58+09:00',6,4); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('4c57819b051a55c7cbd1','copainterのAIペン入れ機能を妨害するフィルター作ってみた','kanekanekaneko','aro kaneko','2024-06-27T00:01:19+09:00',12,3); 
-INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('3e817b51c46963ab108d','共有ファイルサーバーでGit管理する！','y-hys','','2024-06-26T23:30:27+09:00',4,0); 
+INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('3e817b51c46963ab108d','共有ファイルサーバーでGit管理する！','y-hys','','2024-06-26T23:30:27+09:00',5,1); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('8c66395dda41db7543e2','Cloudflare Workersを触ってみた','dev-cho','','2024-06-25T02:09:15+09:00',5,0); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('a0e3fe3152e3a9eb64d6','GraphQLサーバとRESTサーバをさっと立ちあげて、実際に触ってみる。つづき。戻り電文の型を変更する','masatomix','Masatomi KINO','2024-06-24T13:21:40+09:00',4,0); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('279c529610cedfc6f7a0','3層ニューラルネットワークを理解する','kanekanekaneko','aro kaneko','2024-06-24T07:33:39+09:00',6,5); 
@@ -64,7 +64,7 @@ INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_coun
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('3c6e0e10b139e3149757','Bootstrap備忘録～グリッド～','PBKimura','','2023-11-16T13:58:32+09:00',3,0); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('81e65cbe6d8c6a161449','Reactでカウントダウン/ストップウォッチアプリを作って、不定期的にメンテナンスしています','umiushi_1','','2023-11-11T22:52:55+09:00',7,2); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('6179ef4d9213af34f97d','Deno+HonoでWebサーバを立てる ~DenoKVを添えて','umiushi_1','','2023-11-01T21:33:47+09:00',6,0); 
-INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('bf9fad3b72b4a3e9aeaa','VBAでDBを操作するならこれを使え！','sawa_toru','','2023-11-01T17:21:35+09:00',13,15); 
+INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('bf9fad3b72b4a3e9aeaa','VBAでDBを操作するならこれを使え！','sawa_toru','','2023-11-01T17:21:35+09:00',13,16); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('27f74a467dc42a9f80cc','シーケンス(serial)が上手くいかず、INSERTできなかった話','redwings_a','','2023-10-31T22:10:07+09:00',3,1); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('6d5cf1aca79b542866c8','図形の入った資料を高速で書く試み','pbk-sato','昂大 佐藤','2023-10-31T21:42:29+09:00',12,15); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('3c28a0b919f30571cdce','WordVBA汎用関数 (画像操作、文字列操作、テーブル操作)','pbtang','','2023-10-30T18:56:13+09:00',6,2); 
