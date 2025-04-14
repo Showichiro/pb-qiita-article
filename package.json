@@ -32,7 +32,7 @@
     "miniflare": "^4.20250321.1",
     "postcss": "^8.5.3",
     "tailwindcss": "^4.1.3",
-    "vite": "^6.2.5",
+    "vite": "^6.2.6",
     "vitest": "^3.1.1",
     "wrangler": "^4.7.2"
   }
