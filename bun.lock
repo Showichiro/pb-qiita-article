@@ -4,7 +4,7 @@
     "": {
       "dependencies": {
         "@hono/swagger-ui": "^0.5.0",
-        "@hono/zod-openapi": "^0.19.2",
+        "@hono/zod-openapi": "^0.19.4",
         "@hono/zod-validator": "^0.4.3",
         "drizzle-orm": "^0.41.0",
         "hono": "^4.7.5",
@@ -137,7 +137,7 @@
 
     "@hono/vite-dev-server": ["@hono/vite-dev-server@0.19.0", "", { "dependencies": { "@hono/node-server": "^1.12.0", "minimatch": "^9.0.3" }, "peerDependencies": { "hono": "*", "miniflare": "*", "wrangler": "*" }, "optionalPeers": ["miniflare", "wrangler"] }, "sha512-myMc4Nm0nFQSPaeE6I/a1ODyDR5KpQ4EHodX4Tu/7qlB31GfUemhUH/WsO91HJjDEpRRpsT4Zbg+PleMlpTljw=="],
 
-    "@hono/zod-openapi": ["@hono/zod-openapi@0.19.2", "", { "dependencies": { "@asteasolutions/zod-to-openapi": "^7.1.0", "@hono/zod-validator": "^0.4.1" }, "peerDependencies": { "hono": ">=4.3.6", "zod": "3.*" } }, "sha512-lkFa6wdQVgY7d7/m++Ixr3hvKCF5Y+zjTIPM37fex5ylCfX53A/W28gZRDuFZx3aR+noKob7lHfwdk9dURLzxw=="],
+    "@hono/zod-openapi": ["@hono/zod-openapi@0.19.4", "", { "dependencies": { "@asteasolutions/zod-to-openapi": "^7.1.0", "@hono/zod-validator": "^0.4.3" }, "peerDependencies": { "hono": ">=4.3.6", "zod": "3.*" } }, "sha512-wt/Hn5TudVLGQxARVBBGDN/ckDOWUQrw9gdZoDBfRb5+G8+AJ/qeRDV8iorKE3SyEeiRkJ5ErKevkjCsAgH69Q=="],
 
     "@hono/zod-validator": ["@hono/zod-validator@0.4.3", "", { "peerDependencies": { "hono": ">=3.9.0", "zod": "^3.19.1" } }, "sha512-xIgMYXDyJ4Hj6ekm9T9Y27s080Nl9NXHcJkOvkXPhubOLj8hZkOL8pDnnXfvCf5xEE8Q4oMFenQUZZREUY2gqQ=="],
 
