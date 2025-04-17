@@ -1,3 +1,4 @@
+INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('035540ddda232907439b','独自ドメイン取得からメール運用までの手順(ドメイン取得〜DNS設定まで)','masatomix','Masatomi KINO','2018-08-20T02:03:46+09:00',3,6); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('910a8faf4ec761ded04b','Vagrantのコマンドメモ','ryotaro76','riga','2018-08-16T14:55:13+09:00',4,2); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('51afae59064709fb033b','MESHのイベントを、IFTTTのWebhooks経由でSlackに通知する。','masatomix','Masatomi KINO','2018-08-06T01:28:36+09:00',5,5); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('94218643edadd0a97680','PythonでSSLでRESTを投げるときに、プロキシを通す方法','masatomix','Masatomi KINO','2018-07-31T14:17:15+09:00',3,1); 
