@@ -1,3 +1,4 @@
+INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('f80ed5005ca417aff97b','InDesign のスクリプトでメニュー項目を開く/実行する方法','dev-cho','','2023-07-17T12:27:12+09:00',2,2); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('9ec08f35d464fb2ad777','InDesign、Illustratorの代替フォントのハイライト表示ON/OFF方法','dev-cho','','2023-07-17T11:00:38+09:00',0,0); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('b2441608f7b87a9fd1e2','[UiPath] オンプレ版Orchestratorのデータベースを別サーバーに移行する手順','nakawodayo','中尾 幸志郎','2023-06-28T21:53:51+09:00',6,1); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('2dfac6e4714201f7f6b0','[UiPath] オンプレ版OrchestratorでURL変更＆証明書差し替え','nakawodayo','中尾 幸志郎','2023-06-02T13:29:41+09:00',6,0); 
@@ -97,4 +98,3 @@ INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_coun
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('43e691e7d47e54638984','UiPath製品群をプロキシ環境で使用するための環境設定手順(UiPath Enterprise版/認証なしプロキシのケース)','masatomix','Masatomi KINO','2019-12-24T08:09:10+09:00',8,8); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('43be25d2d6e61dfe32a0','UiPathを触り初めてからの難しかった点を振り返る','toshiki_takatsuki','toshiki takatsuki','2019-12-22T00:01:39+09:00',3,7); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('3ae9c5f27b0483217fcb','Alteryx Designerによるデータ処理をUiPathで自動化してみる','toshiki_takatsuki','toshiki takatsuki','2019-12-21T23:03:45+09:00',3,3); 
-INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('1b03d61d7f5319ceb65f','UiPath Orchestrator Community Edition のAPIを呼び出す件と、カスタムアクティビティをつくってみた','masatomix','Masatomi KINO','2019-12-12T16:47:04+09:00',15,9); 
