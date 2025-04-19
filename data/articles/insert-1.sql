@@ -1,3 +1,4 @@
+INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('32b63a878b36a46a43a7','Brainf*ckでライフゲームを作りました','kanekanekaneko','aro kaneko','2025-04-18T06:03:57+09:00',5,1); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('08b5fde38075563ca336','リダイレクト,パイプラインに関する整理','iketo','','2025-04-15T19:12:33+09:00',1,0); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('72d657d0c0c60f5ea08b','CSSだけで、data属性の数値に基づいたヒートマップを実装する方法','kanekanekaneko','aro kaneko','2025-04-06T22:15:04+09:00',5,1); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('c6110246d802143ac4e6','TanStackRouterを用いたルーティングでパスパラメータをコンテキストとして利用する','y-hys','','2025-04-05T21:05:02+09:00',0,0); 
@@ -44,7 +45,7 @@ INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_coun
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('04debd43e9a3853edf1a','XAMPP環境でOCI8拡張を使用したOracle接続に失敗する時の対処法','y-hys','','2025-01-07T22:30:07+09:00',4,2); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('50cf20cf514f81d55b5b','技術記事や手順書での括弧で記載する際の慣習','y-hys','','2025-01-03T00:32:50+09:00',63,39); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('6f1c486db733571fbb21','【R6秋】情報処理安全確保支援士~合格体験記~','kanekanekaneko','aro kaneko','2025-01-02T19:11:14+09:00',7,1); 
-INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('5901c7ed24c0120364cd','Podmanコマンド備忘録','y-hys','','2025-01-02T15:00:26+09:00',2,1); 
+INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('5901c7ed24c0120364cd','Podmanコマンド備忘録','y-hys','','2025-01-02T15:00:26+09:00',2,2); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('c17828ca70a605723567','なぜ、プロジェクトは予定どおりに進まないのか？―進捗管理で意識している5つのこと','nakawodayo','中尾 幸志郎','2024-12-25T22:53:45+09:00',15,9); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('7fbc6974ee1df710c2d1','Chrome拡張機能って案外簡単に作れます','toshiki_takatsuki','toshiki takatsuki','2024-12-23T22:42:23+09:00',12,6); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('01b61f297065e9c671e4','【SELinux】初心者によるSELinuxの概要覚書&再帰的なコンテキストの設定','Bigmountain218','','2024-12-23T21:16:42+09:00',8,0); 
@@ -97,4 +98,3 @@ INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_coun
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('a8fbbfab3c55bedce4f4','Azure CLIを使ってAzureVMにRDPする','ryotaro76','riga','2024-07-10T08:07:10+09:00',2,0); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('36cfdaf7acc21ea8f450','TS×React Tailwind CSS + daisyUIの環境構築','ko-sato-primebrains','晃季 佐藤','2024-07-08T09:04:36+09:00',5,1); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('7797a889449a46ecc05b','リンク先をBigに表示するChrome拡張機能を作った！','y-hys','','2024-07-04T01:11:45+09:00',5,2); 
-INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('6730c6d8572e713e79b9','詳細設計書なんて、書きたくない・・・・Doxygenを使って自動生成してみる','ryotaro76','riga','2024-07-03T13:40:26+09:00',165,172); 
