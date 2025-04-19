@@ -12,14 +12,16 @@ export const Pagenation: FC<{
   return (
     <div className="join">
       <form action="/articles" method="get">
-        <input type="hidden" name="since" value={since ?? ""} />
-        <input type="hidden" name="until" value={until ?? ""} />
-        <input
+        {since != null && (<input type="hidden" name="since" value={since} />)}
+        {until != null && (<input type="hidden" name="until" value={until} />)}
+        {orderDirection != null && (
+          <input
           type="hidden"
           name="orderDirection"
           value={orderDirection ?? ""}
-        />
-        <input type="hidden" name="orderField" value={orderField ?? ""} />
+          />
+        )}
+        {orderField != null && (<input type="hidden" name="orderField" value={orderField} />)}
         <input type="hidden" name="limit" value={limit} />
         <button
           type="submit"
