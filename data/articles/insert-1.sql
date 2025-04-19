@@ -1,4 +1,4 @@
-INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('32b63a878b36a46a43a7','Brainf*ckでライフゲームを作りました','kanekanekaneko','aro kaneko','2025-04-18T06:03:57+09:00',5,1); 
+INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('32b63a878b36a46a43a7','Brainf*ckでライフゲームを作りました','kanekanekaneko','aro kaneko','2025-04-18T06:03:57+09:00',6,1); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('08b5fde38075563ca336','リダイレクト,パイプラインに関する整理','iketo','','2025-04-15T19:12:33+09:00',1,0); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('72d657d0c0c60f5ea08b','CSSだけで、data属性の数値に基づいたヒートマップを実装する方法','kanekanekaneko','aro kaneko','2025-04-06T22:15:04+09:00',5,1); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('c6110246d802143ac4e6','TanStackRouterを用いたルーティングでパスパラメータをコンテキストとして利用する','y-hys','','2025-04-05T21:05:02+09:00',0,0); 
