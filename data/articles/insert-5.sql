@@ -1,3 +1,5 @@
+INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('90705d7b690690970cab','UiPathでテキストファイルの文字列置換を行う','toshiki_takatsuki','toshiki takatsuki','2018-09-03T16:54:57+09:00',2,0); 
+INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('d7b447fb0a24710ff9a7','UiPathStudioを使っていて使用頻度の高いショートカット','toshiki_takatsuki','toshiki takatsuki','2018-09-03T16:11:27+09:00',6,5); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('72422148ea8353662eb1','UiPath Developer Community 第6回ワークショップ 覚え書き「出現するタイミングが不定のポップアップを処理する」','masatomix','Masatomi KINO','2018-08-30T15:50:58+09:00',3,4); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('035540ddda232907439b','独自ドメイン取得からメール運用までの手順(ドメイン取得〜DNS設定まで)','masatomix','Masatomi KINO','2018-08-20T02:03:46+09:00',3,6); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('910a8faf4ec761ded04b','Vagrantのコマンドメモ','ryotaro76','riga','2018-08-16T14:55:13+09:00',4,2); 
