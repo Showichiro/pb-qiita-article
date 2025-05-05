@@ -31,7 +31,7 @@
     "drizzle-kit": "^0.31.0",
     "miniflare": "^4.20250416.0",
     "postcss": "^8.5.3",
-    "tailwindcss": "^4.1.4",
+    "tailwindcss": "^4.1.5",
     "vite": "^6.2.6",
     "vitest": "^3.1.2",
     "wrangler": "^4.10.0"
