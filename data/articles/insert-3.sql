@@ -1,3 +1,4 @@
+INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('5d4e473f092bf96a51a8','Git for Windows アップデート','dev-cho','','2023-08-05T01:00:40+09:00',15,13); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('d69ac664a2fcbdb98f6c','WSL環境にNode.js環境を構築する','masatomix','Masatomi KINO','2023-08-04T22:06:48+09:00',0,0); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('7a1af1f6fc28258927ae','WSL環境にAWS コマンドラインインターフェイス(AWS CLI)を構築する','masatomix','Masatomi KINO','2023-08-04T21:12:18+09:00',2,0); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('290d78d45b67e046c125','ExtendScript Toolkit(ESTK)のダウンロード先のリンク','dev-cho','','2023-07-25T20:14:30+09:00',0,0); 
@@ -97,4 +98,3 @@ INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_coun
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('23ca68ad1f3b6be79ae4','Node.jsでCSVファイルを読みこんでJSONデータに変換するサンプルコード','masatomix','Masatomi KINO','2020-02-16T00:21:10+09:00',16,21); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('8cf0747d0be28acdc865','Cloud Functions for Firebase の関数をスケジューラから定期的に呼び出す簡単な方法','masatomix','Masatomi KINO','2020-02-11T14:04:22+09:00',1,0); 
 INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('9061d55b20caad62ecda','Cloud Functions for Firebaseを使ってExcelファイル←→ Cloud Firestore を読み書きするサンプルコード','masatomix','Masatomi KINO','2020-01-21T09:01:01+09:00',15,11); 
-INSERT OR REPLACE INTO articles(id,title,user_id,user_name,created_at,likes_count,stocks_count) VALUES('1a48f97b4b1d5df45cf4','UiPath製品群をプロキシ環境で使用するための環境設定手順(認証ありプロキシのケース)','masatomix','Masatomi KINO','2020-01-13T14:42:59+09:00',9,7); 
