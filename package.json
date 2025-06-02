@@ -27,7 +27,7 @@
     "@hono/vite-dev-server": "^0.19.1",
     "@tailwindcss/postcss": "^4.1.7",
     "bun-types": "^1.2.14",
-    "daisyui": "^5.0.37",
+    "daisyui": "^5.0.43",
     "drizzle-kit": "^0.31.1",
     "miniflare": "^4.20250428.1",
     "postcss": "^8.5.3",
