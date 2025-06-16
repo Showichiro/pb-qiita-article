@@ -3,7 +3,7 @@
   "workspaces": {
     "": {
       "dependencies": {
-        "@hono/swagger-ui": "^0.5.0",
+        "@hono/swagger-ui": "^0.5.2",
         "@hono/zod-openapi": "^0.19.8",
         "@hono/zod-validator": "^0.5.0",
         "drizzle-orm": "^0.43.1",
@@ -133,7 +133,7 @@
 
     "@hono/node-server": ["@hono/node-server@1.14.2", "", { "peerDependencies": { "hono": "^4" } }, "sha512-GHjpOeHYbr9d1vkID2sNUYkl5IxumyhDrUJB7wBp7jvqYwPFt+oNKsAPBRcdSbV7kIrXhouLE199ks1QcK4r7A=="],
 
-    "@hono/swagger-ui": ["@hono/swagger-ui@0.5.0", "", { "peerDependencies": { "hono": "*" } }, "sha512-MWYYSv9kC8IwFBLZdwgZZMT9zUq2C/4/ekuyEYOkHEgUMqu+FG3eebtBZ4ofMh60xYRxRR2BgQGoNIILys/PFg=="],
+    "@hono/swagger-ui": ["@hono/swagger-ui@0.5.2", "", { "peerDependencies": { "hono": "*" } }, "sha512-7wxLKdb8h7JTdZ+K8DJNE3KXQMIpJejkBTQjrYlUWF28Z1PGOKw6kUykARe5NTfueIN37jbyG/sBYsbzXzG53A=="],
 
     "@hono/vite-cloudflare-pages": ["@hono/vite-cloudflare-pages@0.4.2", "", { "peerDependencies": { "hono": "*" } }, "sha512-fvSmWNtL7rMTa6tfj0dJNu0UStp8veb2r1BfutoKtJ6GaTzO1sR5ElQw9jIYo46oTBcx8+i/9+NzyGR56awtrQ=="],
 
