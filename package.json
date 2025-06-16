@@ -33,7 +33,7 @@
     "postcss": "^8.5.5",
     "tailwindcss": "^4.1.8",
     "vite": "^6.3.5",
-    "vitest": "^3.1.4",
+    "vitest": "^3.2.3",
     "wrangler": "^4.14.4"
   }
 }
