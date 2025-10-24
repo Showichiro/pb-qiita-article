@@ -1,6 +1,8 @@
 @import "tailwindcss";
 
+/* biome-ignore lint/suspicious/noUnknownAtRules: tailwind */
 @config '../tailwind.config.js';
+/* biome-ignore lint/suspicious/noUnknownAtRules: daisyui */
 @plugin "daisyui" {
   /* biome-ignore lint/correctness/noUnknownProperty: 公式の通り */
   themes: "lemonade";
