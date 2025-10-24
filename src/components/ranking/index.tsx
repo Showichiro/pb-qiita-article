@@ -6,79 +6,73 @@ export const Ranking: FC<{
   likesCounts: Array<LikesCountSchema>;
 }> = ({ articleCountGroupByUsers, likesCounts }) => {
   return (
-    <>
-      <div class="grid grid-rows-2 gap-4">
-        <div>
-          <h2 id="posts" class="text-3xl">
-            記事数ランキング
-          </h2>
-          <table class="table overflow-x-auto table-zebra">
-            <thead>
-              <tr>
-                <th>順位</th>
-                <th>執筆者</th>
-                <th>記事数</th>
+    <div class="grid grid-rows-2 gap-4">
+      <div>
+        <h2 id="posts" class="text-3xl">
+          記事数ランキング
+        </h2>
+        <table class="table overflow-x-auto table-zebra">
+          <thead>
+            <tr>
+              <th>順位</th>
+              <th>執筆者</th>
+              <th>記事数</th>
+            </tr>
+          </thead>
+          <tbody>
+            {articleCountGroupByUsers.map((user, index) => (
+              <tr key={`article-count-${user.userId}`}>
+                <td>{index + 1}</td>
+                <td>
+                  <a
+                    className="link"
+                    href={`https://qiita.com/${user.userId}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    {user.userId}
+                    <span>{user.userName !== "" && `(${user.userName})`}</span>
+                  </a>
+                </td>
+                <td>{user.count}</td>
               </tr>
-            </thead>
-            <tbody>
-              {articleCountGroupByUsers.map((user, index) => (
-                <tr key={`article-count-${user.userId}`}>
-                  <td>{index + 1}</td>
-                  <td>
-                    <a
-                      className="link"
-                      href={`https://qiita.com/${user.userId}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      {user.userId}
-                      <span>
-                        {user.userName !== "" && `(${user.userName})`}
-                      </span>
-                    </a>
-                  </td>
-                  <td>{user.count}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-        <div>
-          <h2 id="likes" class="text-3xl">
-            いいね数ランキング
-          </h2>
-          <table class="table overflow-x-auto table-zebra">
-            <thead>
-              <tr>
-                <th>順位</th>
-                <th>執筆者</th>
-                <th>いいね数</th>
-              </tr>
-            </thead>
-            <tbody>
-              {likesCounts.map((user, index) => (
-                <tr key={`likes-count-${user.userId}`}>
-                  <td>{index + 1}</td>
-                  <td>
-                    <a
-                      className="link"
-                      href={`https://qiita.com/${user.userId}`}
-                      rel="noopener noreferrer"
-                    >
-                      {user.userId}
-                      <span>
-                        {user.userName !== "" && `(${user.userName})`}
-                      </span>
-                    </a>
-                  </td>
-                  <td>{user.totalLikesCount}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+            ))}
+          </tbody>
+        </table>
       </div>
-    </>
+      <div>
+        <h2 id="likes" class="text-3xl">
+          いいね数ランキング
+        </h2>
+        <table class="table overflow-x-auto table-zebra">
+          <thead>
+            <tr>
+              <th>順位</th>
+              <th>執筆者</th>
+              <th>いいね数</th>
+            </tr>
+          </thead>
+          <tbody>
+            {likesCounts.map((user, index) => (
+              <tr key={`likes-count-${user.userId}`}>
+                <td>{index + 1}</td>
+                <td>
+                  <a
+                    className="link"
+                    href={`https://qiita.com/${user.userId}`}
+                    rel="noopener noreferrer"
+                  >
+                    {user.userId}
+                    <span>{user.userName !== "" && `(${user.userName})`}</span>
+                  </a>
+                </td>
+                <td>{user.totalLikesCount}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
   );
 };
 

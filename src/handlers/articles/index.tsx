@@ -1,7 +1,7 @@
 import { findAllArticles } from "@/db";
 import { ArticlesPage } from "@/pages";
 import type { ArticlesQuery } from "@/schemas";
-import { dateToDatetimeString, type Env } from "@/util";
+import type { Env } from "@/util";
 import { processDateParam } from "@/util";
 import type { Handler } from "hono";
 
@@ -48,8 +48,5 @@ export const articlePageHandler: Handler<
         until: processDateParam(query.until),
       }}
     />,
-    {
-      title: "記事一覧",
-    },
   );
 };
