@@ -1,81 +1,71 @@
 # PB-QIITA-APP
 
-## Technology Stack
-This project uses the following technologies:
-
-| Category              | Name                       | URL                                              |
-|-----------------------|----------------------------|--------------------------------------------------|
-| Framework/libraries   | Hono                       | [Hono](https://honojs.dev/)                      |
-|                       | Zod                        | [Zod](https://zod.dev/)                          |
-|                       | Drizzle-ORM                | [Drizzle-ORM](https://orm.drizzle.team/)         |
-|                       | tailwindcss                | [tailwindcss](https://tailwindcss.com/)          |
-|                       | daisy UI                   | [daisy UI](https://daisyui.com/)                 |
-|                       | Vite                       | [Vite](https://vitejs.dev/)                      |
-|                       | Vitest                     | [Vitest](https://vitest.dev/)                    |
-|                       | Biome                      | [Biome](https://biome.dev/)                      |
-| Database              | Cloudflare D1 Database     | [Cloudflare D1 Database](https://developers.cloudflare.com/d1/) |
-| Hosting               | Cloudflare Pages           | [Cloudflare Pages](https://pages.cloudflare.com/)|
-|                       | Cloudflare Workers         | [Cloudflare Workers](https://workers.cloudflare.com/)           |
+Hono application for Qiita articles and rankings, hosted on Cloudflare Workers with D1.
 
 ## Development
 
-### Environment Setup
+Use Node.js 24 LTS and Bun 1.4.2 (see .node-version and .bun-version).
+Bun installs dependencies and runs scripts; the cf CLI runs under Node because it does not support the Bun runtime.
 
-#### Required Tools
-- [Bun](https://bun.sh/)
-
-#### Bun Installation
-Please refer to the official documentation for instructions on installing Bun.
-- [Official BunJS Site](https://bun.sh/docs/installation)
-
-#### Installation Steps
-1. Install BunJS. Refer to the official documentation above for installation methods.
-2. Navigate to the project's root directory.
-3. Install dependencies.
-
-```shell
+~~~sh
 bun install --frozen-lockfile
-```
-
-4. DB setup
-
-```shell
 bun run schema:apply
-```
-
-5. Insert data into DB.
-
-```shell
-for sql in data/**/*.sql; do bun wrangler d1 execute pb-qiita-articles --local --file $sql; done
-```
-
-### Start the development server.
- Start the development server.
-```shell
+bun run data:apply
 bun run dev
-```
+~~~
 
-### test
-Run tests.
-```shell
-bun run test
-```
+Open http://localhost:5173. Local migrations, seed data and Vite use the same project-local .cloudflare/state directory.
+Both database commands default to local mode; remote writes have explicit :remote scripts.
 
-### lint
+~~~sh
+bun run typecheck
+bunx biome lint src/
+bun run test:ci
+bun run deploy:check
+bun run preview
+~~~
 
-Lint and format code.
-```shell
-bun run lint
-```
+The test suite uses Miniflare D1 databases. Vitest has a separate configuration so it does not start the Vite Workers plugin.
+Use bun run format and bun run lint to apply formatting and lint fixes.
+Generate migrations with bun run schema:gen.
 
-### format
+## Workers and cf migration
 
-Format code.
+The project now uses cf 1.0.0-beta.10 and @cloudflare/vite-plugin 2.0 beta, pinned exactly because these releases are beta.
+Wrangler and the Hono Pages adapter are no longer dependencies. cloudflare.config.ts preserves the existing DB binding and database UUID.
+Vite builds .cloudflare/output/v0; cf deploy consumes that output with --prebuilt --mode production.
+We call Vite directly because cf build fails to spawn cf-vite on Windows in this beta.
+Miniflare 4 remains the latest stable test dependency; cf and its Vite plugin use their own Miniflare 5 alpha internally.
+Zod 4/OpenAPI 1, Vite 8, Vitest 5, TypeScript 7 and the remaining libraries have been updated.
 
-```shell
-bun run format
-```
+Official references:
+- https://developers.cloudflare.com/cf/get-started/
+- https://developers.cloudflare.com/cf/projects/
+- https://developers.cloudflare.com/cf/wrangler/reference/
+- https://zod.dev/v4/changelog
+- https://vite.dev/guide/migration
 
-## Production
+## Deployment
 
-[Production Link](https://pb-qiita-articles.pages.dev)
+CI validates pull requests without Cloudflare credentials. Same-repository PRs also deploy Worker previews; forks and Dependabot skip this credential-dependent job.
+Pushes to main deploy the Worker. Set repository secrets CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID.
+The token must allow Workers deployment and access to the existing D1 binding; a Pages-only token needs updated permissions.
+Worker previews use the existing D1 binding, so they read the same data as production. Preview validation does not run remote migrations or seed data.
+
+~~~sh
+# Authenticate separately from an existing Wrangler login:
+node node_modules/cf/bin/cf auth login
+bun run deploy
+# Explicit remote database operations, when required:
+bun run schema:apply:remote
+bun run data:apply:remote
+~~~
+
+The new public URL is https://pb-qiita-articles.<account-subdomain>.workers.dev, as printed by cf deploy.
+The existing https://pb-qiita-articles.pages.dev site is not redirected by this change and continues serving its last Pages deployment.
+After the first successful Worker deployment, update external links or configure a custom domain. Keeping the old Pages project permits rollback without deleting data.
+No production deployment or remote migration is required for local verification.
+The scheduled Qiita refresh uses cf D1 commands and keeps the existing QIITA_API secret.
+
+Dependency overrides pin patched esbuild, sharp and undici versions; bun audit reports no vulnerabilities. Drizzle migration generation and D1 tests are verified against these overrides.
+Local cf D1 migration/seed checks run on Windows in CI: the beta CLI stalled during local migration setup on the Ubuntu runner. Linux still validates types, lint, all D1 tests, Workers builds and deployment dry-runs; preview deployment is verified on Linux.

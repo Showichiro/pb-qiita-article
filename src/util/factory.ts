@@ -38,8 +38,8 @@ export const createHonoWithDBAndOpenAPI = () => {
           description: "local",
         },
         {
-          url: "https://pb-qiita-articles.pages.dev/",
-          description: "PRD",
+          url: "/",
+          description: "Current deployment",
         },
       ],
     })
