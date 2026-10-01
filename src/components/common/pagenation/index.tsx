@@ -4,8 +4,8 @@ import type { FC } from "hono/jsx";
 export const Pagenation: FC<{
   page: number;
   limit: number;
-  since: string | null;
-  until: string | null;
+  since?: string | null;
+  until?: string | null;
   orderField?: OrderByField | null;
   orderDirection?: OrderDirection | null;
 }> = ({ page, limit, since, until, orderDirection, orderField }) => {

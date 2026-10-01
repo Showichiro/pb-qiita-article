@@ -1,39 +1,30 @@
 name: deploy-preview
-
 on:
   pull_request:
-    branches: ["main"]
-
+    branches: [main]
 permissions:
   contents: read
-  pages: write
-  deployments: write
-  id-token: write
-
 concurrency:
-  group: "pages"
+  group: workers-preview-${{ github.event.pull_request.number }}
   cancel-in-progress: true
-
 jobs:
   deploy:
+    if: github.event.pull_request.head.repo.full_name == github.repository && github.actor != 'dependabot[bot]'
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v1
-      - name: Install dependencies
-        run: bun install --frozen-lockfile
-      - name: test
-        run: bun run test:ci
-      - name: build
-        run: bun run build
-      - name: Publish to Cloudflare Pages/Workers
-        uses: cloudflare/pages-action@v1
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          projectName: pb-qiita-articles
-          directory: dist
-          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
-          wranglerVersion: "3"
+          node-version-file: .node-version
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version-file: .bun-version
+      - run: bun install --frozen-lockfile
+      - run: bun run typecheck
+      - run: bun run test:ci
+      - name: Deploy Worker preview
+        run: node node_modules/cf/bin/cf previews deploy "pr-$PR_NUMBER" --mode production
+        env:
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}

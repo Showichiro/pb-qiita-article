@@ -3,9 +3,9 @@ import { z } from "@hono/zod-openapi";
 export const countQuery = z.object({
   since: z.coerce
     .date({
-      description: "ISO 8601 date",
-      invalid_type_error: "since must be a date",
+      error: "since must be a date",
     })
+    .describe("ISO 8601 date")
     .nullish()
     .or(
       z.string().length(0, {
@@ -14,9 +14,9 @@ export const countQuery = z.object({
     ),
   until: z.coerce
     .date({
-      description: "ISO 8601 date",
-      invalid_type_error: "until must be a date",
+      error: "until must be a date",
     })
+    .describe("ISO 8601 date")
     .nullish()
     .or(
       z.string().length(0, {

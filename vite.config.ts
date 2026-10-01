@@ -1,26 +1,6 @@
-import build from "@hono/vite-cloudflare-pages";
-import devServer from "@hono/vite-dev-server";
-import adapter from "@hono/vite-dev-server/cloudflare";
-import { defineConfig } from "vitest/config";
-
+import { cloudflare } from "@cloudflare/vite-plugin";
+import { defineConfig } from "vite";
 export default defineConfig({
-  plugins: [
-    build(),
-    devServer({
-      adapter,
-      entry: "src/index.tsx",
-    }),
-  ],
-  build: {
-    assetsDir: "static",
-    ssrEmitAssets: true,
-  },
-  resolve: {
-    alias: {
-      "@": "/src",
-    },
-  },
-  test: {
-    globals: true,
-  },
+  plugins: [cloudflare()],
+  resolve: { alias: { "@": "/src" } },
 });

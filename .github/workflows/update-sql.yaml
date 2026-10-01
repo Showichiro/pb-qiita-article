@@ -8,22 +8,28 @@ jobs:
   update-sql:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
       - name: Setup Bun
-        uses: oven-sh/setup-bun@v1
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version-file: .bun-version
       - name: Install dependencies
-        run: bun install
+        run: bun install --frozen-lockfile
       - name: update-sql
         run: bun run scripts/updateArticles.ts
         env:
           QIITA_API_KEY: ${{secrets.QIITA_API}}
       - name: exec-updated-sql
-        run: for sql in data/**/*.sql; do bun wrangler d1 execute pb-qiita-articles --remote --file $sql; done
+        run: bun run data:apply:remote
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
       - name: Commit & Create PR
-        uses: peter-evans/create-pull-request@v6
+        uses: peter-evans/create-pull-request@v7
         with:
           commit-message: Update SQL
           delete-branch: true

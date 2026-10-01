@@ -2,7 +2,6 @@
 
 @config "../tailwind.config.js";
 @plugin "daisyui" {
-  /* biome-ignore lint/correctness/noUnknownProperty: 公式の通り */
   themes: "lemonade";
 }
 

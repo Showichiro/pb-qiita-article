@@ -2,8 +2,8 @@
 import {} from "hono";
 
 declare module "hono" {
-  type ContextRenderer = (
-    content: string | Promise<string>,
-    props?: { title?: string },
-  ) => Response;
+  interface ContextRenderer {
+    // biome-ignore lint/style/useShorthandFunctionType: Hono requires interface augmentation.
+    (content: string | Promise<string>, props?: { title?: string }): Response;
+  }
 }

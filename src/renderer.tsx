@@ -9,7 +9,10 @@ export const renderer = jsxRenderer(
           <meta name="viewport" content="width=device-width, initial-scale=1" />
           <meta name="description" lang="en" content="qiita items" />
           <meta name="description" lang="ja" content="qiita items" />
-          <link href={styles} rel="stylesheet" />
+          <link
+            href={import.meta.env.DEV ? `${styles}?direct` : styles}
+            rel="stylesheet"
+          />
           <title>{title}</title>
         </head>
         <body>{children}</body>
