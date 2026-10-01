@@ -66,3 +66,6 @@ The existing https://pb-qiita-articles.pages.dev site is not redirected by this 
 After the first successful Worker deployment, update external links or configure a custom domain. Keeping the old Pages project permits rollback without deleting data.
 No production deployment or remote migration is required for local verification.
 The scheduled Qiita refresh uses cf D1 commands and keeps the existing QIITA_API secret.
+
+Dependency overrides pin patched esbuild, sharp and undici versions; bun audit reports no vulnerabilities. Drizzle migration generation and D1 tests are verified against these overrides.
+Local cf D1 migration/seed checks run on Windows in CI: the beta CLI stalled during local migration setup on the Ubuntu runner. Linux still validates types, lint, all D1 tests, Workers builds and deployment dry-runs; preview deployment is verified on Linux.
