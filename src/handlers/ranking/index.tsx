@@ -4,6 +4,11 @@ import { getArticleCountGroupByUser, getLikesCountGroupByUser } from "@/db";
 import { dateToDatetimeString, processDateParam } from "@/util";
 import { RankingPage } from "@/pages";
 import type { Env } from "@/util";
+import {
+  serializeRankingBootstrap,
+  adaptRankingConfig,
+  parseRankingDisplay,
+} from "@/client/ranking";
 
 export const postCountsHandler: Handler<
   Env,
@@ -54,16 +59,39 @@ export const rankingPageHandler: Handler<
     in: { query: CountQuery };
     out: { query: CountQuery };
   }
-> = (c) => {
+> = async (c) => {
   const query = c.req.valid("query");
+  const config = {
+    ...query,
+    since: processDateParam(query.since),
+    until: processDateParam(query.until),
+  };
+
+  // Bootstrap both datasets for SSR
+  const postCounts = await getArticleCountGroupByUser(c.var.db, config);
+  const likesCounts = await getLikesCountGroupByUser(c.var.db, config);
+
+  // Normalize config for client bootstrap (null -> empty string)
+  const requestUrl = new URL(c.req.url);
+  const clientConfig = {
+    ...adaptRankingConfig(config),
+    since: requestUrl.searchParams.get("since") ?? "",
+    until: requestUrl.searchParams.get("until") ?? "",
+    ...parseRankingDisplay(requestUrl.searchParams),
+  };
+
+  const bootstrap = serializeRankingBootstrap({
+    config: clientConfig,
+    postCounts,
+    likesCounts,
+  });
+
   return c.render(
     <RankingPage
-      db={c.var.db}
-      config={{
-        ...query,
-        since: processDateParam(query.since),
-        until: processDateParam(query.until),
-      }}
+      bootstrap={bootstrap}
+      config={clientConfig}
+      postCounts={postCounts}
+      likesCounts={likesCounts}
     />,
     {
       title: "ランキング",
