@@ -25,6 +25,21 @@ import {
 } from "./ui";
 import type { FindAllArticlesConfig } from "@/db";
 import {
+  articleColumnLabels,
+  articleFieldId,
+  articleOrderDirections,
+  articleOrderFields,
+  articlesCardExtraClass,
+  articlesFormClass,
+  articlesIslandClass,
+  articlesLinkClass,
+  articlesNavClass,
+  articlesResultsClass,
+  articlesTagControlClass,
+  articlesTagLabelClass,
+  articlesTagClass,
+} from "./articles-presentation";
+import {
   articleQueryParams,
   fetchArticles,
   parseArticleQuery,
@@ -126,21 +141,21 @@ export default function ArticlesApp({
   return (
     <section
       ref={subscribeHistory}
-      className="react-island"
+      className={articlesIslandClass}
       aria-label="記事検索"
     >
-      <Card className="gap-4 p-4">
+      <Card className={articlesCardExtraClass}>
         <form
           action="/articles"
           method="get"
           onSubmit={submit}
-          className="flex flex-wrap items-end gap-3"
+          className={articlesFormClass}
         >
           {(["q", "author"] as const).map((name) => (
-            <label key={name} htmlFor={`articles-${name}`}>
-              {name === "q" ? "キーワード（タイトル）" : "投稿者（ID・名前）"}
+            <label key={name} htmlFor={articleFieldId(name)}>
+              {name === "q" ? "キーワード（タイトル）" : "投稿者（ID・名前）"}{" "}
               <Input
-                id={`articles-${name}`}
+                id={articleFieldId(name)}
                 name={name}
                 maxLength={200}
                 value={draft[name]}
@@ -148,14 +163,18 @@ export default function ArticlesApp({
               />
             </label>
           ))}
-          <label htmlFor="articles-tags">
-            タグ（すべて一致）
+          <label
+            className={articlesTagLabelClass}
+            htmlFor={articleFieldId("tags")}
+          >
+            タグ（すべて一致）{" "}
             <Select
-              id="articles-tags"
+              id={articleFieldId("tags")}
               name="tags"
               multiple
               size={4}
-              className="h-auto"
+              className={articlesTagControlClass}
+              wrapperClassName={articlesTagControlClass}
               value={draft.tags}
               onChange={(e) =>
                 setDraft({
@@ -175,7 +194,7 @@ export default function ArticlesApp({
             </Select>
           </label>
           {rangeFields.map((name) => (
-            <label key={name} htmlFor={`articles-${name}`}>
+            <label key={name} htmlFor={articleFieldId(name)}>
               {
                 {
                   minLikes: "いいね数（下限）",
@@ -184,8 +203,9 @@ export default function ArticlesApp({
                   maxStocks: "ストック数（上限）",
                 }[name]
               }
+              {" "}
               <Input
-                id={`articles-${name}`}
+                id={articleFieldId(name)}
                 name={name}
                 type="number"
                 min="0"
@@ -199,30 +219,30 @@ export default function ArticlesApp({
               />
             </label>
           ))}
-          <label htmlFor="articles-since">
+          <label htmlFor={articleFieldId("since")}>
             投稿日（開始）{" "}
             <Input
               type="date"
-              id="articles-since"
+              id={articleFieldId("since")}
               name="since"
               value={draft.since.slice(0, 10)}
               onChange={(e) => setDraft({ ...draft, since: e.target.value })}
             />
           </label>
-          <label htmlFor="articles-until">
+          <label htmlFor={articleFieldId("until")}>
             投稿日（終了）{" "}
             <Input
               type="date"
-              id="articles-until"
+              id={articleFieldId("until")}
               name="until"
               value={draft.until.slice(0, 10)}
               onChange={(e) => setDraft({ ...draft, until: e.target.value })}
             />
           </label>
-          <label htmlFor="articles-orderField">
+          <label htmlFor={articleFieldId("orderField")}>
             並び替え{" "}
             <Select
-              id="articles-orderField"
+              id={articleFieldId("orderField")}
               name="orderField"
               value={draft.orderField}
               onChange={(e) =>
@@ -232,15 +252,17 @@ export default function ArticlesApp({
                 })
               }
             >
-              <option value="createdAt">投稿日</option>
-              <option value="likesCount">いいね数</option>
-              <option value="stocksCount">ストック数</option>
+              {articleOrderFields.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
             </Select>
           </label>
-          <label htmlFor="articles-orderDirection">
+          <label htmlFor={articleFieldId("orderDirection")}>
             順序{" "}
             <Select
-              id="articles-orderDirection"
+              id={articleFieldId("orderDirection")}
               name="orderDirection"
               value={draft.orderDirection}
               onChange={(e) =>
@@ -251,14 +273,17 @@ export default function ArticlesApp({
                 })
               }
             >
-              <option value="desc">降順</option>
-              <option value="asc">昇順</option>
+              {articleOrderDirections.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
             </Select>
           </label>
-          <label htmlFor="articles-limit">
+          <label htmlFor={articleFieldId("limit")}>
             表示件数{" "}
             <Input
-              id="articles-limit"
+              id={articleFieldId("limit")}
               name="limit"
               type="number"
               min="1"
@@ -324,18 +349,11 @@ function ArticleResults({ result, isPending, navigate }: ResultsProps) {
         {articles.length}件
       </div>
       {articles.length === 0 && <p>該当する記事はありません。</p>}
-      <div className="overflow-x-auto" aria-busy={isPending}>
+      <div className={articlesResultsClass} aria-busy={isPending}>
         <Table>
           <TableHeader>
             <TableRow>
-              {[
-                "タイトル",
-                "執筆者",
-                "タグ",
-                "いいね数",
-                "ストック数",
-                "投稿日",
-              ].map((label) => (
+              {articleColumnLabels.map((label) => (
                 <TableHead key={label} scope="col">
                   {label}
                 </TableHead>
@@ -347,7 +365,7 @@ function ArticleResults({ result, isPending, navigate }: ResultsProps) {
               <TableRow key={article.id}>
                 <TableCell>
                   <a
-                    className="underline underline-offset-4"
+                    className={articlesLinkClass}
                     target="_blank"
                     rel="noopener noreferrer"
                     href={`https://qiita.com/${encodeURIComponent(article.userId)}/items/${encodeURIComponent(article.id)}`}
@@ -357,7 +375,7 @@ function ArticleResults({ result, isPending, navigate }: ResultsProps) {
                 </TableCell>
                 <TableCell>
                   <a
-                    className="underline underline-offset-4"
+                    className={articlesLinkClass}
                     target="_blank"
                     rel="noopener noreferrer"
                     href={`https://qiita.com/${encodeURIComponent(article.userId)}`}
@@ -370,7 +388,7 @@ function ArticleResults({ result, isPending, navigate }: ResultsProps) {
                   <ul>
                     {article.tags.map((tag) => (
                       <li
-                        className="inline-flex rounded-full border px-2 py-0.5 text-xs"
+                        className={articlesTagClass}
                         key={tag.name}
                       >
                         <a
@@ -392,7 +410,7 @@ function ArticleResults({ result, isPending, navigate }: ResultsProps) {
           </TableBody>
         </Table>
       </div>
-      <nav className="my-4 flex items-center gap-3" aria-label="記事のページ">
+      <nav className={articlesNavClass} aria-label="記事のページ">
         <Button
           type="button"
           variant="outline"

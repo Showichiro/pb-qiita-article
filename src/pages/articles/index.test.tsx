@@ -181,6 +181,18 @@ describe("ArticlesPage", async () => {
     );
     expect(text).toContain('id="articles-app"');
     expect(text).toContain('action="/articles" method="get"');
+    expect(text).toContain('class="react-island"');
+    expect(text).toContain('data-slot="card"');
+    expect(text).toContain('data-slot="input"');
+    expect(text).toContain("10件");
+    expect(text).not.toContain("btn btn-primary");
+    expect(text).not.toContain("badge");
+    expect(text).toContain(
+      'href="/articles?orderField=createdAt&amp;orderDirection=desc&amp;limit=10&amp;offset=10"',
+    );
+    expect(text).not.toMatch(/<a[^>]*>前へ<\/a>/);
+    expect(text).toMatch(/<button[^>]*disabled[^>]*>前へ<\/button>/);
+    expect(text).toMatch(/<a [^>]*href="[^"]*offset=10"[^>]*>次へ<\/a>/);
     const bootstrap = text.match(
       /<script id="articles-bootstrap" type="application\/json">([\s\S]*?)<\/script>/,
     );

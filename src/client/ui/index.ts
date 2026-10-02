@@ -5,8 +5,6 @@
  * Scoped to `.react-island` and coexists cleanly with Tailwind 4 + daisyUI 5 Hono shell.
  */
 
-import "../ui.css";
-
 export {
   Button,
   buttonVariants,

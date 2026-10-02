@@ -1,5 +1,16 @@
 /** @jsxImportSource react */
 import * as React from "react";
+import {
+  tableBodyClass,
+  tableCaptionClass,
+  tableCellClass,
+  tableClass,
+  tableContainerClass,
+  tableFooterClass,
+  tableHeadClass,
+  tableHeaderClass,
+  tableRowClass,
+} from "./classes";
 import { cn } from "./utils";
 
 /**
@@ -18,12 +29,12 @@ export const Table = React.forwardRef<HTMLTableElement, TableProps>(
     return (
       <div
         data-slot="table-container"
-        className={cn("relative w-full overflow-x-auto", containerClassName)}
+        className={cn(tableContainerClass, containerClassName)}
       >
         <table
           ref={ref}
           data-slot="table"
-          className={cn("w-full caption-bottom text-sm", className)}
+          className={cn(tableClass, className)}
           {...props}
         />
       </div>
@@ -40,7 +51,7 @@ export const TableHeader = React.forwardRef<
   <thead
     ref={ref}
     data-slot="table-header"
-    className={cn("[&_tr]:border-b", className)}
+    className={cn(tableHeaderClass, className)}
     {...props}
   />
 ));
@@ -54,7 +65,7 @@ export const TableBody = React.forwardRef<
   <tbody
     ref={ref}
     data-slot="table-body"
-    className={cn("[&_tr:last-child]:border-0", className)}
+    className={cn(tableBodyClass, className)}
     {...props}
   />
 ));
@@ -68,10 +79,7 @@ export const TableFooter = React.forwardRef<
   <tfoot
     ref={ref}
     data-slot="table-footer"
-    className={cn(
-      "border-t bg-muted/50 font-medium [&>tr]:last:border-b-0",
-      className,
-    )}
+    className={cn(tableFooterClass, className)}
     {...props}
   />
 ));
@@ -85,10 +93,7 @@ export const TableRow = React.forwardRef<
   <tr
     ref={ref}
     data-slot="table-row"
-    className={cn(
-      "border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted",
-      className,
-    )}
+    className={cn(tableRowClass, className)}
     {...props}
   />
 ));
@@ -104,10 +109,7 @@ export const TableHead = React.forwardRef<HTMLTableCellElement, TableHeadProps>(
       ref={ref}
       scope={scope}
       data-slot="table-head"
-      className={cn(
-        "h-10 px-2 text-left align-middle font-medium text-foreground whitespace-nowrap [&:has([role=checkbox])]:pr-0",
-        className,
-      )}
+      className={cn(tableHeadClass, className)}
       {...props}
     />
   ),
@@ -123,10 +125,7 @@ export const TableCell = React.forwardRef<HTMLTableCellElement, TableCellProps>(
     <td
       ref={ref}
       data-slot="table-cell"
-      className={cn(
-        "p-2 align-middle whitespace-nowrap [&:has([role=checkbox])]:pr-0",
-        className,
-      )}
+      className={cn(tableCellClass, className)}
       {...props}
     />
   ),
@@ -141,7 +140,7 @@ export const TableCaption = React.forwardRef<
   <caption
     ref={ref}
     data-slot="table-caption"
-    className={cn("mt-4 text-sm text-muted-foreground", className)}
+    className={cn(tableCaptionClass, className)}
     {...props}
   />
 ));
