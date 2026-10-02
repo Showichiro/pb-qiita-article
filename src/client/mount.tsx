@@ -5,6 +5,8 @@ import { useLayoutEffect, type ComponentType } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import {
   parseArticleQuery,
+  configQueryParams,
+  rangeFields,
   toArticleDraft,
   type ArticleDraft,
 } from "./articles";
@@ -12,6 +14,7 @@ import {
 export type ArticlesInitialData = {
   initialConfig: FindAllArticlesConfig;
   initialArticles?: Article[];
+  initialTagOptions?: string[];
 };
 
 type AppModule = {
@@ -43,7 +46,20 @@ export function readInitialData(container: HTMLElement): ArticlesInitialData {
   if (initialArticles !== undefined && !Array.isArray(initialArticles)) {
     throw new Error("Invalid articles initial data");
   }
-  return { initialConfig, initialArticles };
+  const initialTagOptions: unknown = data?.tagOptions;
+  if (
+    initialTagOptions !== undefined &&
+    (!Array.isArray(initialTagOptions) ||
+      !initialTagOptions.every((tag) => typeof tag === "string"))
+  )
+    throw new Error("Invalid article tag options");
+  return {
+    initialConfig,
+    initialArticles,
+    ...(initialTagOptions === undefined
+      ? {}
+      : { initialTagOptions: initialTagOptions as string[] }),
+  };
 }
 
 export async function mountArticlesApp(
@@ -152,19 +168,24 @@ function readDraft(
   form: HTMLFormElement,
   config: FindAllArticlesConfig,
 ): ArticleDraft {
-  const base = parseArticleQuery(
-    new URLSearchParams(
-      Object.entries(config)
-        .filter(([, value]) => value != null)
-        .map(([key, value]) => [key, String(value)]),
-    ),
-  );
+  const base = parseArticleQuery(configQueryParams(config));
   const draft = toArticleDraft(base);
   const fields = new FormData(form);
-  for (const key of ["since", "until", "limit"] as const) {
+  for (const key of [
+    "q",
+    "author",
+    "since",
+    "until",
+    "limit",
+    ...rangeFields,
+  ] as const) {
     const value = fields.get(key);
     if (typeof value === "string") draft[key] = value;
   }
+  if (form.querySelector('[name="tags"]'))
+    draft.tags = fields
+      .getAll("tags")
+      .filter((value): value is string => typeof value === "string");
   const field = fields.get("orderField");
   if (
     field === "createdAt" ||

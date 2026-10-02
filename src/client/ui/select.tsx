@@ -14,7 +14,7 @@ export interface SelectProps
 }
 
 export const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
-  ({ className, wrapperClassName, children, ...props }, ref) => {
+  ({ className, wrapperClassName, children, multiple, ...props }, ref) => {
     return (
       <div
         data-slot="select-wrapper"
@@ -25,32 +25,36 @@ export const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
           data-slot="select"
           className={cn(
             "flex h-9 w-full appearance-none items-center justify-between rounded-md border border-input bg-background px-3 py-1 pr-8 text-sm shadow-xs transition-colors outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer",
+            multiple && "h-auto appearance-auto pr-3",
             className,
           )}
+          multiple={multiple}
           {...props}
         >
           {children}
         </select>
-        <span
-          data-slot="select-icon"
-          aria-hidden="true"
-          className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground"
-        >
-          <svg
-            className="size-4 opacity-50"
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
+        {!multiple && (
+          <span
+            data-slot="select-icon"
             aria-hidden="true"
+            className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground"
           >
-            <title>Chevron</title>
-            <path d="m6 9 6 6 6-6" />
-          </svg>
-        </span>
+            <svg
+              className="size-4 opacity-50"
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <title>Chevron</title>
+              <path d="m6 9 6 6 6-6" />
+            </svg>
+          </span>
+        )}
       </div>
     );
   },

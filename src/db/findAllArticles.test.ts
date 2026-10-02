@@ -479,3 +479,166 @@ describe("findAllArticles", async () => {
     });
   });
 });
+
+describe("literal substring filters beyond D1 LIKE pattern limits", () => {
+  const runtime = new Miniflare({
+    modules: true,
+    script: "export default { fetch() { return new Response('ok'); } };",
+    d1Databases: ["DB"],
+  });
+  let DB: D1Database;
+  beforeAll(async () => {
+    DB = await runtime.getD1Database("DB");
+    const { readFile } = await import("node:fs/promises");
+    const migration = await readFile(
+      "migrations/0000_quick_vanisher.sql",
+      "utf8",
+    );
+    for (const statement of migration.split("--> statement-breakpoint"))
+      await DB.prepare(statement.trim()).run();
+  });
+  afterAll(() => runtime.dispose());
+
+  test("SQLite instr is literal and lower folds ASCII without folding Unicode", async () => {
+    const result = await DB.prepare(
+      "SELECT instr(lower(?), lower(?)) AS asciiMatch, instr(lower(?), lower(?)) AS unicodeMiss, instr(?, ?) AS literalMatch, instr(?, ?) AS literalMiss, lower(?) AS folded",
+    )
+      .bind(
+        "AbC",
+        "bC",
+        "Ä",
+        "ä",
+        "a%_\\b",
+        "%_\\",
+        "axb",
+        "%_\\",
+        "ABCÄ日本語",
+      )
+      .first();
+    expect(result).toMatchObject({
+      asciiMatch: 2,
+      unicodeMiss: 0,
+      literalMatch: 2,
+      literalMiss: 0,
+      folded: "abcÄ日本語",
+    });
+  });
+
+  test.each([
+    ["200 ASCII characters", "Ab".repeat(100), "Cd".repeat(100)],
+    [
+      "200 Japanese characters (600 UTF-8 bytes)",
+      "日本語検索".repeat(40),
+      "投稿者検索".repeat(40),
+    ],
+    [
+      "200 wildcard characters",
+      `${"%_\\".repeat(66)}%_`,
+      `${"_%\\".repeat(66)}_%`,
+    ],
+    ["quoted SQL-looking text", "' OR 1=1 -- %_\\", "' OR 1=1 -- %_\\"],
+  ])(
+    "matches complete literal title AND author for %s before tag/range pagination",
+    async (_label, q, author) => {
+      const insert = async (
+        id: string,
+        title: string,
+        userId: string,
+        userName: string,
+        likes = 0,
+        tags = ["C#", "a,b"],
+      ) => {
+        await DB.prepare("INSERT INTO articles VALUES (?, ?, ?, ?, ?, ?, ?)")
+          .bind(id, title, userId, userName, "2026-01-01", likes, 2)
+          .run();
+        for (const tag of tags)
+          await DB.prepare("INSERT INTO tags (article_id, name) VALUES (?, ?)")
+            .bind(id, tag)
+            .run();
+      };
+      await insert(
+        "id-match",
+        `prefix ${q} suffix`,
+        `prefix ${author} suffix`,
+        "other",
+      );
+      await insert(
+        "name-match",
+        `prefix ${q} suffix`,
+        "other",
+        `prefix ${author} suffix`,
+      );
+      await insert("truncated-title", `${q.slice(0, -1)}!`, author, "other");
+      await insert("truncated-author", q, `${author.slice(0, -1)}!`, "other");
+      await insert("wrong-range", q, author, "other", 1);
+      await insert("missing-tag", q, author, "other", 0, ["C#"]);
+      try {
+        const config = {
+          q: ` ${q.toLowerCase()} `,
+          author: ` ${author.toLowerCase()} `,
+          tags: ["C#", "a,b"],
+          minLikes: 0,
+          maxLikes: 0,
+          minStocks: 2,
+          maxStocks: 2,
+          since: "2026-01-01",
+          until: "2026-01-01",
+          orderField: "createdAt" as const,
+          orderDirection: "asc" as const,
+          limit: 100,
+          offset: 0,
+        };
+        const instance = drizzle(DB, { schema });
+        const matches = await findAllArticles(instance, config);
+        expect(matches.map((article) => article.id).sort()).toEqual([
+          "id-match",
+          "name-match",
+        ]);
+        expect(
+          await findAllArticles(instance, { ...config, limit: 1, offset: 1 }),
+        ).toEqual([matches[1]]);
+        expect(
+          await findAllArticles(instance, { ...config, offset: 2 }),
+        ).toEqual([]);
+      } finally {
+        await DB.prepare("DELETE FROM tags").run();
+        await DB.prepare("DELETE FROM articles").run();
+      }
+    },
+  );
+  test("matches ASCII case variants but distinguishes non-ASCII case for title and author", async () => {
+    await DB.prepare("INSERT INTO articles VALUES (?, ?, ?, ?, ?, ?, ?)")
+      .bind(
+        "case",
+        "Mixed ASCII Ä日本語",
+        "MixedWriter",
+        "Ä投稿者",
+        "2026-01-01",
+        0,
+        2,
+      )
+      .run();
+    try {
+      const instance = drizzle(DB, { schema });
+      const base = { limit: 10, offset: 0, since: null, until: null };
+      expect(
+        await findAllArticles(instance, {
+          ...base,
+          q: "mixed ascii Ä日本語",
+          author: "mixedwriter",
+        }),
+      ).toHaveLength(1);
+      expect(
+        await findAllArticles(instance, { ...base, q: "ä日本語" }),
+      ).toEqual([]);
+      expect(
+        await findAllArticles(instance, { ...base, author: "ä投稿者" }),
+      ).toEqual([]);
+      expect(
+        await findAllArticles(instance, { ...base, author: "Ä投稿者" }),
+      ).toHaveLength(1);
+    } finally {
+      await DB.prepare("DELETE FROM articles").run();
+    }
+  });
+});

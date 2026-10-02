@@ -2,6 +2,9 @@
 import type { ArticlesAppProps } from "./ArticlesApp";
 import {
   articleQueryParams,
+  configQueryParams,
+  commitArticleDraft,
+  toArticleDraft,
   defaultArticleQuery,
   parseArticleQuery,
   serializeArticleBootstrap,
@@ -336,6 +339,138 @@ describe("ArticlesApp browser controls", () => {
     window.dispatchEvent(new PopStateEvent("popstate"));
     expect(request).toHaveBeenCalledTimes(1);
   });
+  const input = async (name: string, value: string) => {
+    const target = host.querySelector<HTMLInputElement>(
+      `input[name="${name}"]`,
+    );
+    if (!target) throw new Error("Missing input");
+    const setter = Object.getOwnPropertyDescriptor(
+      HTMLInputElement.prototype,
+      "value",
+    )?.set;
+    if (!setter) throw new Error("Missing setter");
+    const { act } = await import("react");
+    await act(async () => {
+      setter.call(target, value);
+      target.dispatchEvent(new Event("input", { bubbles: true }));
+    });
+    return target;
+  };
+  it("rejects inverted ranges before history or requests change", async () => {
+    const request = vi.fn().mockResolvedValue(new Response("[]"));
+    vi.stubGlobal("fetch", request);
+    await mount();
+    await input("minLikes", "20");
+    await input("maxLikes", "10");
+    const url = window.location.href;
+    await action("form", "submit");
+    expect(request).not.toHaveBeenCalled();
+    expect(window.location.href).toBe(url);
+    expect(host.querySelector('[role="alert"]')?.textContent).toContain("下限");
+    const { act } = await import("react");
+    await act(async () => {
+      window.history.replaceState(null, "", "/articles?minLikes=1&maxLikes=10");
+      window.dispatchEvent(new PopStateEvent("popstate"));
+    });
+    expect(host.querySelector('[role="alert"]')).toBeNull();
+    expect(
+      host.querySelector<HTMLInputElement>('[name="minLikes"]')?.value,
+    ).toBe("1");
+    expect(request).toHaveBeenCalledTimes(1);
+  });
+  it("preserves all filters in pagination and popstate while pending edits stay urgent", async () => {
+    window.history.replaceState(
+      null,
+      "",
+      "/articles?limit=1&offset=7&q=keyword&author=writer&tags=C%23&tags=a%2Cb&minLikes=0&maxLikes=10&minStocks=2&maxStocks=20",
+    );
+    let finish!: (response: Response) => void;
+    const request = vi.fn(
+      (_url: string) =>
+        new Promise<Response>((done) => {
+          finish = done;
+        }),
+    );
+    vi.stubGlobal("fetch", request);
+    await mount();
+    await action("nav button:last-child");
+    const params = new URL(window.location.href).searchParams;
+    expect(params.getAll("tags")).toEqual(["C#", "a,b"]);
+    expect(params.get("offset")).toBe("8");
+    expect(
+      parseArticleQuery(
+        new URL(request.mock.calls[0][0] as string, window.location.origin)
+          .searchParams,
+      ),
+    ).toMatchObject({
+      q: "keyword",
+      author: "writer",
+      minLikes: 0,
+      maxStocks: 20,
+    });
+    const field = await input("q", "next draft");
+    field.focus();
+    expect(field.value).toBe("next draft");
+    const { act } = await import("react");
+    await act(async () => finish(new Response(JSON.stringify([sample]))));
+    expect(field.value).toBe("next draft");
+    expect(document.activeElement).toBe(field);
+    await act(async () => {
+      window.history.replaceState(
+        null,
+        "",
+        "/articles?limit=1&tags=a%2Cb&minStocks=5&author=other",
+      );
+      window.dispatchEvent(new PopStateEvent("popstate"));
+    });
+    expect(host.querySelector<HTMLInputElement>('[name="author"]')?.value).toBe(
+      "other",
+    );
+    expect(
+      host.querySelector<HTMLInputElement>('[name="minStocks"]')?.value,
+    ).toBe("5");
+    expect(
+      new URL(
+        request.mock.calls[1][0] as string,
+        window.location.origin,
+      ).searchParams.getAll("tags"),
+    ).toEqual(["a,b"]);
+    await act(async () => finish(new Response("[]")));
+  });
+  it.each([
+    ["1e2", 100],
+    ["1.0", 1],
+    ["+2", 2],
+    ["0x10", 16],
+  ] as const)(
+    "handles popstate for server-valid numeric syntax %s",
+    async (raw, expected) => {
+      const request = vi.fn().mockResolvedValue(new Response("[]"));
+      vi.stubGlobal("fetch", request);
+      await mount();
+      const { act } = await import("react");
+      await act(async () => {
+        window.history.replaceState(
+          null,
+          "",
+          `/articles?${new URLSearchParams({ minLikes: raw, maxStocks: raw })}`,
+        );
+        window.dispatchEvent(new PopStateEvent("popstate"));
+      });
+      expect(
+        host.querySelector<HTMLInputElement>('[name="minLikes"]')?.value,
+      ).toBe(String(expected));
+      expect(
+        host.querySelector<HTMLInputElement>('[name="maxStocks"]')?.value,
+      ).toBe(String(expected));
+      expect(request).toHaveBeenCalledTimes(1);
+      const requested = new URL(
+        request.mock.calls[0][0],
+        window.location.origin,
+      );
+      expect(requested.searchParams.get("minLikes")).toBe(String(expected));
+    },
+  );
   it("aborts stale requests and prevents old responses replacing current results", async () => {
     const pending: Array<(response: Response) => void> = [];
     const request = vi
@@ -353,5 +488,131 @@ describe("ArticlesApp browser controls", () => {
     await act(async () => pending[0](new Response(JSON.stringify([sample]))));
     expect(host.textContent).toContain("該当する記事はありません。");
     expect(host.textContent).not.toContain("Article A");
+  });
+});
+
+describe("extended filters", () => {
+  it("round trips repeated punctuation tags and every inclusive bound", () => {
+    const query = parseArticleQuery(
+      configQueryParams({
+        ...defaultArticleQuery,
+        q: "  100%_\\  ",
+        author: " Alice ",
+        tags: [" C# ", "a,b", "C#", ""],
+        minLikes: 0,
+        maxLikes: 10,
+        minStocks: 2,
+        maxStocks: 20,
+        offset: 17,
+      }),
+    );
+    expect(query).toMatchObject({
+      q: "100%_\\",
+      author: "Alice",
+      tags: ["C#", "a,b"],
+      minLikes: 0,
+      maxLikes: 10,
+      minStocks: 2,
+      maxStocks: 20,
+      offset: 17,
+    });
+    const params = articleQueryParams(query);
+    expect(params.getAll("tags")).toEqual(["C#", "a,b"]);
+    expect(parseArticleQuery(params)).toEqual(query);
+    expect(params.has("since")).toBe(false);
+  });
+  it("rejects malformed or inverted ranges and filter length limits", () => {
+    for (const input of [
+      "minLikes=-1",
+      "maxStocks=1.5",
+      "minLikes=20&maxLikes=10",
+      "minStocks=2&maxStocks=1",
+      "maxLikes=9007199254740992",
+      `q=${"x".repeat(201)}`,
+      `tags=${"x".repeat(101)}`,
+    ])
+      expect(() => parseArticleQuery(new URLSearchParams(input))).toThrow();
+    expect(() =>
+      parseArticleQuery(
+        configQueryParams({
+          tags: Array.from({ length: 21 }, (_, i) => String(i)),
+        }),
+      ),
+    ).toThrow();
+  });
+  it("keeps empty draft bounds absent and resets offset at commit", () => {
+    const draft = toArticleDraft({ ...defaultArticleQuery, offset: 30 });
+    expect(draft.minLikes).toBe("");
+    expect(commitArticleDraft({ ...draft, minLikes: " 0 " })).toMatchObject({
+      minLikes: 0,
+      maxLikes: null,
+      offset: 0,
+    });
+    expect(() => commitArticleDraft({ ...draft, minLikes: "-" })).toThrow();
+  });
+});
+
+describe("count coercion agrees with the server", () => {
+  it.each([
+    ["1e2", 100],
+    ["1.0", 1],
+    ["+2", 2],
+    ["0x10", 16],
+    ["  ", null],
+  ] as const)(
+    "normalizes %s without rejecting a server-valid count",
+    (raw, expected) => {
+      const params = new URLSearchParams({
+        minLikes: raw,
+        maxLikes: raw,
+        minStocks: raw,
+        maxStocks: raw,
+      });
+      const query = parseArticleQuery(params);
+      expect(query).toMatchObject({
+        minLikes: expected,
+        maxLikes: expected,
+        minStocks: expected,
+        maxStocks: expected,
+      });
+      expect(
+        commitArticleDraft({
+          ...toArticleDraft(defaultArticleQuery),
+          minLikes: raw,
+        }),
+      ).toMatchObject({ minLikes: expected });
+      expect(toArticleDraft(query).minLikes).toBe(
+        expected === null ? "" : String(expected),
+      );
+      expect(parseArticleQuery(articleQueryParams(query))).toEqual(query);
+    },
+  );
+  it.each(["-1", "1e-2", "1.5", "Infinity", "NaN", "9007199254740992", "-"])(
+    "rejects invalid count %s in both URL and draft",
+    (raw) => {
+      expect(() =>
+        parseArticleQuery(new URLSearchParams({ minLikes: raw })),
+      ).toThrow();
+      expect(() =>
+        commitArticleDraft({
+          ...toArticleDraft(defaultArticleQuery),
+          minLikes: raw,
+        }),
+      ).toThrow();
+    },
+  );
+  it("checks inclusive ranges after numeric coercion", () => {
+    expect(() =>
+      parseArticleQuery(
+        new URLSearchParams({ minLikes: "1e2", maxLikes: "0x10" }),
+      ),
+    ).toThrow();
+    expect(() =>
+      commitArticleDraft({
+        ...toArticleDraft(defaultArticleQuery),
+        minStocks: "1e2",
+        maxStocks: "0x10",
+      }),
+    ).toThrow();
   });
 });

@@ -1,6 +1,7 @@
 import type { DrizzleD1Database } from "@/lib";
 import type * as schema from "./schema";
 import type { Article } from "@/schemas";
+import { sql } from "drizzle-orm";
 
 /**
  * Find all articles.
@@ -45,6 +46,13 @@ export type FindAllArticlesConfig = {
   until: string | null;
   orderField?: OrderByField | null;
   orderDirection?: OrderDirection | null;
+  q?: string;
+  author?: string;
+  tags?: string[];
+  minLikes?: number | null;
+  maxLikes?: number | null;
+  minStocks?: number | null;
+  maxStocks?: number | null;
 };
 
 /**
@@ -66,20 +74,42 @@ export const findAllArticles = async (
   const results = await db.query.articles.findMany({
     limit: limit ?? defaultLimit,
     offset: offset ?? defaultOffset,
-    where:
-      !since && !until
-        ? undefined
-        : (fileds, { between, gte, lte }) => {
-            if (since && until) {
-              return between(fileds.createdAt, since, until);
-            }
-            if (since) {
-              return gte(fileds.createdAt, since);
-            }
-            if (until) {
-              return lte(fileds.createdAt, until);
-            }
-          },
+    where: (fields, { and, or, gte, lte }) => {
+      // D1 limits LIKE/GLOB patterns to 50 bytes. instr treats the full bound
+      // text literally; SQLite lower preserves LIKE's ASCII-only case folding.
+      const q = config.q?.trim();
+      const author = config.author?.trim();
+      const tags = [
+        ...new Set(config.tags?.map((tag) => tag.trim()).filter(Boolean)),
+      ];
+      return and(
+        since ? gte(fields.createdAt, since) : undefined,
+        until ? lte(fields.createdAt, until) : undefined,
+        q ? sql`instr(lower(${fields.title}), lower(${q})) > 0` : undefined,
+        author
+          ? or(
+              sql`instr(lower(${fields.userId}), lower(${author})) > 0`,
+              sql`instr(lower(${fields.userName}), lower(${author})) > 0`,
+            )
+          : undefined,
+        config.minLikes != null
+          ? gte(fields.likesCount, config.minLikes)
+          : undefined,
+        config.maxLikes != null
+          ? lte(fields.likesCount, config.maxLikes)
+          : undefined,
+        config.minStocks != null
+          ? gte(fields.stocksCount, config.minStocks)
+          : undefined,
+        config.maxStocks != null
+          ? lte(fields.stocksCount, config.maxStocks)
+          : undefined,
+        ...tags.map(
+          (tag) =>
+            sql`exists (select 1 from tags as selected_tag where selected_tag.article_id = ${fields.id} and selected_tag.name = ${tag})`,
+        ),
+      );
+    },
     orderBy: orderField
       ? (fields, { asc, desc }) => {
           return orderDirection === "asc"

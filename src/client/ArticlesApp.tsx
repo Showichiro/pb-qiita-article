@@ -31,29 +31,29 @@ import {
   type ArticleQuery,
   type ArticleDraft,
   toArticleDraft,
+  configQueryParams,
+  commitArticleDraft,
+  normalizeTags,
+  rangeFields,
 } from "./articles";
 
 export type ArticlesAppProps = {
   initialConfig?: FindAllArticlesConfig;
   initialArticles?: Article[];
   initialDraft?: ArticleDraft;
+  initialTagOptions?: string[];
 };
 export default function ArticlesApp({
   initialConfig,
   initialArticles,
   initialDraft,
+  initialTagOptions = [],
 }: ArticlesAppProps = {}) {
   const initialQuery = () =>
     (initialArticles === undefined || initialConfig === undefined) &&
     typeof window !== "undefined"
       ? parseArticleQuery(new URLSearchParams(window.location.search))
-      : parseArticleQuery(
-          new URLSearchParams(
-            Object.entries(initialConfig ?? {})
-              .filter(([, value]) => value != null)
-              .map(([key, value]) => [key, String(value)]),
-          ),
-        );
+      : parseArticleQuery(configQueryParams(initialConfig ?? {}));
   const [result, setResult] = useState(() => ({
     query: initialQuery(),
     data: initialArticles ?? initialRequest(initialQuery()),
@@ -62,25 +62,30 @@ export default function ArticlesApp({
   const [draft, setDraft] = useState(
     () => initialDraft ?? toArticleDraft(query),
   );
+  const [validationError, setValidationError] = useState<string | null>(null);
+  const tagOptions = normalizeTags([...initialTagOptions, ...draft.tags]);
   const [isPending, startTransition] = useTransition();
   const active = useRef<{ query: ArticleQuery; controller?: AbortController }>({
     query,
   });
-  const load = useCallback((next: ArticleQuery) => {
+  const load = useCallback((next: ArticleQuery, resetDraft = true) => {
     active.current.controller?.abort();
     const controller = new AbortController();
     active.current = { query: next, controller };
     // Start once in the event handler and retain the Promise across render retries.
     const data = fetchArticles(next, controller.signal);
     void data.catch(() => {});
-    setDraft(toArticleDraft(next));
+    if (resetDraft) {
+      setDraft(toArticleDraft(next));
+      setValidationError(null);
+    }
     startTransition(() => setResult({ query: next, data }));
   }, []);
   const navigate = (next: ArticleQuery) => {
     const url = new URL(window.location.href);
     for (const key of Object.keys(next)) url.searchParams.delete(key);
     articleQueryParams(next).forEach((value, key) => {
-      url.searchParams.set(key, value);
+      url.searchParams.append(key, value);
     });
     window.history.pushState(null, "", url);
     load(next);
@@ -108,11 +113,15 @@ export default function ArticlesApp({
   }, [load]);
   const submit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    navigate(
-      parseArticleQuery(
-        articleQueryParams({ ...draft, limit: Number(draft.limit), offset: 0 }),
-      ),
-    );
+    try {
+      const next = commitArticleDraft(draft);
+      setValidationError(null);
+      navigate(next);
+    } catch (error) {
+      setValidationError(
+        error instanceof Error ? error.message : "検索条件を確認してください。",
+      );
+    }
   };
   return (
     <section
@@ -127,6 +136,69 @@ export default function ArticlesApp({
           onSubmit={submit}
           className="flex flex-wrap items-end gap-3"
         >
+          {(["q", "author"] as const).map((name) => (
+            <label key={name} htmlFor={`articles-${name}`}>
+              {name === "q" ? "キーワード（タイトル）" : "投稿者（ID・名前）"}
+              <Input
+                id={`articles-${name}`}
+                name={name}
+                maxLength={200}
+                value={draft[name]}
+                onChange={(e) => setDraft({ ...draft, [name]: e.target.value })}
+              />
+            </label>
+          ))}
+          <label htmlFor="articles-tags">
+            タグ（すべて一致）
+            <Select
+              id="articles-tags"
+              name="tags"
+              multiple
+              size={4}
+              className="h-auto"
+              value={draft.tags}
+              onChange={(e) =>
+                setDraft({
+                  ...draft,
+                  tags: Array.from(
+                    e.target.selectedOptions,
+                    (option) => option.value,
+                  ),
+                })
+              }
+            >
+              {tagOptions.map((tag) => (
+                <option key={tag} value={tag}>
+                  {tag}
+                </option>
+              ))}
+            </Select>
+          </label>
+          {rangeFields.map((name) => (
+            <label key={name} htmlFor={`articles-${name}`}>
+              {
+                {
+                  minLikes: "いいね数（下限）",
+                  maxLikes: "いいね数（上限）",
+                  minStocks: "ストック数（下限）",
+                  maxStocks: "ストック数（上限）",
+                }[name]
+              }
+              <Input
+                id={`articles-${name}`}
+                name={name}
+                type="number"
+                min="0"
+                max={Number.MAX_SAFE_INTEGER}
+                step="1"
+                aria-describedby={
+                  validationError ? "articles-validation" : undefined
+                }
+                value={draft[name]}
+                onChange={(e) => setDraft({ ...draft, [name]: e.target.value })}
+              />
+            </label>
+          ))}
           <label htmlFor="articles-since">
             投稿日（開始）{" "}
             <Input
@@ -198,12 +270,17 @@ export default function ArticlesApp({
           <Input type="hidden" name="offset" value={draft.offset} />
           <Button type="submit">検索する</Button>
         </form>
+        {validationError && (
+          <p id="articles-validation" role="alert">
+            {validationError}
+          </p>
+        )}
         <div role="status" aria-live="polite">
           {isPending ? "読み込み中…" : ""}
         </div>
         <ResultsBoundary
           resource={result.data}
-          retry={() => load(active.current.query)}
+          retry={() => load(active.current.query, false)}
         >
           <Suspense fallback={<p role="status">読み込み中…</p>}>
             <ArticleResults

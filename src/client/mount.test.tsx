@@ -132,7 +132,13 @@ test("hands off edits made during download and restores the focused control", as
   expect(
     container.querySelector<HTMLInputElement>('[name="limit"]')?.value,
   ).toBe("");
-  expect(container.querySelector("select")?.value).toBe("likesCount");
+  expect(
+    (
+      container.querySelector(
+        'select[name="orderField"]',
+      ) as HTMLSelectElement | null
+    )?.value,
+  ).toBe("likesCount");
   expect(document.activeElement).toBe(
     container.querySelector('[name="since"]'),
   );
@@ -158,3 +164,132 @@ test("preserves native form edits that arrive after the handoff snapshot", async
   expect(input.value).toBe("2026-02-01");
   expect(container.querySelector("form")?.getAttribute("method")).toBe("get");
 });
+
+test("hands off multiple tag selections, text cursor and all range drafts during delayed import", async () => {
+  const container = island();
+  element("articles-bootstrap").textContent = JSON.stringify({
+    config,
+    articles: [],
+    tagOptions: ["C#", "a,b"],
+  });
+  container.innerHTML =
+    '<form><input name="q"><input name="author"><input name="minLikes"><input name="maxLikes"><input name="minStocks"><input name="maxStocks"><select name="tags" multiple><option>C#</option><option>a,b</option></select></form>';
+  const { default: App } = await import("./ArticlesApp");
+  let finish!: (module: { default: typeof App }) => void;
+  const mounting = mountArticlesApp(
+    container,
+    () =>
+      new Promise((done) => {
+        finish = done;
+      }),
+  );
+  for (const [name, value] of Object.entries({
+    q: "draft keyword",
+    author: "writer",
+    minLikes: "0",
+    maxLikes: "",
+    minStocks: "2",
+    maxStocks: "30",
+  })) {
+    const input = container.querySelector<HTMLInputElement>(`[name="${name}"]`);
+    if (!input) throw new Error("Missing input");
+    input.value = value;
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+  }
+  const tags = container.querySelector('select[name="tags"]');
+  if (!(tags instanceof HTMLSelectElement)) throw new Error("Missing tags");
+  for (const option of tags.options) option.selected = true;
+  tags.dispatchEvent(new Event("change", { bubbles: true }));
+  const keyword = container.querySelector<HTMLInputElement>('[name="q"]');
+  if (!keyword) throw new Error("Missing keyword");
+  keyword.focus();
+  keyword.setSelectionRange(2, 5);
+  await act(async () => {
+    finish({ default: App });
+    await mounting;
+  });
+  const clientTags = container.querySelector('select[name="tags"]');
+  if (!(clientTags instanceof HTMLSelectElement))
+    throw new Error("Missing client tags");
+  expect(
+    Array.from(clientTags.selectedOptions, (option) => option.value),
+  ).toEqual(["C#", "a,b"]);
+  expect(
+    container.querySelector<HTMLInputElement>('[name="maxLikes"]')?.value,
+  ).toBe("");
+  expect(
+    container.querySelector<HTMLInputElement>('[name="minStocks"]')?.value,
+  ).toBe("2");
+  const clientKeyword = container.querySelector<HTMLInputElement>('[name="q"]');
+  if (!clientKeyword) throw new Error("Missing keyword");
+  expect(clientKeyword.value).toBe("draft keyword");
+  expect(document.activeElement).toBe(clientKeyword);
+  expect(clientKeyword.selectionStart).toBe(2);
+  expect(clientKeyword.selectionEnd).toBe(5);
+});
+
+test("transfers focus from the native multiple tag selector", async () => {
+  const container = island();
+  element("articles-bootstrap").textContent = JSON.stringify({
+    config,
+    articles: [],
+    tagOptions: ["C#", "a,b"],
+  });
+  container.innerHTML =
+    '<form><select name="tags" multiple><option selected>C#</option><option selected>a,b</option></select></form>';
+  const tags = container.querySelector("select");
+  if (!tags) throw new Error("Missing tags");
+  tags.focus();
+  const { default: App } = await import("./ArticlesApp");
+  await act(async () =>
+    mountArticlesApp(container, async () => ({ default: App })),
+  );
+  const target = container.querySelector("select");
+  if (!target) throw new Error("Missing client tags");
+  expect(document.activeElement).toBe(target);
+  expect(target.multiple).toBe(true);
+  expect(Array.from(target.selectedOptions, (option) => option.value)).toEqual([
+    "C#",
+    "a,b",
+  ]);
+});
+
+test.each([
+  ["1e2", 100],
+  ["1.0", 1],
+  ["+2", 2],
+  ["0x10", 16],
+] as const)(
+  "enhances SSR for raw count syntax %s without throwing or fetching",
+  async (raw, expected) => {
+    const previousUrl = window.location.href;
+    window.history.replaceState(
+      null,
+      "",
+      `/articles?${new URLSearchParams({ minLikes: raw })}`,
+    );
+    const request = vi.fn();
+    vi.stubGlobal("fetch", request);
+    try {
+      const container = island();
+      element("articles-bootstrap").textContent = JSON.stringify({
+        config: { ...config, minLikes: expected },
+        articles: [],
+        tagOptions: [],
+      });
+      container.innerHTML = `<form><input name="minLikes" type="number" value="${expected}"></form>`;
+      const { default: App } = await import("./ArticlesApp");
+      await act(async () =>
+        mountArticlesApp(container, async () => ({ default: App })),
+      );
+      expect(container.querySelector("section.react-island")).not.toBeNull();
+      expect(
+        container.querySelector<HTMLInputElement>('[name="minLikes"]')?.value,
+      ).toBe(String(expected));
+      expect(request).not.toHaveBeenCalled();
+    } finally {
+      window.history.replaceState(null, "", previousUrl);
+      vi.unstubAllGlobals();
+    }
+  },
+);

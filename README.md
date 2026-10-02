@@ -123,3 +123,12 @@ The scheduled Qiita refresh uses cf D1 commands and keeps the existing QIITA_API
 
 Dependency overrides pin patched esbuild, sharp and undici versions; bun audit reports no vulnerabilities. Drizzle migration generation and D1 tests are verified against these overrides.
 Local cf D1 migration/seed checks run on Windows in CI: the beta CLI stalled during local migration setup on the Ubuntu runner. Linux still validates types, lint, all D1 tests, Workers builds and deployment dry-runs; preview deployment is verified on Linux.
+
+
+### Article search
+
+The native GET form at /articles and its React enhancement support title keyword (q), author ID or name (author), multiple exact tags (all selected tags must match), and inclusive like/stock count ranges (minLikes/maxLikes/minStocks/maxStocks). Tags use repeated URL parameters, for example /articles?q=React&tags=C%23&tags=TypeScript&minLikes=0&maxStocks=100; commas remain part of a tag name. Keywords, authors and tags are trimmed, empty filters are omitted, and counts must be nonnegative safe integers with the lower bound no greater than the upper bound.
+
+Search resets pagination; pagination and browser history preserve every committed filter. Controls keep an editable draft while requests run using React use, Suspense, an error boundary and transitions. The server form remains usable before JavaScript loads or if the client bundle fails, and enhancement preserves draft values, multiple tag selections, focus and text selection. Tags selected through a saved URL remain available even when absent from the database tag options.
+
+Title and author substring matching ignores ASCII letter case and preserves non-ASCII case; percent, underscore and backslash are literal characters. The database uses parameterized SQLite `instr(lower(column), lower(text))` to support the full 200-character input limit without hitting D1's [50-byte LIKE/GLOB pattern limit](https://developers.cloudflare.com/d1/platform/limits/). SQLite's built-in [`lower`](https://www.sqlite.org/lang_corefunc.html#lower) folds ASCII only.

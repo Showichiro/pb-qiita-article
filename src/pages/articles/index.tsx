@@ -1,8 +1,16 @@
 import { ArticlesTable, Header, PageLayout, PageTitle } from "@/components";
-import { findAllArticles, type FindAllArticlesConfig, type schema } from "@/db";
+import {
+  findAllArticles,
+  findArticleTags,
+  type FindAllArticlesConfig,
+  type schema,
+} from "@/db";
 import type { DrizzleD1Database } from "@/lib";
 import {
   parseArticleQuery,
+  configQueryParams,
+  normalizeTags,
+  rangeFields,
   articleQueryParams,
   serializeArticleBootstrap,
 } from "@/client/articles";
@@ -13,18 +21,16 @@ export const ArticlesPage: FC<{
   db: DrizzleD1Database<typeof schema>;
   config: FindAllArticlesConfig;
 }> = async ({ config, db }) => {
-  const query = parseArticleQuery(
-    new URLSearchParams(
-      Object.entries(config)
-        .filter(([, value]) => value != null)
-        .map(([key, value]) => [key, String(value)]),
-    ),
-  );
+  const query = parseArticleQuery(configQueryParams(config));
   const articles = await findAllArticles(db, {
     ...query,
     since: query.since || null,
     until: query.until || null,
   });
+  const tagOptions = normalizeTags([
+    ...(await findArticleTags(db)),
+    ...query.tags,
+  ]);
   const pageUrl = (offset: number) =>
     `/articles?${articleQueryParams({ ...query, offset })}`;
   return (
@@ -38,6 +44,53 @@ export const ArticlesPage: FC<{
             method="get"
             class="flex flex-wrap items-end gap-3"
           >
+            <label>
+              キーワード（タイトル）{" "}
+              <input name="q" maxLength={200} value={query.q} />
+            </label>
+            <label>
+              投稿者（ID・名前）{" "}
+              <input name="author" maxLength={200} value={query.author} />
+            </label>
+            <label class="block w-full min-w-0 max-w-full sm:w-64">
+              タグ（すべて一致）
+              <select
+                class="block w-full min-w-0 max-w-full"
+                name="tags"
+                multiple
+                size={4}
+              >
+                {tagOptions.map((tag) => (
+                  <option
+                    key={tag}
+                    value={tag}
+                    selected={query.tags.includes(tag)}
+                  >
+                    {tag}
+                  </option>
+                ))}
+              </select>
+            </label>
+            {rangeFields.map((name) => (
+              <label key={name}>
+                {
+                  {
+                    minLikes: "いいね数（下限）",
+                    maxLikes: "いいね数（上限）",
+                    minStocks: "ストック数（下限）",
+                    maxStocks: "ストック数（上限）",
+                  }[name]
+                }
+                <input
+                  name={name}
+                  type="number"
+                  min="0"
+                  max={Number.MAX_SAFE_INTEGER}
+                  step="1"
+                  value={query[name] ?? ""}
+                />
+              </label>
+            ))}
             <label>
               投稿日（開始）{" "}
               <input
@@ -133,7 +186,9 @@ export const ArticlesPage: FC<{
           </nav>
         </div>
         <script id="articles-bootstrap" type="application/json">
-          {raw(serializeArticleBootstrap({ config: query, articles }))}
+          {raw(
+            serializeArticleBootstrap({ config: query, articles, tagOptions }),
+          )}
         </script>
       </PageLayout>
     </>
