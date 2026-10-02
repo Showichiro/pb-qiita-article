@@ -1,8 +1,9 @@
 /** @jsxImportSource react */
 import { mountArticlesApp } from "./mount";
 import { mountRankingApp } from "./ranking-mount";
+import { mountAnalysisApp } from "./analysis-mount";
 
-// Pages without an articles/ranking island require no React root or application import.
+// Pages without an application island require no React root or application import.
 function start() {
   const articlesContainer = document.getElementById("articles-app");
   if (articlesContainer) {
@@ -10,11 +11,17 @@ function start() {
       console.error("Could not start the articles application", error);
     });
   }
-
   const rankingContainer = document.getElementById("ranking-app");
   if (rankingContainer) {
     void mountRankingApp(rankingContainer).catch((error: unknown) => {
       console.error("Could not start the ranking application", error);
+    });
+  }
+
+  const analysisContainer = document.getElementById("analysis-app");
+  if (analysisContainer) {
+    void mountAnalysisApp(analysisContainer).catch((error: unknown) => {
+      console.error("Could not start the analysis application", error);
     });
   }
 }
