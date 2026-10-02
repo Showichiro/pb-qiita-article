@@ -45,6 +45,7 @@ import {
   type ArticleDraft,
   toArticleDraft,
 } from "./articles";
+import { useDebouncedAction } from "./hooks/useDebouncedAction";
 
 export type ArticlesAppProps = {
   initialConfig?: FindAllArticlesConfig;
@@ -79,48 +80,175 @@ export default function ArticlesApp({
   const active = useRef<{ query: ArticleQuery; controller?: AbortController }>({
     query,
   });
-  const load = useCallback((next: ArticleQuery) => {
-    active.current.controller?.abort();
-    const controller = new AbortController();
-    active.current = { query: next, controller };
-    // Start once in the event handler and retain the Promise across render retries.
-    const data = fetchArticles(next, controller.signal);
-    void data.catch(() => {});
-    setDraft(toArticleDraft(next));
-    startTransition(() => setResult({ query: next, data }));
-  }, []);
-  const navigate = (next: ArticleQuery) => {
-    const url = new URL(window.location.href);
-    for (const key of Object.keys(next)) url.searchParams.delete(key);
-    articleQueryParams(next).forEach((value, key) => {
-      url.searchParams.set(key, value);
-    });
-    window.history.pushState(null, "", url);
-    load(next);
-  };
-  // React 19 ref cleanup owns the native history subscription.
-  const subscribeHistory = useCallback(() => {
-    const onPop = () =>
-      load(parseArticleQuery(new URLSearchParams(window.location.search)));
-    window.addEventListener("popstate", onPop);
-    // Bootstrap rows belong to their server query. Catch history changes before
-    // subscription, including changes between the first render and commit.
-    const current = parseArticleQuery(
-      new URLSearchParams(window.location.search),
-    );
-    if (
-      articleQueryParams(current).toString() !==
-        articleQueryParams(active.current.query).toString() ||
-      active.current.controller?.signal.aborted
-    )
-      load(current);
-    return () => {
-      window.removeEventListener("popstate", onPop);
+
+  // Deduplication: track the last canonical query to avoid duplicate requests
+  const lastCanonicalQuery = useRef<string | null>(
+    articleQueryParams(query).toString(),
+  );
+
+  // Stable ref for latest draft to avoid stale closures in debounce callback
+  const latestDraftRef = useRef<ArticleDraft>(draft);
+
+  const load = useCallback(
+    (next: ArticleQuery, skipDedupe = false) => {
+      const canonical = articleQueryParams(next).toString();
+      if (
+        !skipDedupe &&
+        canonical === lastCanonicalQuery.current &&
+        !active.current.controller?.signal.aborted
+      ) {
+        return;
+      }
+      lastCanonicalQuery.current = canonical;
+
       active.current.controller?.abort();
-    };
-  }, [load]);
+      const controller = new AbortController();
+      active.current = { query: next, controller };
+      const data = fetchArticles(next, controller.signal).catch((error) => {
+        if (
+          controller.signal.aborted ||
+          (error instanceof Error && error.name === "AbortError")
+        )
+          return pendingArticles;
+        if (active.current.controller === controller)
+          lastCanonicalQuery.current = null;
+        throw error;
+      });
+      void data.catch(() => {});
+      setDraft(toArticleDraft(next));
+      startTransition(() => setResult({ query: next, data }));
+    },
+    [],
+  );
+
+  const navigate = useCallback(
+    (next: ArticleQuery) => {
+      load(next);
+      const canonical = articleQueryParams(next).toString();
+      const current = articleQueryParams(
+        parseArticleQuery(new URLSearchParams(window.location.search)),
+      ).toString();
+      if (canonical === current) return;
+      const url = new URL(window.location.href);
+      for (const key of Object.keys(next)) url.searchParams.delete(key);
+      articleQueryParams(next).forEach((value, key) => {
+        url.searchParams.set(key, value);
+      });
+      window.history.pushState(null, "", url);
+    },
+    [load],
+  );
+
+  // Debounced action for limit field (500ms delay)
+  const limitDebounce = useDebouncedAction(
+    async (limitValue: string, _signal: AbortSignal) => {
+      const limitNum = Number(limitValue);
+      if (!Number.isSafeInteger(limitNum) || limitNum < 1 || limitNum > 100) {
+        // Invalid limit: don't fetch, keep raw draft
+        return;
+      }
+      // Build query from latest draft (not committed query)
+      const latestDraft = latestDraftRef.current;
+      const limitNumDraft = Number(latestDraft.limit);
+      const isLimitValid =
+        Number.isSafeInteger(limitNumDraft) && limitNumDraft >= 1 && limitNumDraft <= 100;
+
+      if (!isLimitValid) {
+        return;
+      }
+
+      // Reset offset when limit changes
+      const next: ArticleQuery = {
+        since: latestDraft.since,
+        until: latestDraft.until,
+        orderField: latestDraft.orderField,
+        orderDirection: latestDraft.orderDirection,
+        limit: limitNum,
+        offset: 0,
+      };
+      navigate(next);
+    },
+    {
+      intervalMs: 500,
+      startTransition,
+      isValid: (val: string) => {
+        const num = Number(val);
+        return Number.isSafeInteger(num) && num >= 1 && num <= 100;
+      },
+      areEqual: (a: string, b: string) => a === b,
+    },
+  );
+
+  // Immediate fetch for date/select changes (no debounce)
+  const handleFilterChange = useCallback(
+    (field: keyof ArticleDraft, value: string) => {
+      const newDraft = { ...draft, [field]: value };
+      setDraft(newDraft);
+      latestDraftRef.current = newDraft;
+
+      // Cancel any pending debounce timer
+      limitDebounce.cancel();
+
+      // Validate full draft before fetching
+      const limitNum = Number(newDraft.limit);
+      const isLimitValid =
+        Number.isSafeInteger(limitNum) && limitNum >= 1 && limitNum <= 100;
+
+      if (!isLimitValid) {
+        // Invalid limit: don't fetch, keep raw draft
+        return;
+      }
+
+      // Build query from draft (not committed query)
+      const next: ArticleQuery = {
+        since: newDraft.since,
+        until: newDraft.until,
+        orderField: newDraft.orderField,
+        orderDirection: newDraft.orderDirection,
+        limit: limitNum,
+        offset: 0,
+      };
+      navigate(next);
+    },
+    [draft, navigate, limitDebounce.cancel],
+  );
+
+  // React 19 ref cleanup owns the native history subscription.
+  const subscribeHistory = useCallback(
+    (_node: HTMLElement | null) => {
+      const onPop = () => {
+        // Cancel any pending debounce on history navigation
+        limitDebounce.cancel();
+        const current = parseArticleQuery(new URLSearchParams(window.location.search));
+        setDraft(toArticleDraft(current));
+        latestDraftRef.current = toArticleDraft(current);
+        load(current);
+      };
+      window.addEventListener("popstate", onPop);
+      // Bootstrap rows belong to their server query. Catch history changes before
+      // subscription, including changes between the first render and commit.
+      const current = parseArticleQuery(
+        new URLSearchParams(window.location.search),
+      );
+      if (
+        articleQueryParams(current).toString() !==
+          articleQueryParams(active.current.query).toString() ||
+        active.current.controller?.signal.aborted
+      )
+        load(current);
+      return () => {
+        window.removeEventListener("popstate", onPop);
+        active.current.controller?.abort();
+        limitDebounce.cancel();
+      };
+    },
+    [load, limitDebounce.cancel],
+  );
+
   const submit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    // Cancel any pending debounce before submit
+    limitDebounce.cancel();
     navigate(
       parseArticleQuery(
         articleQueryParams({ ...draft, limit: Number(draft.limit), offset: 0 }),
@@ -147,7 +275,7 @@ export default function ArticlesApp({
               id={articleFieldId("since")}
               name="since"
               value={draft.since.slice(0, 10)}
-              onChange={(e) => setDraft({ ...draft, since: e.target.value })}
+              onChange={(e) => handleFilterChange("since", e.target.value)}
             />
           </label>
           <label htmlFor={articleFieldId("until")}>
@@ -157,7 +285,7 @@ export default function ArticlesApp({
               id={articleFieldId("until")}
               name="until"
               value={draft.until.slice(0, 10)}
-              onChange={(e) => setDraft({ ...draft, until: e.target.value })}
+              onChange={(e) => handleFilterChange("until", e.target.value)}
             />
           </label>
           <label htmlFor={articleFieldId("orderField")}>
@@ -167,10 +295,10 @@ export default function ArticlesApp({
               name="orderField"
               value={draft.orderField}
               onChange={(e) =>
-                setDraft({
-                  ...draft,
-                  orderField: e.target.value as ArticleQuery["orderField"],
-                })
+                handleFilterChange(
+                  "orderField",
+                  e.target.value as ArticleQuery["orderField"],
+                )
               }
             >
               {articleOrderFields.map((option) => (
@@ -187,11 +315,10 @@ export default function ArticlesApp({
               name="orderDirection"
               value={draft.orderDirection}
               onChange={(e) =>
-                setDraft({
-                  ...draft,
-                  orderDirection: e.target
-                    .value as ArticleQuery["orderDirection"],
-                })
+                handleFilterChange(
+                  "orderDirection",
+                  e.target.value as ArticleQuery["orderDirection"],
+                )
               }
             >
               {articleOrderDirections.map((option) => (
@@ -210,7 +337,12 @@ export default function ArticlesApp({
               min="1"
               max="100"
               value={draft.limit}
-              onChange={(e) => setDraft({ ...draft, limit: e.target.value })}
+              onChange={(e) => {
+                const newDraft = { ...draft, limit: e.target.value };
+                setDraft(newDraft);
+                latestDraftRef.current = newDraft;
+                limitDebounce.trigger(e.target.value);
+              }}
             />
           </label>
           <Input type="hidden" name="offset" value={draft.offset} />
@@ -221,13 +353,17 @@ export default function ArticlesApp({
         </div>
         <ResultsBoundary
           resource={result.data}
-          retry={() => load(active.current.query)}
+          retry={() => {
+            limitDebounce.cancel();
+            load(active.current.query, true); // skip dedupe to allow retry
+          }}
         >
           <Suspense fallback={<p role="status">読み込み中…</p>}>
             <ArticleResults
               result={result}
               isPending={isPending}
               navigate={navigate}
+              cancelDebounce={limitDebounce.cancel}
             />
           </Suspense>
         </ResultsBoundary>
@@ -236,6 +372,7 @@ export default function ArticlesApp({
   );
 }
 
+const pendingArticles: Promise<Article[]> = new Promise(() => {});
 const initialRequests = new Map<string, Promise<Article[]>>();
 function initialRequest(query: ArticleQuery) {
   const key = articleQueryParams(query).toString();
@@ -255,8 +392,9 @@ type ResultsProps = {
   result: { query: ArticleQuery; data: Article[] | Promise<Article[]> };
   isPending: boolean;
   navigate: (query: ArticleQuery) => void;
+  cancelDebounce: () => void;
 };
-function ArticleResults({ result, isPending, navigate }: ResultsProps) {
+function ArticleResults({ result, isPending, navigate, cancelDebounce }: ResultsProps) {
   const { query, data } = result;
   const articles = Array.isArray(data) ? data : use(data);
   return (
@@ -331,12 +469,13 @@ function ArticleResults({ result, isPending, navigate }: ResultsProps) {
           type="button"
           variant="outline"
           disabled={isPending || query.offset === 0}
-          onClick={() =>
+          onClick={() => {
+            cancelDebounce();
             navigate({
               ...query,
               offset: Math.max(0, query.offset - query.limit),
-            })
-          }
+            });
+          }}
         >
           前へ
         </Button>
@@ -345,9 +484,10 @@ function ArticleResults({ result, isPending, navigate }: ResultsProps) {
           type="button"
           variant="outline"
           disabled={isPending || articles.length < query.limit}
-          onClick={() =>
-            navigate({ ...query, offset: query.offset + query.limit })
-          }
+          onClick={() => {
+            cancelDebounce();
+            navigate({ ...query, offset: query.offset + query.limit });
+          }}
         >
           次へ
         </Button>

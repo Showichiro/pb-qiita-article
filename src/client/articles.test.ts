@@ -155,7 +155,11 @@ describe("ArticlesApp browser controls", () => {
     tags: [],
   };
   beforeEach(async () => {
-    window.history.replaceState(null, "", "/articles?limit=1&offset=7");
+    window.history.replaceState(
+      null,
+      "",
+      "/articles?limit=1&offset=7&campaign=keep",
+    );
     (
       globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }
     ).IS_REACT_ACT_ENVIRONMENT = true;
@@ -169,6 +173,7 @@ describe("ArticlesApp browser controls", () => {
     await act(async () => root.unmount());
     host.remove();
     vi.unstubAllGlobals();
+    vi.useRealTimers();
     window.history.replaceState(null, "", "/articles");
   });
   const mount = async () => {
@@ -187,6 +192,30 @@ describe("ArticlesApp browser controls", () => {
     await act(async () => {
       target.dispatchEvent(
         new Event(event, { bubbles: true, cancelable: true }),
+      );
+    });
+  };
+  const change = async (selector: string, value: string) => {
+    const { act } = await import("react");
+    const target = host.querySelector(selector);
+    if (!target) throw new Error(`Missing ${selector}`);
+    await act(async () => {
+      if (
+        !(target instanceof HTMLSelectElement) &&
+        !(target instanceof HTMLInputElement)
+      )
+        throw new Error(`Not an input control: ${selector}`);
+      const prototype =
+        target instanceof HTMLSelectElement
+          ? HTMLSelectElement.prototype
+          : HTMLInputElement.prototype;
+      const setter = Object.getOwnPropertyDescriptor(prototype, "value")?.set;
+      if (!setter) throw new Error("Missing value setter");
+      setter.call(target, value);
+      target.dispatchEvent(
+        new Event(target instanceof HTMLSelectElement ? "change" : "input", {
+          bubbles: true,
+        }),
       );
     });
   };
@@ -239,6 +268,8 @@ describe("ArticlesApp browser controls", () => {
     await act(async () => resolve(new Response("failure", { status: 503 })));
     expect(host.querySelector('[role="alert"]')?.textContent).toContain("503");
     await action('[role="alert"] button');
+    expect(request).toHaveBeenCalledTimes(2);
+    expect(request.mock.calls[1][0]).toBe(request.mock.calls[0][0]);
     expect(host.textContent).toContain("該当する記事はありません。");
   });
   it("keeps bootstrap rows paired with their query until the current URL resolves", async () => {
@@ -336,22 +367,248 @@ describe("ArticlesApp browser controls", () => {
     window.dispatchEvent(new PopStateEvent("popstate"));
     expect(request).toHaveBeenCalledTimes(1);
   });
-  it("aborts stale requests and prevents old responses replacing current results", async () => {
-    const pending: Array<(response: Response) => void> = [];
+  it("applies date and select filters immediately using the complete draft and offset zero", async () => {
+    const request = vi.fn(
+      (_url: string, _options: RequestInit) => new Promise<Response>(() => {}),
+    );
+    vi.stubGlobal("fetch", request);
+    await mount();
+    await change('[name="since"]', "2026-02-03");
+    await change('[name="orderField"]', "likesCount");
+    expect(request).toHaveBeenCalledTimes(2);
+    expect((request.mock.calls[0][1].signal as AbortSignal).aborted).toBe(true);
+    const url = new URL(request.mock.calls[1][0], window.location.origin);
+    expect(url.searchParams.get("since")).toBe("2026-02-03");
+    expect(url.searchParams.get("orderField")).toBe("likesCount");
+    expect(url.searchParams.get("limit")).toBe("1");
+    expect(url.searchParams.get("offset")).toBe("0");
+    expect(window.location.search).toContain("since=2026-02-03");
+    expect(window.location.search).toContain("orderField=likesCount");
+    expect(window.location.search).toContain("offset=0");
+  });
+  it("waits for 500ms of quiet and uses the latest draft after an urgent rerender", async () => {
+    vi.useFakeTimers();
+    const request = vi.fn().mockResolvedValue(new Response("[]"));
+    vi.stubGlobal("fetch", request);
+    await mount();
+    await change('[name="limit"]', "2");
+    await vi.advanceTimersByTimeAsync(300);
+    await change('[name="limit"]', "3");
+    await vi.advanceTimersByTimeAsync(499);
+    expect(request).not.toHaveBeenCalled();
+    const { act, createElement } = await import("react");
+    const { default: App } = await import("./ArticlesApp");
+    await act(async () =>
+      root.render(
+        createElement<ArticlesAppProps>(App, { initialArticles: [sample] }),
+      ),
+    );
+    await vi.advanceTimersByTimeAsync(1);
+    expect(request).toHaveBeenCalledTimes(1);
+    const url = new URL(request.mock.calls[0][0], window.location.origin);
+    expect(url.searchParams.get("limit")).toBe("3");
+    expect(url.searchParams.get("offset")).toBe("0");
+    expect(window.location.search).toContain("limit=3");
+    expect(host.querySelector<HTMLInputElement>('[name="limit"]')?.value).toBe(
+      "3",
+    );
+  });
+  it("replaces a pending limit search with a newer value and keeps current rows visible", async () => {
+    vi.useFakeTimers();
+    const request = vi.fn(
+      (_url: string, _options: RequestInit) => new Promise<Response>(() => {}),
+    );
+    vi.stubGlobal("fetch", request);
+    await mount();
+    await change('[name="limit"]', "2");
+    expect(host.textContent).toContain("読み込み中");
+    expect(host.textContent).toContain("Article A");
+    await vi.advanceTimersByTimeAsync(250);
+    await change('[name="limit"]', "3");
+    expect(host.textContent).toContain("Article A");
+    await vi.advanceTimersByTimeAsync(499);
+    expect(request).not.toHaveBeenCalled();
+    expect(host.textContent).toContain("Article A");
+    await vi.advanceTimersByTimeAsync(1);
+    expect(request).toHaveBeenCalledTimes(1);
+    expect(request.mock.calls[0][0]).toContain("limit=3");
+    expect(host.textContent).toContain("Article A");
+  });
+  it("includes a pending numeric draft in an immediate select search", async () => {
+    vi.useFakeTimers();
+    const request = vi.fn(
+      (_url: string, _options: RequestInit) => new Promise<Response>(() => {}),
+    );
+    vi.stubGlobal("fetch", request);
+    await mount();
+    await change('[name="limit"]', "2");
+    await change('[name="orderField"]', "stocksCount");
+    expect(request).toHaveBeenCalledTimes(1);
+    const url = new URL(request.mock.calls[0][0], window.location.origin);
+    expect(url.searchParams.get("limit")).toBe("2");
+    expect(url.searchParams.get("orderField")).toBe("stocksCount");
+    expect(url.searchParams.get("offset")).toBe("0");
+    await vi.advanceTimersByTimeAsync(500);
+    expect(request).toHaveBeenCalledTimes(1);
+  });
+  it("submits a pending limit once and deduplicates the same canonical query", async () => {
+    vi.useFakeTimers();
     const request = vi
       .fn()
-      .mockImplementation(
-        () => new Promise<Response>((done) => pending.push(done)),
+      .mockResolvedValue(new Response(JSON.stringify([sample])));
+    vi.stubGlobal("fetch", request);
+    await mount();
+    const historyLengthBeforeSearch = window.history.length;
+    await change('[name="limit"]', "3");
+    await action("form", "submit");
+    expect(request).toHaveBeenCalledTimes(1);
+    expect(request.mock.calls[0][0]).toContain("limit=3");
+    expect(request.mock.calls[0][0]).toContain("offset=0");
+    expect(window.history.length).toBe(historyLengthBeforeSearch + 1);
+    expect(window.location.search).toContain("campaign=keep");
+    const historyLengthAfterSearch = window.history.length;
+    await action("form", "submit");
+    await vi.advanceTimersByTimeAsync(500);
+    expect(request).toHaveBeenCalledTimes(1);
+    expect(window.history.length).toBe(historyLengthAfterSearch);
+    vi.useRealTimers();
+    const { act } = await import("react");
+    await act(async () => {
+      const popstate = new Promise<void>((resolve) =>
+        window.addEventListener("popstate", () => resolve(), { once: true }),
       );
+      window.history.back();
+      await popstate;
+    });
+    expect(window.location.search).toContain("limit=1");
+    expect(window.location.search).toContain("offset=7");
+  });
+  it("cancels a pending debounce on history navigation and restores draft from the URL", async () => {
+    vi.useFakeTimers();
+    const request = vi.fn().mockResolvedValue(new Response("[]"));
+    vi.stubGlobal("fetch", request);
+    await mount();
+    await change('[name="limit"]', "2");
+    const { act } = await import("react");
+    await act(async () => {
+      window.history.replaceState(
+        null,
+        "",
+        "/articles?since=2026-03-04&orderField=stocksCount&limit=4&offset=13&campaign=history",
+      );
+      window.dispatchEvent(new PopStateEvent("popstate"));
+    });
+    expect(request).toHaveBeenCalledTimes(1);
+    const requested = new URL(request.mock.calls[0][0], window.location.origin);
+    expect(requested.searchParams.get("since")).toBe("2026-03-04");
+    expect(requested.searchParams.get("orderField")).toBe("stocksCount");
+    expect(requested.searchParams.get("limit")).toBe("4");
+    expect(requested.searchParams.get("offset")).toBe("13");
+    expect(window.location.search).toContain("campaign=history");
+    expect(host.querySelector<HTMLInputElement>('[name="since"]')?.value).toBe(
+      "2026-03-04",
+    );
+    const orderField = host.querySelector('[name="orderField"]');
+    if (!(orderField instanceof HTMLSelectElement))
+      throw new Error("Missing order field select");
+    expect(orderField.value).toBe("stocksCount");
+    expect(host.querySelector<HTMLInputElement>('[name="limit"]')?.value).toBe(
+      "4",
+    );
+    await act(async () => window.dispatchEvent(new PopStateEvent("popstate")));
+    expect(request).toHaveBeenCalledTimes(1);
+    await vi.advanceTimersByTimeAsync(500);
+    expect(request).toHaveBeenCalledTimes(1);
+  });
+  it("cancels a pending debounce when unmounted before it can start a request", async () => {
+    vi.useFakeTimers();
+    const request = vi.fn().mockResolvedValue(new Response("[]"));
+    vi.stubGlobal("fetch", request);
+    await mount();
+    await change('[name="limit"]', "2");
+    await vi.advanceTimersByTimeAsync(250);
+    const { act } = await import("react");
+    await act(async () => root.unmount());
+    await vi.advanceTimersByTimeAsync(500);
+    expect(request).not.toHaveBeenCalled();
+  });
+  it("aborts stale requests and prevents old responses replacing current results", async () => {
+    const pending: Array<{
+      resolve: (response: Response) => void;
+      reject: (error: Error) => void;
+    }> = [];
+    const request = vi.fn(
+      (_url: string, _options: RequestInit) =>
+        new Promise<Response>((resolve, reject) =>
+          pending.push({ resolve, reject }),
+        ),
+    );
+    vi.stubGlobal("fetch", request);
+    await mount();
+    await change('[name="orderField"]', "likesCount");
+    await change('[name="orderDirection"]', "asc");
+    expect(request).toHaveBeenCalledTimes(2);
+    expect((request.mock.calls[0][1].signal as AbortSignal).aborted).toBe(true);
+    const { act } = await import("react");
+    await act(async () =>
+      pending[0].reject(new DOMException("Aborted", "AbortError")),
+    );
+    await act(async () =>
+      pending[1].resolve(
+        new Response(JSON.stringify([{ ...sample, title: "Latest article" }])),
+      ),
+    );
+    expect(host.textContent).toContain("Latest article");
+    expect(host.textContent).not.toContain("Article A");
+    expect(host.querySelector('[role="alert"]')).toBeNull();
+    expect(host.textContent).not.toContain("読み込み中");
+  });
+  it("keeps invalid numeric drafts editable and does not search until the full draft is valid", async () => {
+    vi.useFakeTimers();
+    const request = vi.fn().mockResolvedValue(new Response("[]"));
+    vi.stubGlobal("fetch", request);
+    await mount();
+    await change('[name="limit"]', "101");
+    await change('[name="since"]', "2026-04-05");
+    await change('[name="orderField"]', "stocksCount");
+    await vi.advanceTimersByTimeAsync(1000);
+    expect(request).not.toHaveBeenCalled();
+    expect(window.location.search).toContain("limit=1");
+    expect(window.location.search).not.toContain("since=2026-04-05");
+    expect(window.location.search).not.toContain("orderField=stocksCount");
+    expect(host.querySelector<HTMLInputElement>('[name="limit"]')?.value).toBe(
+      "101",
+    );
+    expect(host.querySelector<HTMLInputElement>('[name="since"]')?.value).toBe(
+      "2026-04-05",
+    );
+    const orderField = host.querySelector('[name="orderField"]');
+    if (!(orderField instanceof HTMLSelectElement))
+      throw new Error("Missing order field select");
+    expect(orderField.value).toBe("stocksCount");
+
+    await change('[name="limit"]', "2");
+    await vi.advanceTimersByTimeAsync(500);
+    expect(request).toHaveBeenCalledTimes(1);
+    const url = new URL(request.mock.calls[0][0], window.location.origin);
+    expect(url.searchParams.get("since")).toBe("2026-04-05");
+    expect(url.searchParams.get("orderField")).toBe("stocksCount");
+    expect(url.searchParams.get("limit")).toBe("2");
+    expect(window.location.search).toContain("campaign=keep");
+  });
+  it("retries a failed same-query submit without adding a duplicate history entry", async () => {
+    const request = vi
+      .fn()
+      .mockResolvedValueOnce(new Response("failure", { status: 503 }))
+      .mockResolvedValueOnce(new Response("[]"));
     vi.stubGlobal("fetch", request);
     await mount();
     await action("form", "submit");
+    expect(host.querySelector('[role="alert"]')?.textContent).toContain("503");
+    const historyLengthAfterFailure = window.history.length;
     await action("form", "submit");
-    expect(request.mock.calls[0][1].signal.aborted).toBe(true);
-    const { act } = await import("react");
-    await act(async () => pending[1](new Response("[]")));
-    await act(async () => pending[0](new Response(JSON.stringify([sample]))));
+    expect(request).toHaveBeenCalledTimes(2);
+    expect(window.history.length).toBe(historyLengthAfterFailure);
     expect(host.textContent).toContain("該当する記事はありません。");
-    expect(host.textContent).not.toContain("Article A");
   });
 });
