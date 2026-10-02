@@ -43,6 +43,22 @@ render can use the same data. Subsequent searches and pagination fetch
 `/api/articles` without navigating the entire page. Loading, empty, and failure
 states belong to the island. The API and D1 schema remain compatible.
 
+The island follows React's [Async rendering model](https://react.dev/reference/react/use):
+search/history events start a request once and retain its Promise in React state.
+The results component reads it with `use`; `Suspense` owns initial waiting and an
+Error Boundary owns failures. Retry creates a fresh Promise and resets that boundary.
+SSR bootstrap arrays remain synchronous, so mounting does not fetch or flash a fallback.
+An unseeded first load uses a bounded Promise cache to survive render retries.
+
+`useTransition` marks result changes as non-urgent and provides `isPending`;
+previous rows remain visible while searching, with pagination disabled until commit.
+Controlled filter inputs update immediately outside the Transition. Superseded
+requests are aborted and cannot commit over the latest Promise. History subscriptions
+use React 19 callback-ref cleanup and are removed on unmount. There is no fetching
+`useEffect` or manual loading/error state; the mount adapter's `useLayoutEffect` only
+coordinates replacement of the Hono fallback DOM. See [Suspense](https://react.dev/reference/react/Suspense)
+and [useTransition](https://react.dev/reference/react/useTransition).
+
 Client TSX files use `@jsxImportSource react`; the repository default remains
 `hono/jsx` for server components. Vite and `vite-ssr-components` resolve the client
 entry to emitted production assets. Run `bun run dev` for the server and client

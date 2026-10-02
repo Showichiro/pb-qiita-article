@@ -228,11 +228,57 @@ describe("ArticlesApp browser controls", () => {
     await action("form", "submit");
     expect(request.mock.calls[0][0]).toContain("offset=0");
     expect(host.textContent).toContain("読み込み中");
+    expect(host.textContent).toContain("Article A");
+    expect(host.querySelector("nav button")?.hasAttribute("disabled")).toBe(
+      true,
+    );
+    expect(host.querySelector("form input")?.hasAttribute("disabled")).toBe(
+      false,
+    );
     const { act } = await import("react");
     await act(async () => resolve(new Response("failure", { status: 503 })));
     expect(host.querySelector('[role="alert"]')?.textContent).toContain("503");
     await action('[role="alert"] button');
     expect(host.textContent).toContain("該当する記事はありません。");
+  });
+  it("uses Suspense for an unseeded first load without refetching on render", async () => {
+    let resolve!: (response: Response) => void;
+    const request = vi.fn(
+      () =>
+        new Promise<Response>((done) => {
+          resolve = done;
+        }),
+    );
+    vi.stubGlobal("fetch", request);
+    const { act, createElement } = await import("react");
+    const { default: App } = await import("./ArticlesApp");
+    await act(async () => root.render(createElement(App)));
+    expect(host.textContent).toContain("読み込み中");
+    await act(async () => root.render(createElement(App)));
+    expect(request).toHaveBeenCalledTimes(1);
+    await act(async () => resolve(new Response(JSON.stringify([sample]))));
+    expect(host.textContent).toContain("Article A");
+  });
+  it("keeps one pending Promise through rerenders and cancels on unmount", async () => {
+    const request = vi.fn(
+      (_url: string, _options: RequestInit) => new Promise<Response>(() => {}),
+    );
+    vi.stubGlobal("fetch", request);
+    await mount();
+    await action("form", "submit");
+    const { act, createElement } = await import("react");
+    const { default: App } = await import("./ArticlesApp");
+    await act(async () =>
+      root.render(
+        createElement<ArticlesAppProps>(App, { initialArticles: [sample] }),
+      ),
+    );
+    expect(request).toHaveBeenCalledTimes(1);
+    expect(host.textContent).toContain("Article A");
+    await act(async () => root.unmount());
+    expect((request.mock.calls[0][1].signal as AbortSignal).aborted).toBe(true);
+    window.dispatchEvent(new PopStateEvent("popstate"));
+    expect(request).toHaveBeenCalledTimes(1);
   });
   it("aborts stale requests and prevents old responses replacing current results", async () => {
     const pending: Array<(response: Response) => void> = [];
