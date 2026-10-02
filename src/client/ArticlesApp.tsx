@@ -29,17 +29,22 @@ import {
   fetchArticles,
   parseArticleQuery,
   type ArticleQuery,
+  type ArticleDraft,
+  toArticleDraft,
 } from "./articles";
 
 export type ArticlesAppProps = {
   initialConfig?: FindAllArticlesConfig;
   initialArticles?: Article[];
+  initialDraft?: ArticleDraft;
 };
 export default function ArticlesApp({
   initialConfig,
   initialArticles,
+  initialDraft,
 }: ArticlesAppProps = {}) {
   const initialQuery = () =>
+    (initialArticles === undefined || initialConfig === undefined) &&
     typeof window !== "undefined"
       ? parseArticleQuery(new URLSearchParams(window.location.search))
       : parseArticleQuery(
@@ -54,7 +59,9 @@ export default function ArticlesApp({
     data: initialArticles ?? initialRequest(initialQuery()),
   }));
   const { query } = result;
-  const [draft, setDraft] = useState(query);
+  const [draft, setDraft] = useState(
+    () => initialDraft ?? toArticleDraft(query),
+  );
   const [isPending, startTransition] = useTransition();
   const active = useRef<{ query: ArticleQuery; controller?: AbortController }>({
     query,
@@ -66,7 +73,7 @@ export default function ArticlesApp({
     // Start once in the event handler and retain the Promise across render retries.
     const data = fetchArticles(next, controller.signal);
     void data.catch(() => {});
-    setDraft(next);
+    setDraft(toArticleDraft(next));
     startTransition(() => setResult({ query: next, data }));
   }, []);
   const navigate = (next: ArticleQuery) => {
@@ -83,6 +90,17 @@ export default function ArticlesApp({
     const onPop = () =>
       load(parseArticleQuery(new URLSearchParams(window.location.search)));
     window.addEventListener("popstate", onPop);
+    // Bootstrap rows belong to their server query. Catch history changes before
+    // subscription, including changes between the first render and commit.
+    const current = parseArticleQuery(
+      new URLSearchParams(window.location.search),
+    );
+    if (
+      articleQueryParams(current).toString() !==
+        articleQueryParams(active.current.query).toString() ||
+      active.current.controller?.signal.aborted
+    )
+      load(current);
     return () => {
       window.removeEventListener("popstate", onPop);
       active.current.controller?.abort();
@@ -90,7 +108,11 @@ export default function ArticlesApp({
   }, [load]);
   const submit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    navigate(parseArticleQuery(articleQueryParams({ ...draft, offset: 0 })));
+    navigate(
+      parseArticleQuery(
+        articleQueryParams({ ...draft, limit: Number(draft.limit), offset: 0 }),
+      ),
+    );
   };
   return (
     <section
@@ -170,9 +192,7 @@ export default function ArticlesApp({
               min="1"
               max="100"
               value={draft.limit}
-              onChange={(e) =>
-                setDraft({ ...draft, limit: Number(e.target.value) })
-              }
+              onChange={(e) => setDraft({ ...draft, limit: e.target.value })}
             />
           </label>
           <Input type="hidden" name="offset" value={draft.offset} />

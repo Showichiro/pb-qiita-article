@@ -241,6 +241,62 @@ describe("ArticlesApp browser controls", () => {
     await action('[role="alert"] button');
     expect(host.textContent).toContain("該当する記事はありません。");
   });
+  it("keeps bootstrap rows paired with their query until the current URL resolves", async () => {
+    let finish!: (response: Response) => void;
+    const request = vi.fn(
+      (_url: string) =>
+        new Promise<Response>((done) => {
+          finish = done;
+        }),
+    );
+    vi.stubGlobal("fetch", request);
+    const { act, createElement } = await import("react");
+    const { default: App } = await import("./ArticlesApp");
+    await act(async () =>
+      root.render(
+        createElement<ArticlesAppProps>(App, {
+          initialConfig: { since: null, until: null, limit: 1, offset: 0 },
+          initialArticles: [sample],
+        }),
+      ),
+    );
+    expect(request).toHaveBeenCalledTimes(1);
+    expect(request.mock.calls[0][0]).toContain("offset=7");
+    expect(host.querySelector("nav span")?.textContent).toBe("1");
+    expect(host.textContent).toContain("Article A");
+    await act(async () =>
+      finish(
+        new Response(JSON.stringify([{ ...sample, title: "Page eight" }])),
+      ),
+    );
+    expect(host.querySelector("nav span")?.textContent).toBe("8");
+    expect(host.textContent).toContain("Page eight");
+    expect(host.textContent).not.toContain("Article A");
+  });
+  it("allows an empty limit draft and normalizes it only when submitted", async () => {
+    const request = vi.fn().mockResolvedValue(new Response("[]"));
+    vi.stubGlobal("fetch", request);
+    await mount();
+    const input = host.querySelector<HTMLInputElement>('[name="limit"]');
+    if (!input) throw new Error("Missing limit");
+    const { act } = await import("react");
+    await act(async () => {
+      const setter = Object.getOwnPropertyDescriptor(
+        HTMLInputElement.prototype,
+        "value",
+      )?.set;
+      if (!setter) throw new Error("Missing setter");
+      setter.call(input, "");
+      input.dispatchEvent(new Event("input", { bubbles: true }));
+    });
+    expect(input.value).toBe("");
+    expect(input.validity.rangeUnderflow).toBe(false);
+    expect(host.querySelector("form")?.checkValidity()).toBe(true);
+    expect(request).not.toHaveBeenCalled();
+    await action("form", "submit");
+    expect(request.mock.calls[0][0]).toContain("limit=10");
+    expect(input.value).toBe("10");
+  });
   it("uses Suspense for an unseeded first load without refetching on render", async () => {
     let resolve!: (response: Response) => void;
     const request = vi.fn(

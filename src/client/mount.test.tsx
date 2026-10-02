@@ -98,3 +98,63 @@ test("falls back to data attributes when no bootstrap script is provided", () =>
     initialArticles: undefined,
   });
 });
+
+test("hands off edits made during download and restores the focused control", async () => {
+  const container = island();
+  container.innerHTML =
+    '<form action="/articles" method="get"><input name="since" type="date"><input name="limit" type="number" value="10"><select name="orderField"><option value="createdAt">Date</option><option value="likesCount">Likes</option></select></form>';
+  const { default: App } = await import("./ArticlesApp");
+  let finish!: (module: { default: typeof App }) => void;
+  const mounting = mountArticlesApp(
+    container,
+    () =>
+      new Promise((done) => {
+        finish = done;
+      }),
+  );
+  const date = container.querySelector<HTMLInputElement>('[name="since"]');
+  if (!date) throw new Error("Missing date");
+  date.value = "2026-01-01";
+  date.dispatchEvent(new Event("input", { bubbles: true }));
+  date.focus();
+  const limit = container.querySelector<HTMLInputElement>('[name="limit"]');
+  const select = container.querySelector("select");
+  if (!limit || !select) throw new Error("Missing field");
+  limit.value = "";
+  select.value = "likesCount";
+  await act(async () => {
+    finish({ default: App });
+    await mounting;
+  });
+  expect(
+    container.querySelector<HTMLInputElement>('[name="since"]')?.value,
+  ).toBe("2026-01-01");
+  expect(
+    container.querySelector<HTMLInputElement>('[name="limit"]')?.value,
+  ).toBe("");
+  expect(container.querySelector("select")?.value).toBe("likesCount");
+  expect(document.activeElement).toBe(
+    container.querySelector('[name="since"]'),
+  );
+  expect(container.querySelector("section.react-island")).not.toBeNull();
+});
+
+test("preserves native form edits that arrive after the handoff snapshot", async () => {
+  const container = island();
+  container.innerHTML =
+    '<form action="/articles" method="get"><input name="since" type="date"></form>';
+  const input = container.querySelector("input");
+  if (!input) throw new Error("Missing field");
+  await act(async () => {
+    await mountArticlesApp(container, async () => ({
+      default: () => {
+        input.value = "2026-02-01";
+        input.dispatchEvent(new Event("input", { bubbles: true }));
+        return <button type="button">Client</button>;
+      },
+    }));
+  });
+  expect(container.querySelector("input")).toBe(input);
+  expect(input.value).toBe("2026-02-01");
+  expect(container.querySelector("form")?.getAttribute("method")).toBe("get");
+});

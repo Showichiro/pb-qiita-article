@@ -53,10 +53,17 @@ An unseeded first load uses a bounded Promise cache to survive render retries.
 `useTransition` marks result changes as non-urgent and provides `isPending`;
 previous rows remain visible while searching, with pagination disabled until commit.
 Controlled filter inputs update immediately outside the Transition. Superseded
-requests are aborted and cannot commit over the latest Promise. History subscriptions
+event-handler requests are aborted and cannot commit over the latest Promise. History subscriptions
 use React 19 callback-ref cleanup and are removed on unmount. There is no fetching
 `useEffect` or manual loading/error state; the mount adapter's `useLayoutEffect` only
-coordinates replacement of the Hono fallback DOM. See [Suspense](https://react.dev/reference/react/Suspense)
+coordinates replacement of the Hono fallback DOM and transfers its unsent form
+values and focus. If an edit arrives after the transfer snapshot, or focused SSR
+content has no client counterpart, the native GET form stays available. Bootstrap
+rows are paired with their server query; after subscribing to history the island
+rechecks the current URL and loads mismatched conditions in a Transition. The limit
+draft stays a string while editing; submitting an empty value uses the default 10.
+Unseeded initial requests share a bounded module cache with no TTL or per-consumer
+unmount cancellation; the normal Hono page always supplies bootstrap articles. See [Suspense](https://react.dev/reference/react/Suspense)
 and [useTransition](https://react.dev/reference/react/useTransition).
 
 Client TSX files use `@jsxImportSource react`; the repository default remains

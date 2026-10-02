@@ -8,6 +8,12 @@ export type ArticleQuery = {
   limit: number;
   offset: number;
 };
+export type ArticleDraft = Omit<ArticleQuery, "limit"> & { limit: string };
+export const toArticleDraft = (query: ArticleQuery): ArticleDraft => ({
+  ...query,
+  limit: String(query.limit),
+});
+
 export const defaultArticleQuery: ArticleQuery = {
   since: "",
   until: "",
