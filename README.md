@@ -29,6 +29,37 @@ The test suite uses Miniflare D1 databases. Vitest has a separate configuration 
 Use bun run format and bun run lint to apply formatting and lint fixes.
 Generate migrations with bun run schema:gen.
 
+## Frontend architecture
+
+Hono owns routing, validation, the HTML shell, and database access. React 19 owns
+the interactive article list inside `#articles-app`; the header, page title, and
+ranking page continue to use Hono JSX. This is an incremental React island, with
+server-rendered article content available when JavaScript is disabled or the
+client bundle cannot start.
+
+`src/client/main.tsx` mounts `ArticlesApp` on the articles page. The server passes
+the initial query and articles in an escaped JSON bootstrap, so the first React
+render can use the same data. Subsequent searches and pagination fetch
+`/api/articles` without navigating the entire page. Loading, empty, and failure
+states belong to the island. The API and D1 schema remain compatible.
+
+Client TSX files use `@jsxImportSource react`; the repository default remains
+`hono/jsx` for server components. Vite and `vite-ssr-components` resolve the client
+entry to emitted production assets. Run `bun run dev` for the server and client
+together; the existing build and deployment commands also build the island.
+
+React UI primitives live under `src/client/ui`. Their styles are scoped to the
+island and coexist with the existing Tailwind/daisyUI shell. Only components
+needed by the current screens are introduced; additional controls can follow as
+search and analysis features expand.
+
+The project roadmap is [P-SHO-3: PB Qiita UI Evolution](https://linear.app/showiv/project/pb-qiita-ui-evolution-70fa2817d65e).
+M1 introduces the React foundation and article island. M2 extends search and
+shareable URL state; M3 adds ranking and time-series visualizations; M4 evaluates
+TanStack Query and Hono RPC. TanStack Query, TanStack Router, and Hono RPC are not
+adopted in M1. The current client uses a small fetch wrapper and the existing
+Zod/OpenAPI API contract.
+
 ## Workers and cf migration
 
 The project now uses cf 1.0.0-beta.10 and @cloudflare/vite-plugin 2.0 beta, pinned exactly because these releases are beta.

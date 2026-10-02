@@ -1,0 +1,255 @@
+// @vitest-environment jsdom
+import type { ArticlesAppProps } from "./ArticlesApp";
+import {
+  articleQueryParams,
+  defaultArticleQuery,
+  parseArticleQuery,
+  serializeArticleBootstrap,
+} from "./articles";
+
+describe("article query", () => {
+  it("matches database ordering defaults", () =>
+    expect(parseArticleQuery(new URLSearchParams())).toEqual(
+      defaultArticleQuery,
+    ));
+  it("rejects invalid limits, offsets and ordering", () => {
+    for (const input of [
+      "limit=0&offset=-1",
+      "limit=101&offset=1.5",
+      "limit=&offset=Infinity",
+      "limit=NaN&orderField=id&orderDirection=wrong",
+    ])
+      expect(parseArticleQuery(new URLSearchParams(input))).toEqual(
+        defaultArticleQuery,
+      );
+  });
+  it("round trips direct URL filters including non-page-aligned offsets", () => {
+    const query = {
+      ...defaultArticleQuery,
+      since: "2026-01-01",
+      until: "2026-10-01",
+      orderField: "stocksCount" as const,
+      orderDirection: "asc" as const,
+      limit: 30,
+      offset: 17,
+    };
+    expect(parseArticleQuery(articleQueryParams(query))).toEqual(query);
+  });
+  it("drops invalid dates", () =>
+    expect(parseArticleQuery(new URLSearchParams("since=nonsense")).since).toBe(
+      "",
+    ));
+  it("escapes script terminators and unicode separators without changing JSON values", () => {
+    const value = {
+      config: `u2089</script><script>&${String.fromCharCode(0x2028, 0x2029)}`,
+      articles: [],
+    };
+    const encoded = serializeArticleBootstrap(value);
+    expect(encoded).not.toMatch(/[<>&\u2028\u2029]/);
+    expect(JSON.parse(encoded)).toEqual(value);
+  });
+});
+
+// React's server renderer exercises the island's first render without a browser.
+describe("ArticlesApp initial render", () => {
+  it("preserves columns, links, tags and the native search contract", async () => {
+    const { createElement } = await import("react");
+    const { renderToStaticMarkup } = await import("react-dom/server");
+    const { default: ArticlesApp } = await import("./ArticlesApp");
+    const html = renderToStaticMarkup(
+      createElement<ArticlesAppProps>(ArticlesApp, {
+        initialArticles: [
+          {
+            id: "a",
+            title: "<記事>",
+            userId: "writer",
+            userName: "Author",
+            createdAt: "2026-10-01T00:00:00.000Z",
+            likesCount: 3,
+            stocksCount: 4,
+            tags: [{ name: "C#" }],
+          },
+        ],
+      }),
+    );
+    expect(html).toContain("&lt;記事&gt;");
+    expect(html).toContain("https://qiita.com/writer/items/a");
+    expect(html).toContain("https://qiita.com/tags/C%23");
+    expect(html).toContain("2026-10-01");
+    for (const name of [
+      "since",
+      "until",
+      "orderField",
+      "orderDirection",
+      "limit",
+      "offset",
+    ])
+      expect(html).toContain(`name="${name}"`);
+    for (const column of [
+      "タイトル",
+      "執筆者",
+      "タグ",
+      "いいね数",
+      "ストック数",
+      "投稿日",
+    ])
+      expect(html).toContain(column);
+  });
+  it("renders the empty result state", async () => {
+    const { createElement } = await import("react");
+    const { renderToStaticMarkup } = await import("react-dom/server");
+    const { default: ArticlesApp } = await import("./ArticlesApp");
+    expect(
+      renderToStaticMarkup(
+        createElement<ArticlesAppProps>(ArticlesApp, { initialArticles: [] }),
+      ),
+    ).toContain("該当する記事はありません。");
+  });
+});
+
+describe("article requests", () => {
+  afterEach(() => vi.unstubAllGlobals());
+  it("passes cancellation through to the existing API", async () => {
+    const { fetchArticles } = await import("./articles");
+    const request = vi
+      .fn()
+      .mockResolvedValue(new Response("[]", { status: 200 }));
+    vi.stubGlobal("fetch", request);
+    const controller = new AbortController();
+    await expect(
+      fetchArticles(defaultArticleQuery, controller.signal),
+    ).resolves.toEqual([]);
+    expect(request).toHaveBeenCalledWith(
+      expect.stringContaining("/api/articles?"),
+      expect.objectContaining({ signal: controller.signal }),
+    );
+  });
+  it("rejects HTTP failures and malformed payloads", async () => {
+    const { fetchArticles } = await import("./articles");
+    vi.stubGlobal(
+      "fetch",
+      vi
+        .fn()
+        .mockResolvedValueOnce(new Response("bad", { status: 500 }))
+        .mockResolvedValueOnce(new Response('{"articles":[]}'))
+        .mockResolvedValueOnce(new Response('[{"id":"a"}]')),
+    );
+    for (let attempt = 0; attempt < 3; attempt++)
+      await expect(
+        fetchArticles(defaultArticleQuery, new AbortController().signal),
+      ).rejects.toThrow();
+  });
+});
+
+describe("ArticlesApp browser controls", () => {
+  let host: HTMLDivElement;
+  let root: import("react-dom/client").Root;
+  const sample = {
+    id: "a",
+    title: "Article A",
+    userId: "writer",
+    userName: "Author",
+    createdAt: "2026-10-01T00:00:00.000Z",
+    likesCount: 3,
+    stocksCount: 4,
+    tags: [],
+  };
+  beforeEach(async () => {
+    window.history.replaceState(null, "", "/articles?limit=1&offset=7");
+    (
+      globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }
+    ).IS_REACT_ACT_ENVIRONMENT = true;
+    host = document.createElement("div");
+    document.body.appendChild(host);
+    const { createRoot } = await import("react-dom/client");
+    root = createRoot(host);
+  });
+  afterEach(async () => {
+    const { act } = await import("react");
+    await act(async () => root.unmount());
+    host.remove();
+    vi.unstubAllGlobals();
+    window.history.replaceState(null, "", "/articles");
+  });
+  const mount = async () => {
+    const { act, createElement } = await import("react");
+    const { default: App } = await import("./ArticlesApp");
+    await act(async () =>
+      root.render(
+        createElement<ArticlesAppProps>(App, { initialArticles: [sample] }),
+      ),
+    );
+  };
+  const action = async (selector: string, event = "click") => {
+    const { act } = await import("react");
+    const target = host.querySelector(selector);
+    if (!target) throw new Error(`Missing ${selector}`);
+    await act(async () => {
+      target.dispatchEvent(
+        new Event(event, { bubbles: true, cancelable: true }),
+      );
+    });
+  };
+  it("uses SSR results without a request, respects URL pagination, and handles popstate", async () => {
+    const request = vi
+      .fn()
+      .mockResolvedValue(new Response(JSON.stringify([sample])));
+    vi.stubGlobal("fetch", request);
+    await mount();
+    expect(request).not.toHaveBeenCalled();
+    expect(host.textContent).toContain("Article A");
+    await action("nav button:last-child");
+    expect(request.mock.calls[0][0]).toContain("offset=8");
+    const { act } = await import("react");
+    await act(async () => {
+      window.history.replaceState(
+        null,
+        "",
+        "/articles?limit=1&offset=2&orderField=likesCount",
+      );
+      window.dispatchEvent(new PopStateEvent("popstate"));
+    });
+    expect(request.mock.lastCall?.[0]).toContain("offset=2");
+    expect(request.mock.lastCall?.[0]).toContain("orderField=likesCount");
+  });
+  it("submits with offset reset, exposes loading/errors, and retries into empty results", async () => {
+    let resolve!: (response: Response) => void;
+    const request = vi
+      .fn()
+      .mockImplementationOnce(
+        () =>
+          new Promise<Response>((done) => {
+            resolve = done;
+          }),
+      )
+      .mockResolvedValueOnce(new Response("[]"));
+    vi.stubGlobal("fetch", request);
+    await mount();
+    await action("form", "submit");
+    expect(request.mock.calls[0][0]).toContain("offset=0");
+    expect(host.textContent).toContain("読み込み中");
+    const { act } = await import("react");
+    await act(async () => resolve(new Response("failure", { status: 503 })));
+    expect(host.querySelector('[role="alert"]')?.textContent).toContain("503");
+    await action('[role="alert"] button');
+    expect(host.textContent).toContain("該当する記事はありません。");
+  });
+  it("aborts stale requests and prevents old responses replacing current results", async () => {
+    const pending: Array<(response: Response) => void> = [];
+    const request = vi
+      .fn()
+      .mockImplementation(
+        () => new Promise<Response>((done) => pending.push(done)),
+      );
+    vi.stubGlobal("fetch", request);
+    await mount();
+    await action("form", "submit");
+    await action("form", "submit");
+    expect(request.mock.calls[0][1].signal.aborted).toBe(true);
+    const { act } = await import("react");
+    await act(async () => pending[1](new Response("[]")));
+    await act(async () => pending[0](new Response(JSON.stringify([sample]))));
+    expect(host.textContent).toContain("該当する記事はありません。");
+    expect(host.textContent).not.toContain("Article A");
+  });
+});

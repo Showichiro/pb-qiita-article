@@ -61,6 +61,20 @@ describe("ArticlesPage", async () => {
         db={instance}
       />,
     );
+    expect(text).toContain('id="articles-app"');
+    expect(text).toContain('action="/articles" method="get"');
+    const bootstrap = text.match(
+      /<script id="articles-bootstrap" type="application\/json">([\s\S]*?)<\/script>/,
+    );
+    expect(bootstrap).not.toBeNull();
+    const initial = JSON.parse(bootstrap?.[1] ?? "null");
+    expect(initial.config).toMatchObject({
+      limit: 10,
+      offset: 0,
+      orderField: "createdAt",
+      orderDirection: "desc",
+    });
+    expect(initial.articles).toHaveLength(record);
     expect(text).toMatchSnapshot();
   });
 });
