@@ -13,7 +13,7 @@ import {
 
 export type ArticlesInitialData = {
   initialConfig: FindAllArticlesConfig;
-  initialArticles?: Article[];
+  initialArticles: Article[];
   initialTagOptions?: string[];
 };
 
@@ -38,12 +38,12 @@ export function readInitialData(container: HTMLElement): ArticlesInitialData {
     throw new Error("Invalid articles initial configuration");
   }
   const articles = container.dataset.initialArticles;
-  const initialArticles: Article[] | undefined = data
+  const initialArticles: unknown = data
     ? data.articles
     : articles
       ? JSON.parse(articles)
       : undefined;
-  if (initialArticles !== undefined && !Array.isArray(initialArticles)) {
+  if (!Array.isArray(initialArticles)) {
     throw new Error("Invalid articles initial data");
   }
   const initialTagOptions: unknown = data?.tagOptions;
@@ -122,6 +122,10 @@ export async function mountArticlesApp(
         focused && container.contains(focused)
           ? focused.getAttribute("name")
           : null;
+      const focusId =
+        focused && container.contains(focused)
+          ? focused.getAttribute("data-focus-id")
+          : null;
       const selection =
         focused instanceof HTMLInputElement && focused.selectionStart !== null
           ? {
@@ -133,13 +137,17 @@ export async function mountArticlesApp(
       const target =
         focused && container.contains(focused)
           ? Array.from(
-              clientContainer.querySelectorAll("input, select, button"),
+              clientContainer.querySelectorAll(
+                "input, select, button, a, [data-focus-id]",
+              ),
             ).find((field) =>
               focusName
                 ? field.getAttribute("name") === focusName
-                : focused.tagName === "BUTTON" &&
-                  field.tagName === "BUTTON" &&
-                  field.textContent === focused.textContent,
+                : focusId
+                  ? field.getAttribute("data-focus-id") === focusId
+                  : focused.tagName === "BUTTON" &&
+                    field.tagName === "BUTTON" &&
+                    field.textContent === focused.textContent,
             )
           : undefined;
       if (focused && container.contains(focused) && !target) {

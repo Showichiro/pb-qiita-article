@@ -11,11 +11,16 @@ import {
   articleOrderFields,
   articlesCardExtraClass,
   articlesFormClass,
+  articlesActionFocusId,
+  articlesActionSlotClass,
   articlesIslandClass,
   articlesLinkClass,
   articlesNavClass,
   articlesResultsClass,
+  articlesTagClearClass,
+  articlesTagClearFocusId,
   articlesTagControlClass,
+  articlesTagFieldClass,
   articlesTagLabelClass,
   articlesTagClass,
 } from "@/client/articles-presentation";
@@ -109,12 +114,14 @@ export const ArticlesSearch: FC<{
   const options = normalizeTags([...tagOptions, ...query.tags]);
   const pageUrl = (offset: number) =>
     `/articles?${articleQueryParams({ ...query, offset })}`;
+  const clearTagsUrl = `/articles?${articleQueryParams({
+    ...query,
+    tags: [],
+    offset: 0,
+  })}`;
   return (
     <section class={articlesIslandClass} aria-label="記事検索">
-      <div
-        data-slot="card"
-        class={cn(cardClass, articlesCardExtraClass)}
-      >
+      <div data-slot="card" class={cn(cardClass, articlesCardExtraClass)}>
         <form action="/articles" method="get" class={articlesFormClass}>
           {(["q", "author"] as const).map((name) => (
             <SearchField
@@ -134,36 +141,45 @@ export const ArticlesSearch: FC<{
               />
             </SearchField>
           ))}
-          <label class={articlesTagLabelClass} for={articleFieldId("tags")}>
-            タグ（すべて一致）{" "}
-            <div
-              data-slot="select-wrapper"
-              class={cn(selectWrapperClass, articlesTagControlClass)}
-            >
-              <select
-                data-slot="select"
-                class={cn(
-                  selectClass,
-                  selectMultipleClass,
-                  articlesTagControlClass,
-                )}
-                id={articleFieldId("tags")}
-                name="tags"
-                multiple
-                size={4}
+          <div class={articlesTagFieldClass} data-slot="article-tags-field">
+            <label class={articlesTagLabelClass} for={articleFieldId("tags")}>
+              タグ（すべて一致）{" "}
+              <div
+                data-slot="select-wrapper"
+                class={cn(selectWrapperClass, articlesTagControlClass)}
               >
-                {options.map((tag) => (
-                  <option
-                    key={tag}
-                    value={tag}
-                    selected={query.tags.includes(tag)}
-                  >
-                    {tag}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </label>
+                <select
+                  data-slot="select"
+                  class={cn(
+                    selectClass,
+                    selectMultipleClass,
+                    articlesTagControlClass,
+                  )}
+                  id={articleFieldId("tags")}
+                  name="tags"
+                  multiple
+                  size={4}
+                >
+                  {options.map((tag) => (
+                    <option
+                      key={tag}
+                      value={tag}
+                      selected={query.tags.includes(tag)}
+                    >
+                      {tag}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </label>
+            <a
+              href={clearTagsUrl}
+              class={articlesTagClearClass}
+              data-focus-id={articlesTagClearFocusId}
+            >
+              タグを解除
+            </a>
+          </div>
           {rangeFields.map((name) => (
             <SearchField
               key={name}
@@ -264,15 +280,21 @@ export const ArticlesSearch: FC<{
             name="offset"
             value="0"
           />
-          <button
-            type="submit"
-            data-slot="button"
-            data-variant="default"
-            data-size="default"
-            class={buttonVariants()}
+          <div
+            class={articlesActionSlotClass}
+            data-slot="article-search-action"
           >
-            検索する
-          </button>
+            <button
+              type="submit"
+              data-slot="button"
+              data-variant="default"
+              data-size="default"
+              data-focus-id={articlesActionFocusId}
+              class={buttonVariants({ className: "h-9 w-28" })}
+            >
+              検索する
+            </button>
+          </div>
         </form>
         <div role="status" aria-live="polite" />
         <div role="status" aria-live="polite">

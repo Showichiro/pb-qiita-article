@@ -13,8 +13,15 @@
 export const articlesIslandClass = "react-island";
 export const articlesCardExtraClass = "gap-4 p-4";
 export const articlesFormClass = "flex flex-wrap items-end gap-3";
+export const articlesTagFieldClass = "block w-full min-w-0 max-w-full sm:w-64";
 export const articlesTagLabelClass = "block w-full min-w-0 max-w-full sm:w-64";
 export const articlesTagControlClass = "block w-full min-w-0 max-w-full";
+export const articlesTagClearClass =
+  "inline-flex min-h-9 items-center underline underline-offset-4";
+export const articlesTagClearFocusId = "articles-tag-clear";
+export const articlesActionSlotClass = "flex h-9 w-28 items-center";
+export const articlesActionHintClass = "text-sm text-muted-foreground";
+export const articlesActionFocusId = "articles-auto-search";
 export const articlesResultsClass = "overflow-x-auto";
 export const articlesNavClass = "my-4 flex items-center gap-3";
 export const articlesLinkClass = "underline underline-offset-4";

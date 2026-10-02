@@ -31,11 +31,17 @@ import {
   articleOrderFields,
   articlesCardExtraClass,
   articlesFormClass,
+  articlesActionFocusId,
+  articlesActionHintClass,
+  articlesActionSlotClass,
   articlesIslandClass,
   articlesLinkClass,
   articlesNavClass,
   articlesResultsClass,
   articlesTagControlClass,
+  articlesTagClearClass,
+  articlesTagClearFocusId,
+  articlesTagFieldClass,
   articlesTagLabelClass,
   articlesTagClass,
 } from "./articles-presentation";
@@ -56,7 +62,7 @@ import { useDebouncedAction } from "./hooks/useDebouncedAction";
 
 export type ArticlesAppProps = {
   initialConfig?: FindAllArticlesConfig;
-  initialArticles?: Article[];
+  initialArticles: Article[];
   initialDraft?: ArticleDraft;
   initialTagOptions?: string[];
 };
@@ -65,15 +71,17 @@ export default function ArticlesApp({
   initialArticles,
   initialDraft,
   initialTagOptions = [],
-}: ArticlesAppProps = {}) {
+}: ArticlesAppProps) {
   const initialQuery = () =>
-    (initialArticles === undefined || initialConfig === undefined) &&
-    typeof window !== "undefined"
+    initialConfig === undefined && typeof window !== "undefined"
       ? parseArticleQuery(new URLSearchParams(window.location.search))
       : parseArticleQuery(configQueryParams(initialConfig ?? {}));
-  const [result, setResult] = useState(() => ({
+  const [result, setResult] = useState<{
+    query: ArticleQuery;
+    data: Article[] | Promise<Article[]>;
+  }>(() => ({
     query: initialQuery(),
-    data: initialArticles ?? initialRequest(initialQuery()),
+    data: initialArticles,
   }));
   const { query } = result;
   const [draft, setDraft] = useState(
@@ -81,6 +89,14 @@ export default function ArticlesApp({
   );
   const [validationError, setValidationError] = useState<string | null>(null);
   const tagOptions = normalizeTags([...initialTagOptions, ...draft.tags]);
+  const clearTagsQuery = isSearchDraftValid(draft)
+    ? commitArticleDraft(draft)
+    : query;
+  const clearTagsHref = `/articles?${articleQueryParams({
+    ...clearTagsQuery,
+    tags: [],
+    offset: 0,
+  })}`;
   const [isPending, startTransition] = useTransition();
   const active = useRef<{
     query: ArticleQuery;
@@ -133,17 +149,17 @@ export default function ArticlesApp({
   );
 
   const writeSearchUrl = useCallback((next: ArticleQuery) => {
-      const canonical = articleQueryParams(next).toString();
-      const current = articleQueryParams(
-        parseArticleQuery(new URLSearchParams(window.location.search)),
-      ).toString();
-      if (canonical === current) return;
-      const url = new URL(window.location.href);
-      for (const key of Object.keys(next)) url.searchParams.delete(key);
-      articleQueryParams(next).forEach((value, key) => {
-        url.searchParams.append(key, value);
-      });
-      window.history.pushState(null, "", url);
+    const canonical = articleQueryParams(next).toString();
+    const current = articleQueryParams(
+      parseArticleQuery(new URLSearchParams(window.location.search)),
+    ).toString();
+    if (canonical === current) return;
+    const url = new URL(window.location.href);
+    for (const key of Object.keys(next)) url.searchParams.delete(key);
+    articleQueryParams(next).forEach((value, key) => {
+      url.searchParams.append(key, value);
+    });
+    window.history.pushState(null, "", url);
   }, []);
 
   const runSearch = useCallback(
@@ -297,7 +313,19 @@ export default function ArticlesApp({
         <form
           action="/articles"
           method="get"
+          noValidate
           onSubmit={submit}
+          onKeyDown={(event) => {
+            if (
+              event.key !== "Enter" ||
+              event.nativeEvent.isComposing ||
+              isComposing.current ||
+              !(event.target instanceof HTMLInputElement)
+            )
+              return;
+            event.preventDefault();
+            event.currentTarget.requestSubmit();
+          }}
           className={articlesFormClass}
         >
           {(["q", "author"] as const).map((name) => (
@@ -327,36 +355,49 @@ export default function ArticlesApp({
               />
             </label>
           ))}
-          <label
-            className={articlesTagLabelClass}
-            htmlFor={articleFieldId("tags")}
-          >
-            タグ（すべて一致）{" "}
-            <Select
-              id={articleFieldId("tags")}
-              name="tags"
-              multiple
-              size={4}
-              className={articlesTagControlClass}
-              wrapperClassName={articlesTagControlClass}
-              value={draft.tags}
-              onChange={(e) =>
-                handleImmediateChange(
-                  "tags",
-                  Array.from(
-                    e.target.selectedOptions,
-                    (option) => option.value,
-                  ),
-                )
-              }
+          <div className={articlesTagFieldClass} data-slot="article-tags-field">
+            <label
+              className={articlesTagLabelClass}
+              htmlFor={articleFieldId("tags")}
             >
-              {tagOptions.map((tag) => (
-                <option key={tag} value={tag}>
-                  {tag}
-                </option>
-              ))}
-            </Select>
-          </label>
+              タグ（すべて一致）{" "}
+              <Select
+                id={articleFieldId("tags")}
+                name="tags"
+                multiple
+                size={4}
+                className={articlesTagControlClass}
+                wrapperClassName={articlesTagControlClass}
+                value={draft.tags}
+                onChange={(e) =>
+                  handleImmediateChange(
+                    "tags",
+                    Array.from(
+                      e.target.selectedOptions,
+                      (option) => option.value,
+                    ),
+                  )
+                }
+              >
+                {tagOptions.map((tag) => (
+                  <option key={tag} value={tag}>
+                    {tag}
+                  </option>
+                ))}
+              </Select>
+            </label>
+            <a
+              href={clearTagsHref}
+              className={articlesTagClearClass}
+              data-focus-id={articlesTagClearFocusId}
+              onClick={(event) => {
+                event.preventDefault();
+                handleImmediateChange("tags", []);
+              }}
+            >
+              タグを解除
+            </a>
+          </div>
           {rangeFields.map((name) => (
             <label key={name} htmlFor={articleFieldId(name)}>
               {
@@ -366,8 +407,7 @@ export default function ArticlesApp({
                   minStocks: "ストック数（下限）",
                   maxStocks: "ストック数（上限）",
                 }[name]
-              }
-              {" "}
+              }{" "}
               <Input
                 id={articleFieldId(name)}
                 name={name}
@@ -379,9 +419,7 @@ export default function ArticlesApp({
                   validationError ? "articles-validation" : undefined
                 }
                 value={draft[name]}
-                onChange={(e) =>
-                  handleTextChange(name, e.target.value, false)
-                }
+                onChange={(e) => handleTextChange(name, e.target.value, false)}
               />
             </label>
           ))}
@@ -392,9 +430,7 @@ export default function ArticlesApp({
               id={articleFieldId("since")}
               name="since"
               value={draft.since.slice(0, 10)}
-              onChange={(e) =>
-                handleImmediateChange("since", e.target.value)
-              }
+              onChange={(e) => handleImmediateChange("since", e.target.value)}
             />
           </label>
           <label htmlFor={articleFieldId("until")}>
@@ -404,9 +440,7 @@ export default function ArticlesApp({
               id={articleFieldId("until")}
               name="until"
               value={draft.until.slice(0, 10)}
-              onChange={(e) =>
-                handleImmediateChange("until", e.target.value)
-              }
+              onChange={(e) => handleImmediateChange("until", e.target.value)}
             />
           </label>
           <label htmlFor={articleFieldId("orderField")}>
@@ -462,7 +496,18 @@ export default function ArticlesApp({
             />
           </label>
           <Input type="hidden" name="offset" value={draft.offset} />
-          <Button type="submit">検索する</Button>
+          <div
+            className={articlesActionSlotClass}
+            data-slot="article-search-action"
+          >
+            <span
+              className={articlesActionHintClass}
+              data-focus-id={articlesActionFocusId}
+              tabIndex={-1}
+            >
+              自動検索
+            </span>
+          </div>
         </form>
         {validationError && (
           <p id="articles-validation" role="alert">
@@ -552,20 +597,6 @@ function awaitOrAbort<T>(promise: Promise<T>, signal: AbortSignal): Promise<T> {
 }
 
 const pendingArticles: Promise<Article[]> = new Promise(() => {});
-const initialRequests = new Map<string, Promise<Article[]>>();
-function initialRequest(query: ArticleQuery) {
-  const key = articleQueryParams(query).toString();
-  let promise = initialRequests.get(key);
-  if (!promise) {
-    promise = fetchArticles(query, new AbortController().signal);
-    initialRequests.set(key, promise);
-    void promise.catch(() => initialRequests.delete(key));
-    const oldest = initialRequests.keys().next().value;
-    if (initialRequests.size > 20 && oldest !== undefined)
-      initialRequests.delete(oldest);
-  }
-  return promise;
-}
 
 type ResultsProps = {
   result: { query: ArticleQuery; data: Article[] | Promise<Article[]> };
@@ -573,7 +604,12 @@ type ResultsProps = {
   navigate: (query: ArticleQuery) => void;
   cancelDebounce: () => void;
 };
-function ArticleResults({ result, isPending, navigate, cancelDebounce }: ResultsProps) {
+function ArticleResults({
+  result,
+  isPending,
+  navigate,
+  cancelDebounce,
+}: ResultsProps) {
   const { query, data } = result;
   const articles = Array.isArray(data) ? data : use(data);
   return (
@@ -620,10 +656,7 @@ function ArticleResults({ result, isPending, navigate, cancelDebounce }: Results
                 <TableCell>
                   <ul>
                     {article.tags.map((tag) => (
-                      <li
-                        className={articlesTagClass}
-                        key={tag.name}
-                      >
+                      <li className={articlesTagClass} key={tag.name}>
                         <a
                           target="_blank"
                           rel="noopener noreferrer"

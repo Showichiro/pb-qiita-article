@@ -334,20 +334,30 @@ describe("ArticlesApp browser controls", () => {
     expect(request.mock.calls[0][0]).toContain("limit=10");
     expect(input.value).toBe("10");
   });
-  it("uses Suspense for an unseeded first load without refetching on render", async () => {
+  it("starts one stable event-owned request from a seeded empty bootstrap", async () => {
     let resolve!: (response: Response) => void;
     const request = vi.fn(
-      () =>
+      (_url: string, _options: RequestInit) =>
         new Promise<Response>((done) => {
           resolve = done;
         }),
     );
     vi.stubGlobal("fetch", request);
+    await mount({ initialArticles: [] });
+    expect(host.textContent).toContain("該当する記事はありません。");
+    expect(request).not.toHaveBeenCalled();
+    await change('[name="q"]', "event-owned");
+    await action("form", "submit");
+    expect(request).toHaveBeenCalledTimes(1);
+    expect(request.mock.calls[0][0]).toContain("q=event-owned");
+    expect(host.textContent).toContain("読み込み中");
     const { act, createElement } = await import("react");
     const { default: App } = await import("./ArticlesApp");
-    await act(async () => root.render(createElement(App)));
-    expect(host.textContent).toContain("読み込み中");
-    await act(async () => root.render(createElement(App)));
+    await act(async () =>
+      root.render(
+        createElement<ArticlesAppProps>(App, { initialArticles: [] }),
+      ),
+    );
     expect(request).toHaveBeenCalledTimes(1);
     await act(async () => resolve(new Response(JSON.stringify([sample]))));
     expect(host.textContent).toContain("Article A");
@@ -624,9 +634,10 @@ describe("ArticlesApp browser controls", () => {
     await vi.advanceTimersByTimeAsync(1);
     expect(request).toHaveBeenCalledTimes(1);
     expect(
-      new URL(request.mock.calls[0][0], window.location.origin).searchParams.get(
-        "q",
-      ),
+      new URL(
+        request.mock.calls[0][0],
+        window.location.origin,
+      ).searchParams.get("q"),
     ).toBe("日本語");
   });
   it("applies a tag selection immediately with a queued keyword draft", async () => {
@@ -654,6 +665,129 @@ describe("ArticlesApp browser controls", () => {
     await vi.advanceTimersByTimeAsync(500);
     expect(request).toHaveBeenCalledTimes(1);
   });
+  it("clears selected tags immediately with the latest full valid draft", async () => {
+    vi.useFakeTimers();
+    const request = vi.fn(
+      (_url: string, _options: RequestInit) => new Promise<Response>(() => {}),
+    );
+    vi.stubGlobal("fetch", request);
+    window.history.replaceState(
+      null,
+      "",
+      "/articles?limit=1&offset=7&tags=react&tags=typescript&campaign=keep",
+    );
+    await mount({
+      initialConfig: {
+        ...defaultArticleQuery,
+        limit: 1,
+        offset: 7,
+        tags: ["react", "typescript"],
+      },
+      initialTagOptions: ["react", "typescript", "unknown"],
+    });
+    await change('[name="q"]', "hooks");
+    expect(request).not.toHaveBeenCalled();
+    const clear = host.querySelector<HTMLAnchorElement>(
+      "[data-focus-id='articles-tag-clear']",
+    );
+    if (!clear) throw new Error("Missing tag-clear link");
+    await action("[data-focus-id='articles-tag-clear']");
+    expect(request).toHaveBeenCalledTimes(1);
+    const requested = new URL(request.mock.calls[0][0], window.location.origin);
+    expect(requested.searchParams.get("q")).toBe("hooks");
+    expect(requested.searchParams.getAll("tags")).toEqual([]);
+    expect(requested.searchParams.get("offset")).toBe("0");
+    expect(
+      Array.from(
+        host.querySelector("select")?.selectedOptions ?? [],
+        (option) => option.value,
+      ),
+    ).toEqual([]);
+    await vi.advanceTimersByTimeAsync(500);
+    expect(request).toHaveBeenCalledTimes(1);
+  });
+  it("clears tag drafts without fetching or changing history while another draft is invalid", async () => {
+    const request = vi.fn().mockResolvedValue(new Response("[]"));
+    vi.stubGlobal("fetch", request);
+    window.history.replaceState(
+      null,
+      "",
+      "/articles?limit=1&offset=7&tags=react&campaign=keep",
+    );
+    await mount({
+      initialConfig: {
+        ...defaultArticleQuery,
+        limit: 1,
+        offset: 7,
+        tags: ["react"],
+      },
+      initialTagOptions: ["react", "unknown"],
+    });
+    await change('[name="author"]', "latest writer");
+    await change('[name="minLikes"]', "-1");
+    const previousUrl = window.location.href;
+    const clear = host.querySelector<HTMLAnchorElement>(
+      "[data-focus-id='articles-tag-clear']",
+    );
+    if (!clear) throw new Error("Missing tag-clear link");
+    await action("[data-focus-id='articles-tag-clear']");
+    expect(request).not.toHaveBeenCalled();
+    expect(window.location.href).toBe(previousUrl);
+    expect(host.querySelector<HTMLInputElement>('[name="author"]')?.value).toBe(
+      "latest writer",
+    );
+    expect(
+      host.querySelector<HTMLInputElement>('[name="minLikes"]')?.value,
+    ).toBe("-1");
+    expect(
+      Array.from(
+        host.querySelector("select")?.selectedOptions ?? [],
+        (option) => option.value,
+      ),
+    ).toEqual([]);
+  });
+  it("keeps automatic search text and submits valid drafts on Enter", async () => {
+    const request = vi.fn().mockResolvedValue(new Response("[]"));
+    vi.stubGlobal("fetch", request);
+    await mount();
+    expect(host.querySelector("button[type='submit']")).toBeNull();
+    expect(
+      host.querySelector("[data-slot='article-search-action']")?.textContent,
+    ).toContain("自動検索");
+    const field = host.querySelector<HTMLInputElement>('[name="q"]');
+    if (!field) throw new Error("Missing search field");
+    await change('[name="q"]', "keyboard");
+    const { act } = await import("react");
+    await act(async () => {
+      field.dispatchEvent(
+        new KeyboardEvent("keydown", { key: "Enter", bubbles: true }),
+      );
+    });
+    expect(request).toHaveBeenCalledTimes(1);
+    expect(request.mock.calls[0][0]).toContain("q=keyboard");
+    expect(window.location.search).toContain("q=keyboard");
+  });
+  it("does not submit Enter while composition is still tracked when the key event flag is false", async () => {
+    const request = vi.fn().mockResolvedValue(new Response("[]"));
+    vi.stubGlobal("fetch", request);
+    await mount();
+    await action('[name="author"]', "compositionstart");
+    const previousUrl = window.location.href;
+    const author = host.querySelector<HTMLInputElement>('[name="author"]');
+    if (!author) throw new Error("Missing author field");
+    const { act } = await import("react");
+    await act(async () => {
+      author.dispatchEvent(
+        new KeyboardEvent("keydown", {
+          key: "Enter",
+          bubbles: true,
+          isComposing: false,
+        }),
+      );
+    });
+    expect(request).not.toHaveBeenCalled();
+    expect(window.location.href).toBe(previousUrl);
+  });
   it("does not abort an active request on composition start and replaces it after composition", async () => {
     vi.useFakeTimers();
     const request = vi.fn(
@@ -673,9 +807,10 @@ describe("ArticlesApp browser controls", () => {
     expect(request).toHaveBeenCalledTimes(2);
     expect(firstSignal.aborted).toBe(true);
     expect(
-      new URL(request.mock.calls[1][0], window.location.origin).searchParams.get(
-        "q",
-      ),
+      new URL(
+        request.mock.calls[1][0],
+        window.location.origin,
+      ).searchParams.get("q"),
     ).toBe("new");
   });
   it("includes a pending numeric draft in an immediate select search", async () => {

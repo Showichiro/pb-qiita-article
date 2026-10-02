@@ -1,6 +1,10 @@
 // @vitest-environment jsdom
 import { readFileSync } from "node:fs";
 import { articleQueryParams, type ArticleQuery } from "@/client/articles";
+import {
+  articlesActionSlotClass,
+  articlesTagFieldClass,
+} from "@/client/articles-presentation";
 import type { ArticlesAppProps } from "@/client/ArticlesApp";
 import type { Article } from "@/schemas";
 import { renderer } from "@/util";
@@ -40,6 +44,9 @@ const presentationSelectors = [
   "form",
   "[name='q']",
   "[name='author']",
+  "[data-slot='article-search-action']",
+  "[data-focus-id='articles-tag-clear']",
+  "[data-slot='article-tags-field']",
   "label[for='articles-tags']",
   "[data-slot='select-wrapper']",
   "[name='tags']",
@@ -53,7 +60,6 @@ const presentationSelectors = [
   "[name='orderDirection']",
   "[name='limit']",
   "[name='offset']",
-  "button[type='submit']",
   "[role='status']",
   "table",
   "[data-slot='table-container']",
@@ -133,6 +139,15 @@ describe("articles SSR presentation parity", () => {
     const enhanced = host(react);
     expect(ssr.querySelector("form")?.getAttribute("action")).toBe("/articles");
     expect(ssr.querySelector("form")?.getAttribute("method")).toBe("get");
+    expect(ssr.querySelector("button[type='submit']")?.textContent).toBe(
+      "検索する",
+    );
+    expect(enhanced.querySelector("button[type='submit']")).toBeNull();
+    expect(
+      enhanced
+        .querySelector("[data-slot='article-search-action']")
+        ?.textContent?.trim(),
+    ).toBe("自動検索");
     for (const name of ["q", "author"] as const) {
       expect(ssr.querySelector(`[name='${name}']`)?.getAttribute("value")).toBe(
         query[name],
@@ -148,6 +163,11 @@ describe("articles SSR presentation parity", () => {
       );
     expect(selectedTags(ssr)).toEqual(query.tags);
     expect(selectedTags(enhanced)).toEqual(query.tags);
+    expect(
+      ssr
+        .querySelector("[data-focus-id='articles-tag-clear']")
+        ?.closest("label"),
+    ).toBeNull();
     for (const root of [ssr, enhanced]) {
       const tags = root.querySelector("[name='tags']");
       expect(tags?.getAttribute("multiple")).not.toBeNull();
@@ -170,7 +190,9 @@ describe("articles SSR presentation parity", () => {
       ).toBe(query[name] === null ? "" : String(query[name]));
     }
     expect(
-      ssr.querySelector("[role='status'] + [role='status']")?.textContent?.trim(),
+      ssr
+        .querySelector("[role='status'] + [role='status']")
+        ?.textContent?.trim(),
     ).toBe("1件");
     expect(
       enhanced
@@ -219,16 +241,12 @@ describe("articles SSR presentation parity", () => {
   it("keeps the previous page on an anchor and resets search offset", async () => {
     const paged = { ...query, offset: 2 };
     const { text } = await renderer(
-      <ArticlesSearch
-        query={paged}
-        articles={[]}
-        tagOptions={tagOptions}
-      />,
+      <ArticlesSearch query={paged} articles={[]} tagOptions={tagOptions} />,
     );
     const element = host(text);
-    expect(element.querySelector("[name='offset']")?.getAttribute("value")).toBe(
-      "0",
-    );
+    expect(
+      element.querySelector("[name='offset']")?.getAttribute("value"),
+    ).toBe("0");
     const previous = element.querySelector("nav a");
     expect(previous?.textContent).toBe("前へ");
     expect(previous?.getAttribute("href")).toBe(
@@ -242,13 +260,41 @@ describe("articles SSR presentation parity", () => {
     expect(element.querySelector("nav button")?.textContent).toBe("次へ");
   });
 
+  it("offers a no-JavaScript clear-tags link preserving every other filter at offset zero", async () => {
+    const paged = { ...query, offset: 13 };
+    const { text } = await renderer(
+      <ArticlesSearch query={paged} articles={[]} tagOptions={tagOptions} />,
+    );
+    const element = host(text);
+    const clear = element.querySelector<HTMLAnchorElement>(
+      "[data-focus-id='articles-tag-clear']",
+    );
+    expect(clear?.closest("label")).toBeNull();
+    expect(clear?.textContent?.trim()).toBe("タグを解除");
+    const actual = new URL(clear?.getAttribute("href") ?? "", "https://local");
+    const expected = articleQueryParams({
+      ...paged,
+      tags: [],
+      offset: 0,
+    });
+    expect(actual.pathname).toBe("/articles");
+    expect(actual.searchParams.getAll("tags")).toEqual([]);
+    expect(actual.searchParams.get("offset")).toBe("0");
+    for (const [key, value] of expected) {
+      expect(actual.searchParams.getAll(key)).toEqual(expected.getAll(key));
+      expect(value).toBeTruthy();
+    }
+    expect(
+      element.querySelector("[data-slot='article-search-action']")?.className,
+    ).toBe(articlesActionSlotClass);
+    expect(
+      element.querySelector("[data-slot='article-tags-field']")?.className,
+    ).toBe(articlesTagFieldClass);
+  });
+
   it("matches the empty result placeholder", async () => {
     const { text } = await renderer(
-      <ArticlesSearch
-        query={query}
-        articles={[]}
-        tagOptions={tagOptions}
-      />,
+      <ArticlesSearch query={query} articles={[]} tagOptions={tagOptions} />,
     );
     const react = await reactMarkup(query, []);
     const ssr = host(text);

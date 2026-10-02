@@ -89,14 +89,58 @@ test("keeps SSR content when bootstrap data is malformed", async () => {
   expect(container.querySelector("a")?.textContent).toBe("SSR articles");
 });
 
+test("hands off a focused native search button to the automatic-search hint", async () => {
+  const container = island();
+  container.innerHTML =
+    '<form action="/articles" method="get"><div class="flex h-9 w-28 items-center"><button type="submit" data-focus-id="articles-auto-search">検索する</button></div></form>';
+  const nativeButton = container.querySelector("button");
+  if (!nativeButton) throw new Error("Missing native search button");
+  nativeButton.focus();
+  const { default: App } = await import("./ArticlesApp");
+  let finish!: (module: { default: typeof App }) => void;
+  const mounting = mountArticlesApp(
+    container,
+    () =>
+      new Promise((done) => {
+        finish = done;
+      }),
+  );
+  await act(async () => {
+    finish({ default: App });
+    await mounting;
+  });
+  const hint = container.querySelector<HTMLElement>(
+    "[data-focus-id='articles-auto-search']",
+  );
+  expect(hint?.textContent?.trim()).toBe("自動検索");
+  expect(hint?.getAttribute("tabindex")).toBe("-1");
+  expect(document.activeElement).toBe(hint);
+  expect(container.querySelector("button[type='submit']")).toBeNull();
+});
+
 test("falls back to data attributes when no bootstrap script is provided", () => {
   const container = island();
   element("articles-bootstrap").remove();
   container.dataset.initialConfig = JSON.stringify(config);
+  container.dataset.initialArticles = JSON.stringify([]);
   expect(readInitialData(container)).toEqual({
     initialConfig: config,
-    initialArticles: undefined,
+    initialArticles: [],
   });
+});
+
+test("requires seeded articles in the native bootstrap or data attributes", () => {
+  const container = island();
+  element("articles-bootstrap").textContent = JSON.stringify({ config });
+  expect(() => readInitialData(container)).toThrow(
+    "Invalid articles initial data",
+  );
+  element("articles-bootstrap").remove();
+  container.dataset.initialConfig = JSON.stringify(config);
+  delete container.dataset.initialArticles;
+  expect(() => readInitialData(container)).toThrow(
+    "Invalid articles initial data",
+  );
 });
 
 test("hands off edits made during download and restores the focused control", async () => {
