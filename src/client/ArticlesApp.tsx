@@ -50,7 +50,9 @@ import {
   commitArticleDraft,
   normalizeTags,
   rangeFields,
+  validateArticleDraft,
 } from "./articles";
+import { useDebouncedAction } from "./hooks/useDebouncedAction";
 
 export type ArticlesAppProps = {
   initialConfig?: FindAllArticlesConfig;
@@ -80,63 +82,210 @@ export default function ArticlesApp({
   const [validationError, setValidationError] = useState<string | null>(null);
   const tagOptions = normalizeTags([...initialTagOptions, ...draft.tags]);
   const [isPending, startTransition] = useTransition();
-  const active = useRef<{ query: ArticleQuery; controller?: AbortController }>({
-    query,
-  });
-  const load = useCallback((next: ArticleQuery, resetDraft = true) => {
-    active.current.controller?.abort();
-    const controller = new AbortController();
-    active.current = { query: next, controller };
-    // Start once in the event handler and retain the Promise across render retries.
-    const data = fetchArticles(next, controller.signal);
-    void data.catch(() => {});
-    if (resetDraft) {
-      setDraft(toArticleDraft(next));
-      setValidationError(null);
-    }
-    startTransition(() => setResult({ query: next, data }));
-  }, []);
-  const navigate = (next: ArticleQuery) => {
-    const url = new URL(window.location.href);
-    for (const key of Object.keys(next)) url.searchParams.delete(key);
-    articleQueryParams(next).forEach((value, key) => {
-      url.searchParams.append(key, value);
-    });
-    window.history.pushState(null, "", url);
-    load(next);
-  };
-  // React 19 ref cleanup owns the native history subscription.
-  const subscribeHistory = useCallback(() => {
-    const onPop = () =>
-      load(parseArticleQuery(new URLSearchParams(window.location.search)));
-    window.addEventListener("popstate", onPop);
-    // Bootstrap rows belong to their server query. Catch history changes before
-    // subscription, including changes between the first render and commit.
-    const current = parseArticleQuery(
-      new URLSearchParams(window.location.search),
-    );
-    if (
-      articleQueryParams(current).toString() !==
-        articleQueryParams(active.current.query).toString() ||
-      active.current.controller?.signal.aborted
-    )
-      load(current);
-    return () => {
-      window.removeEventListener("popstate", onPop);
+  const active = useRef<{
+    query: ArticleQuery;
+    controller?: AbortController;
+    request?: Promise<Article[]>;
+  }>({ query });
+  // Deduplication: track the last canonical query to avoid duplicate requests
+  const lastCanonicalQuery = useRef<string | null>(
+    articleQueryParams(query).toString(),
+  );
+
+  // Stable ref for latest draft to avoid stale closures in debounce callback
+  const latestDraftRef = useRef<ArticleDraft>(draft);
+  const isComposing = useRef(false);
+
+  const load = useCallback(
+    (
+      next: ArticleQuery,
+      options: { retry?: boolean } = {},
+    ): Promise<Article[]> => {
+      const canonical = articleQueryParams(next).toString();
+      if (
+        !options.retry &&
+        canonical === lastCanonicalQuery.current &&
+        !active.current.controller?.signal.aborted
+      )
+        return active.current.request ?? Promise.resolve([]);
+      lastCanonicalQuery.current = canonical;
+
       active.current.controller?.abort();
-    };
-  }, [load]);
+      const controller = new AbortController();
+      active.current = { query: next, controller };
+      const request = fetchArticles(next, controller.signal);
+      active.current.request = request;
+      const data = request.catch((error: unknown) => {
+        if (
+          controller.signal.aborted ||
+          (error instanceof Error && error.name === "AbortError")
+        )
+          return pendingArticles;
+        if (active.current.controller === controller)
+          lastCanonicalQuery.current = null;
+        throw error;
+      });
+      void data.catch(() => {});
+      startTransition(() => setResult({ query: next, data }));
+      return request;
+    },
+    [],
+  );
+
+  const writeSearchUrl = useCallback((next: ArticleQuery) => {
+      const canonical = articleQueryParams(next).toString();
+      const current = articleQueryParams(
+        parseArticleQuery(new URLSearchParams(window.location.search)),
+      ).toString();
+      if (canonical === current) return;
+      const url = new URL(window.location.href);
+      for (const key of Object.keys(next)) url.searchParams.delete(key);
+      articleQueryParams(next).forEach((value, key) => {
+        url.searchParams.append(key, value);
+      });
+      window.history.pushState(null, "", url);
+  }, []);
+
+  const runSearch = useCallback(
+    async (_scheduledDraft: ArticleDraft, signal: AbortSignal) => {
+      if (signal.aborted) return;
+      const currentDraft = latestDraftRef.current;
+      if (!isSearchDraftValid(currentDraft)) return;
+      const next = commitArticleDraft(currentDraft);
+      const searchDraft = { ...currentDraft, offset: 0 };
+      latestDraftRef.current = searchDraft;
+      setDraft(searchDraft);
+      setValidationError(null);
+      writeSearchUrl(next);
+      try {
+        await awaitOrAbort(load(next), signal);
+      } catch (error) {
+        if (
+          signal.aborted ||
+          (error instanceof Error && error.name === "AbortError")
+        )
+          return;
+        // The resource Promise carries non-abort failures to ResultsBoundary.
+      }
+    },
+    [load, writeSearchUrl],
+  );
+  const debouncedSearch = useDebouncedAction(runSearch, {
+    intervalMs: 500,
+    startTransition,
+    isValid: isSearchDraftValid,
+    areEqual: areSearchDraftsEqual,
+  });
+  const updateDraft = useCallback(
+    (field: keyof ArticleDraft, value: string | string[]) => {
+      const nextDraft = { ...latestDraftRef.current, [field]: value };
+      latestDraftRef.current = nextDraft;
+      setDraft(nextDraft);
+      setValidationError(null);
+      return nextDraft;
+    },
+    [],
+  );
+  const navigate = useCallback(
+    (next: ArticleQuery) => {
+      debouncedSearch.cancel();
+      const nextDraft = toArticleDraft(next);
+      latestDraftRef.current = nextDraft;
+      setDraft(nextDraft);
+      setValidationError(null);
+      writeSearchUrl(next);
+      void load(next);
+    },
+    [debouncedSearch.cancel, load, writeSearchUrl],
+  );
+  const scheduleSearch = useCallback(
+    (nextDraft: ArticleDraft, immediate: boolean) => {
+      if (!isSearchDraftValid(nextDraft)) {
+        debouncedSearch.cancel();
+        return;
+      }
+      if (
+        articleQueryParams(commitArticleDraft(nextDraft)).toString() ===
+          lastCanonicalQuery.current &&
+        !active.current.controller?.signal.aborted
+      ) {
+        debouncedSearch.cancel();
+        return;
+      }
+      if (immediate) {
+        navigate(commitArticleDraft(nextDraft));
+        return;
+      }
+      debouncedSearch.trigger(nextDraft);
+    },
+    [debouncedSearch.cancel, debouncedSearch.trigger, navigate],
+  );
+  const handleTextChange = useCallback(
+    (
+      field: "q" | "author" | "limit" | (typeof rangeFields)[number],
+      value: string,
+      composing: boolean,
+    ) => {
+      const nextDraft = updateDraft(field, value);
+      if (composing || isComposing.current) debouncedSearch.cancel();
+      else scheduleSearch(nextDraft, false);
+    },
+    [debouncedSearch.cancel, scheduleSearch, updateDraft],
+  );
+  const handleImmediateChange = useCallback(
+    (
+      field: "since" | "until" | "orderField" | "orderDirection" | "tags",
+      value: string | string[],
+    ) => {
+      scheduleSearch(updateDraft(field, value), true);
+    },
+    [scheduleSearch, updateDraft],
+  );
+  const subscribeHistory = useCallback(
+    (_node: HTMLElement | null) => {
+      const onPop = () => {
+        debouncedSearch.cancel();
+        const current = parseArticleQuery(
+          new URLSearchParams(window.location.search),
+        );
+        const nextDraft = toArticleDraft(current);
+        latestDraftRef.current = nextDraft;
+        setDraft(nextDraft);
+        setValidationError(null);
+        void load(current);
+      };
+      window.addEventListener("popstate", onPop);
+      const current = parseArticleQuery(
+        new URLSearchParams(window.location.search),
+      );
+      if (
+        articleQueryParams(current).toString() !==
+          articleQueryParams(active.current.query).toString() ||
+        active.current.controller?.signal.aborted
+      )
+        void load(current);
+      return () => {
+        window.removeEventListener("popstate", onPop);
+        active.current.controller?.abort();
+        debouncedSearch.cancel();
+      };
+    },
+    [debouncedSearch.cancel, load],
+  );
   const submit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    try {
-      const next = commitArticleDraft(draft);
-      setValidationError(null);
-      navigate(next);
-    } catch (error) {
-      setValidationError(
-        error instanceof Error ? error.message : "検索条件を確認してください。",
-      );
+    const currentDraft = { ...latestDraftRef.current };
+    if (!currentDraft.limit.trim()) {
+      currentDraft.limit = "10";
+      latestDraftRef.current = currentDraft;
+      setDraft(currentDraft);
     }
+    if (!isSearchDraftValid(currentDraft)) {
+      setValidationError(searchDraftError(currentDraft));
+      debouncedSearch.cancel();
+      return;
+    }
+    navigate(commitArticleDraft(currentDraft));
   };
   return (
     <section
@@ -159,7 +308,22 @@ export default function ArticlesApp({
                 name={name}
                 maxLength={200}
                 value={draft[name]}
-                onChange={(e) => setDraft({ ...draft, [name]: e.target.value })}
+                onChange={(e) =>
+                  handleTextChange(
+                    name,
+                    e.target.value,
+                    e.nativeEvent instanceof InputEvent &&
+                      e.nativeEvent.isComposing,
+                  )
+                }
+                onCompositionStart={() => {
+                  isComposing.current = true;
+                  debouncedSearch.cancel();
+                }}
+                onCompositionEnd={(e) => {
+                  isComposing.current = false;
+                  handleTextChange(name, e.currentTarget.value, false);
+                }}
               />
             </label>
           ))}
@@ -177,13 +341,13 @@ export default function ArticlesApp({
               wrapperClassName={articlesTagControlClass}
               value={draft.tags}
               onChange={(e) =>
-                setDraft({
-                  ...draft,
-                  tags: Array.from(
+                handleImmediateChange(
+                  "tags",
+                  Array.from(
                     e.target.selectedOptions,
                     (option) => option.value,
                   ),
-                })
+                )
               }
             >
               {tagOptions.map((tag) => (
@@ -215,7 +379,9 @@ export default function ArticlesApp({
                   validationError ? "articles-validation" : undefined
                 }
                 value={draft[name]}
-                onChange={(e) => setDraft({ ...draft, [name]: e.target.value })}
+                onChange={(e) =>
+                  handleTextChange(name, e.target.value, false)
+                }
               />
             </label>
           ))}
@@ -226,7 +392,9 @@ export default function ArticlesApp({
               id={articleFieldId("since")}
               name="since"
               value={draft.since.slice(0, 10)}
-              onChange={(e) => setDraft({ ...draft, since: e.target.value })}
+              onChange={(e) =>
+                handleImmediateChange("since", e.target.value)
+              }
             />
           </label>
           <label htmlFor={articleFieldId("until")}>
@@ -236,7 +404,9 @@ export default function ArticlesApp({
               id={articleFieldId("until")}
               name="until"
               value={draft.until.slice(0, 10)}
-              onChange={(e) => setDraft({ ...draft, until: e.target.value })}
+              onChange={(e) =>
+                handleImmediateChange("until", e.target.value)
+              }
             />
           </label>
           <label htmlFor={articleFieldId("orderField")}>
@@ -246,10 +416,10 @@ export default function ArticlesApp({
               name="orderField"
               value={draft.orderField}
               onChange={(e) =>
-                setDraft({
-                  ...draft,
-                  orderField: e.target.value as ArticleQuery["orderField"],
-                })
+                handleImmediateChange(
+                  "orderField",
+                  e.target.value as ArticleQuery["orderField"],
+                )
               }
             >
               {articleOrderFields.map((option) => (
@@ -266,11 +436,10 @@ export default function ArticlesApp({
               name="orderDirection"
               value={draft.orderDirection}
               onChange={(e) =>
-                setDraft({
-                  ...draft,
-                  orderDirection: e.target
-                    .value as ArticleQuery["orderDirection"],
-                })
+                handleImmediateChange(
+                  "orderDirection",
+                  e.target.value as ArticleQuery["orderDirection"],
+                )
               }
             >
               {articleOrderDirections.map((option) => (
@@ -289,7 +458,7 @@ export default function ArticlesApp({
               min="1"
               max="100"
               value={draft.limit}
-              onChange={(e) => setDraft({ ...draft, limit: e.target.value })}
+              onChange={(e) => handleTextChange("limit", e.target.value, false)}
             />
           </label>
           <Input type="hidden" name="offset" value={draft.offset} />
@@ -305,13 +474,17 @@ export default function ArticlesApp({
         </div>
         <ResultsBoundary
           resource={result.data}
-          retry={() => load(active.current.query, false)}
+          retry={() => {
+            debouncedSearch.cancel();
+            void load(active.current.query, { retry: true });
+          }}
         >
           <Suspense fallback={<p role="status">読み込み中…</p>}>
             <ArticleResults
               result={result}
               isPending={isPending}
               navigate={navigate}
+              cancelDebounce={debouncedSearch.cancel}
             />
           </Suspense>
         </ResultsBoundary>
@@ -320,6 +493,65 @@ export default function ArticlesApp({
   );
 }
 
+function searchDraftError(draft: ArticleDraft): string | null {
+  const filterError = validateArticleDraft(draft);
+  if (filterError) return filterError;
+  const limit = Number(draft.limit);
+  if (!Number.isSafeInteger(limit) || limit < 1 || limit > 100)
+    return "表示件数は1から100までの整数で入力してください。";
+  if (
+    (draft.since && !Number.isFinite(Date.parse(draft.since))) ||
+    (draft.until && !Number.isFinite(Date.parse(draft.until)))
+  )
+    return "投稿日を確認してください。";
+  return null;
+}
+
+function isSearchDraftValid(draft: ArticleDraft): boolean {
+  return searchDraftError(draft) === null;
+}
+
+function areSearchDraftsEqual(a: ArticleDraft, b: ArticleDraft): boolean {
+  const key = (value: ArticleDraft) =>
+    isSearchDraftValid(value)
+      ? `valid:${articleQueryParams(commitArticleDraft(value)).toString()}`
+      : `invalid:${JSON.stringify(value)}`;
+  return key(a) === key(b);
+}
+
+function awaitOrAbort<T>(promise: Promise<T>, signal: AbortSignal): Promise<T> {
+  return new Promise((resolve, reject) => {
+    let settled = false;
+    const cleanup = () => signal.removeEventListener("abort", abort);
+    const abort = () => {
+      if (settled) return;
+      settled = true;
+      cleanup();
+      reject(new DOMException("Aborted", "AbortError"));
+    };
+    if (signal.aborted) {
+      abort();
+      return;
+    }
+    signal.addEventListener("abort", abort, { once: true });
+    promise.then(
+      (value) => {
+        if (settled) return;
+        settled = true;
+        cleanup();
+        resolve(value);
+      },
+      (error: unknown) => {
+        if (settled) return;
+        settled = true;
+        cleanup();
+        reject(error);
+      },
+    );
+  });
+}
+
+const pendingArticles: Promise<Article[]> = new Promise(() => {});
 const initialRequests = new Map<string, Promise<Article[]>>();
 function initialRequest(query: ArticleQuery) {
   const key = articleQueryParams(query).toString();
@@ -339,8 +571,9 @@ type ResultsProps = {
   result: { query: ArticleQuery; data: Article[] | Promise<Article[]> };
   isPending: boolean;
   navigate: (query: ArticleQuery) => void;
+  cancelDebounce: () => void;
 };
-function ArticleResults({ result, isPending, navigate }: ResultsProps) {
+function ArticleResults({ result, isPending, navigate, cancelDebounce }: ResultsProps) {
   const { query, data } = result;
   const articles = Array.isArray(data) ? data : use(data);
   return (
@@ -415,12 +648,13 @@ function ArticleResults({ result, isPending, navigate }: ResultsProps) {
           type="button"
           variant="outline"
           disabled={isPending || query.offset === 0}
-          onClick={() =>
+          onClick={() => {
+            cancelDebounce();
             navigate({
               ...query,
               offset: Math.max(0, query.offset - query.limit),
-            })
-          }
+            });
+          }}
         >
           前へ
         </Button>
@@ -429,9 +663,10 @@ function ArticleResults({ result, isPending, navigate }: ResultsProps) {
           type="button"
           variant="outline"
           disabled={isPending || articles.length < query.limit}
-          onClick={() =>
-            navigate({ ...query, offset: query.offset + query.limit })
-          }
+          onClick={() => {
+            cancelDebounce();
+            navigate({ ...query, offset: query.offset + query.limit });
+          }}
         >
           次へ
         </Button>

@@ -15,7 +15,10 @@ bun run dev
 ~~~
 
 Open http://localhost:5173. Local migrations, seed data and Vite use the same project-local .cloudflare/state directory.
-Both database commands default to local mode; remote writes have explicit :remote scripts.
+Vite's local dev and preview configurations disable remote bindings, so they use the
+local D1 database in `.cloudflare/state` even if a binding is later marked remote.
+The database commands below also default to local mode; explicit `:remote` scripts
+are separate operations that target the configured remote database.
 
 ~~~sh
 bun run typecheck
@@ -104,7 +107,9 @@ Official references:
 CI validates pull requests without Cloudflare credentials. Same-repository PRs also deploy Worker previews; forks and Dependabot skip this credential-dependent job.
 Pushes to main deploy the Worker. Set repository secrets CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID.
 The token must allow Workers deployment and access to the existing D1 binding; a Pages-only token needs updated permissions.
-Worker previews use the existing D1 binding, so they read the same data as production. Preview validation does not run remote migrations or seed data.
+Hosted Worker previews use the existing D1 binding, so they read the same data as
+production. This is separate from local `bun run preview`, which uses local D1.
+Preview validation does not run remote migrations or seed data.
 
 ~~~sh
 # Authenticate separately from an existing Wrangler login:
@@ -119,7 +124,11 @@ The new public URL is https://pb-qiita-articles.<account-subdomain>.workers.dev,
 The existing https://pb-qiita-articles.pages.dev site is not redirected by this change and continues serving its last Pages deployment.
 After the first successful Worker deployment, update external links or configure a custom domain. Keeping the old Pages project permits rollback without deleting data.
 No production deployment or remote migration is required for local verification.
-The scheduled Qiita refresh uses cf D1 commands and keeps the existing QIITA_API secret.
+The scheduled Qiita refresh uses cf D1 commands against the remote database and
+keeps the existing QIITA_API secret. Local development is isolated from that
+database, but hosted previews, scheduled refreshes, and explicit remote scripts
+remain separate sources of remote D1 activity; the cause of any quota usage is
+not determined here.
 
 Dependency overrides pin patched esbuild, sharp and undici versions; bun audit reports no vulnerabilities. Drizzle migration generation and D1 tests are verified against these overrides.
 Local cf D1 migration/seed checks run on Windows in CI: the beta CLI stalled during local migration setup on the Ubuntu runner. Linux still validates types, lint, all D1 tests, Workers builds and deployment dry-runs; preview deployment is verified on Linux.

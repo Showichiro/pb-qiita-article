@@ -3,7 +3,7 @@ import { defineConfig } from "vite";
 import ssrPlugin from "vite-ssr-components/plugin";
 export default defineConfig({
   plugins: [
-    cloudflare(),
+    cloudflare({ remoteBindings: false }),
     ssrPlugin({
       entry: { target: "src/renderer.tsx" },
       hotReload: { morph: false },
