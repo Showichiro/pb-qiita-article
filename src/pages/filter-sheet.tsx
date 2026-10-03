@@ -42,11 +42,6 @@ export const NativeFilterSheet: FC<{ id: string; children: Child }> = ({
           </button>
         </header>
         <div class="filter-sheet-content">{children}</div>
-        <footer class="filter-sheet-footer">
-          <button type="submit" form={`${id}-form`} class={buttonVariants()}>
-            結果を見る
-          </button>
-        </footer>
       </div>
     </dialog>
   </>

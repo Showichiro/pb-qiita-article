@@ -9,13 +9,13 @@ The filter interaction uses a bottom half-modal sheet.
 
 - List first: a pill-shaped “絞り込み・表示設定” button opens a native dialog
   from the bottom, occupying 60% of the dynamic viewport height. The sheet has
-  a fixed header/footer and scrollable controls; the article list stays in place
+  a fixed header and scrollable controls; the article list stays in place
   behind its backdrop. Desktop keeps the same form inline.
 - Modal behavior: background scrolling is locked and the native dialog isolates
-  keyboard focus. Close via the header, “結果を見る”, Escape or backdrop; focus
+  keyboard focus. Close via the header, Escape or backdrop; focus
   returns to the opener. Closing keeps edited fields mounted. Switching to
   desktop closes the React modal. The native GET fallback uses dialog invokers
-  and the footer submits its form.
+  and keeps the in-form submit action.
 - Filters: one column with full-width native controls, 16px control text and
   44px minimum touch height. GET fallback remains usable without JavaScript.
 - Articles: compact rows separated by lines. Title, author and wrapping tags
@@ -42,6 +42,8 @@ The filter interaction uses a bottom half-modal sheet.
    states and desktop inline forms checked with Chromium. Modal height/bottom
    alignment, background scroll locking, Escape, backdrop close, focus return,
    keyboard isolation, draft persistence and desktop resize checked.
+   Explicit backdrop handling also checks touch taps and ignores drags that
+   begin inside the sheet. There is no redundant “結果を見る” footer button.
 6. Verified emitted React assets in Chromium with synthetic API responses:
    scrolling appended all seven articles, end-of-list appeared, and editing
    filters updated the URL. Screenshots are linked below.

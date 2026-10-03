@@ -290,8 +290,7 @@
 
 /* Desktop uses the same mounted form inline; SP opens it in the top layer. */
 .react-island .filter-trigger,
-.filter-sheet-header,
-.filter-sheet-footer {
+.filter-sheet-header {
   display: none;
 }
 .filter-sheet {
@@ -360,21 +359,10 @@
     flex: 1;
     min-height: 0;
     padding: 1rem;
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
     overflow-y: auto;
     overscroll-behavior: contain;
     scroll-padding-block: 1rem;
-  }
-  .filter-sheet-footer {
-    display: block;
-    flex-shrink: 0;
-    padding: 0.75rem 1rem;
-    padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
-    border-top: 1px solid var(--border);
-  }
-  .filter-sheet-footer [data-slot="button"],
-  .filter-sheet-footer button {
-    width: 100%;
-    min-height: 44px;
   }
 }
 /* A native fallback sheet can remain modal if the viewport becomes desktop. */
@@ -395,9 +383,5 @@
     align-items: center;
     justify-content: space-between;
     margin-bottom: 1rem;
-  }
-  .filter-sheet:modal .filter-sheet-footer {
-    display: block;
-    margin-top: 1rem;
   }
 }

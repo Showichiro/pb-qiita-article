@@ -49,7 +49,7 @@ export function FilterSheet({
         id={id}
         className="filter-sheet"
         aria-labelledby={`${id}-title`}
-        closedby="any"
+        closedby="closerequest"
         onPointerDown={(event) => {
           const bounds = event.currentTarget.getBoundingClientRect();
           backdropPointer.current =
@@ -59,10 +59,29 @@ export function FilterSheet({
               event.clientY < bounds.top ||
               event.clientY > bounds.bottom);
         }}
-        onPointerUp={(event) => {
-          if (backdropPointer.current && event.target === event.currentTarget)
+        onPointerCancel={() => {
+          backdropPointer.current = false;
+        }}
+        onClick={(event) => {
+          const bounds = event.currentTarget.getBoundingClientRect();
+          const outside =
+            event.clientX < bounds.left ||
+            event.clientX > bounds.right ||
+            event.clientY < bounds.top ||
+            event.clientY > bounds.bottom;
+          if (
+            backdropPointer.current &&
+            event.target === event.currentTarget &&
+            outside
+          )
             close();
           backdropPointer.current = false;
+        }}
+        onKeyDown={(event) => {
+          if (event.key === "Escape") {
+            event.preventDefault();
+            close();
+          }
         }}
         onToggle={(event) => setOpen(event.currentTarget.open)}
         onClose={() => setOpen(false)}
@@ -81,11 +100,6 @@ export function FilterSheet({
             </Button>
           </header>
           <div className="filter-sheet-content">{children}</div>
-          <footer className="filter-sheet-footer">
-            <Button type="button" onClick={close}>
-              結果を見る
-            </Button>
-          </footer>
         </div>
       </dialog>
     </>
