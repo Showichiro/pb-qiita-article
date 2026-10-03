@@ -281,7 +281,6 @@ export default function RankingApp({
   };
 
   const handleDateChange = (field: "since" | "until", value: string) => {
-    requestIntent.current++;
     const nextDraft = { ...latestDraft.current, [field]: value };
     latestDraft.current = nextDraft;
     setDraft(nextDraft);

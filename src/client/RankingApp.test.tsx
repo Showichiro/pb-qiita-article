@@ -316,7 +316,14 @@ describe("RankingApp", () => {
       await Promise.resolve();
     });
     expect(container.querySelector('[role="alert"]')).toBeNull();
-    expect(container.textContent).not.toContain("読み込み中");
+    await vi.waitFor(async () => {
+      await act(async () => {
+        await new Promise((resolve) => setTimeout(resolve, 0));
+      });
+      expect(container.textContent).not.toContain("読み込み中");
+    });
+    expect(date("until").value).toBe("2026-01-01");
+    expect(container.textContent).toContain("2026-12-31");
   });
 
   it("obsolete intent fences stale date requests and renders only the latest rows without an alert", async () => {
