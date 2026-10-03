@@ -1,4 +1,5 @@
 import type { Article } from "@/schemas";
+import { assertResponseVersion } from "./data-version";
 
 export type ArticleQuery = {
   q: string;
@@ -148,6 +149,8 @@ export function serializeArticleBootstrap(value: {
   tagOptions?: string[];
   config: unknown;
   articles: Article[];
+  dataVersion?: string;
+  publishedSequence?: number;
 }): string {
   return JSON.stringify(value).replace(
     /[<>&\u2028\u2029]/g,
@@ -157,12 +160,15 @@ export function serializeArticleBootstrap(value: {
 }
 export async function fetchArticles(
   query: ArticleQuery,
-  signal: AbortSignal,
+  expectedVersion: string,
 ): Promise<Article[]> {
   const response = await fetch(`/api/articles?${articleQueryParams(query)}`, {
-    signal,
-    headers: { Accept: "application/json" },
+    headers: {
+      Accept: "application/json",
+      "X-Expected-Data-Version": expectedVersion,
+    },
   });
+  assertResponseVersion(response, expectedVersion);
   if (!response.ok)
     throw new Error(`記事を取得できませんでした (${response.status})`);
   const articles: unknown = await response.json();

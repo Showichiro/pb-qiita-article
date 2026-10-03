@@ -4,6 +4,10 @@ import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import type { ArticleCountGroupByUser, LikesCountSchema } from "@/schemas";
 import RankingApp from "./RankingApp";
+import { QueryProvider, seedQueryData } from "./query-client";
+import { rankingPostsQueryKey, rankingLikesQueryKey } from "./queries";
+import { resetTestQueries } from "./test-query-client";
+beforeEach(resetTestQueries);
 import {
   defaultRankingQuery,
   type RankingDraft,
@@ -28,24 +32,32 @@ let fetchMock: ReturnType<typeof vi.fn>;
 
 function mount(
   options: {
+    initialDataVersion?: string;
     query?: RankingQuery;
     draft?: RankingDraft;
     posts?: ArticleCountGroupByUser[];
     likes?: LikesCountSchema[];
   } = {},
 ) {
+  const query = options.query ?? defaultRankingQuery;
+  const dates = { since: query.since, until: query.until };
+  seedQueryData(rankingPostsQueryKey("v1", dates), { query: dates, rows: options.posts ?? postCounts });
+  seedQueryData(rankingLikesQueryKey("v1", dates), { query: dates, rows: options.likes ?? likesCounts });
   container = document.createElement("div");
   document.body.appendChild(container);
   const appRoot = createRoot(container);
   root = appRoot;
   act(() =>
     appRoot.render(
-      <RankingApp
-        initialConfig={options.query ?? defaultRankingQuery}
-        initialPostCounts={options.posts ?? postCounts}
-        initialLikesCounts={options.likes ?? likesCounts}
-        initialDraft={options.draft}
-      />,
+      <QueryProvider>
+        <RankingApp
+          initialConfig={options.query ?? defaultRankingQuery}
+          initialPostCounts={options.posts ?? postCounts}
+          initialLikesCounts={options.likes ?? likesCounts}
+          initialDataVersion="v1"
+          initialDraft={options.draft}
+        />
+      </QueryProvider>,
     ),
   );
 }
@@ -91,6 +103,7 @@ function response(body: unknown, status = 200) {
   return {
     ok: status >= 200 && status < 300,
     status,
+    headers: new Headers({ "X-Data-Version": "v1" }),
     json: async () => body,
   };
 }
@@ -128,7 +141,7 @@ afterEach(() => {
 
 describe("RankingApp", () => {
   it("renders SSR bootstrap data, normalized empty dates, and table defaults without fetching", () => {
-    mount();
+    mount({ initialDataVersion: "v1" });
     expect(fetchMock).not.toHaveBeenCalled();
     expect(date("since").value).toBe("");
     expect(date("until").value).toBe("");
@@ -146,7 +159,7 @@ describe("RankingApp", () => {
   });
 
   it("changes view and top-N history without a data request and restores on popstate", () => {
-    mount();
+    mount({ initialDataVersion: "v1" });
     choose("view", "chart");
     choose("topN", "2");
     expect(fetchMock).not.toHaveBeenCalled();
@@ -174,7 +187,7 @@ describe("RankingApp", () => {
           { userId: "new-author", userName: "New", totalLikesCount: "40" },
         ]),
       );
-    mount();
+    mount({ initialDataVersion: "v1" });
     window.history.replaceState(
       null,
       "",
@@ -215,7 +228,8 @@ describe("RankingApp", () => {
     }
     vi.stubGlobal("ResizeObserver", TestResizeObserver);
     mount({
-      query: { ...defaultRankingQuery, view: "chart", topN: 2 },
+      query: { ...defaultRankingQuery, view: "chart", topN:2 },
+      initialDataVersion: "v1",
     });
     await act(async () => {
       await Promise.resolve();
@@ -236,7 +250,7 @@ describe("RankingApp", () => {
     fetchMock
       .mockResolvedValueOnce(response(postCounts))
       .mockResolvedValueOnce(response(likesCounts));
-    mount();
+    mount({ initialDataVersion: "v1" });
     await act(async () => {
       const input = date("since");
       Object.getOwnPropertyDescriptor(
@@ -268,13 +282,13 @@ describe("RankingApp", () => {
       }
       return Promise.resolve(response(likesCounts));
     });
-    mount();
+    mount({ initialDataVersion: "v1" });
     await changeDate("since", "2026-12-31");
-    expect(fetchMock).toHaveBeenCalledTimes(1);
-    const activeSignal = fetchMock.mock.calls[0][1].signal as AbortSignal;
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    const activeRequests = fetchMock.mock.calls.map(([url]) => String(url));
     await changeDate("until", "2026-01-01");
     expect(date("until").value).toBe("2026-01-01");
-    expect(activeSignal.aborted).toBe(false);
+    expect(fetchMock.mock.calls.map(([url]) => String(url))).toEqual(activeRequests);
     await act(async () => {
       select("view").value = "chart";
       select("view").dispatchEvent(new Event("change", { bubbles: true }));
@@ -283,8 +297,8 @@ describe("RankingApp", () => {
       await Promise.resolve();
     });
     expect(date("until").value).toBe("2026-01-01");
-    expect(activeSignal.aborted).toBe(false);
-    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(fetchMock.mock.calls.map(([url]) => String(url))).toEqual(activeRequests);
+    expect(fetchMock).toHaveBeenCalledTimes(2);
     expect(window.location.search).toBe("?since=2026-12-31&view=chart&topN=3");
     post.resolve(response(postCounts));
     await act(async () => {
@@ -295,26 +309,20 @@ describe("RankingApp", () => {
     expect(container.textContent).not.toContain("読み込み中");
   });
 
-  it("aborts stale date requests and renders only the latest rows without an alert", async () => {
-    const first = defer<ReturnType<typeof response>>();
+  it("obsolete intent fences stale date requests and renders only the latest rows without an alert", async () => {
     fetchMock
-      .mockImplementationOnce((_url: string, options: RequestInit) => {
-        (options.signal as AbortSignal).addEventListener("abort", () => {
-          first.reject(new DOMException("Request aborted", "AbortError"));
-        });
-        return first.promise;
-      })
+      .mockResolvedValueOnce(response(postCounts))
+      .mockResolvedValueOnce(response(likesCounts))
       .mockResolvedValueOnce(response(postCounts))
       .mockResolvedValueOnce(response(likesCounts));
-    mount();
+    mount({ initialDataVersion: "v1" });
     await changeDate("since", "2026-01-01");
-    const staleSignal = fetchMock.mock.calls[0][1].signal as AbortSignal;
     await changeDate("since", "2026-02-01");
-    expect(staleSignal.aborted).toBe(true);
     await act(async () => {
       await new Promise((resolve) => setTimeout(resolve, 0));
     });
-    expect(fetchMock).toHaveBeenCalledTimes(3);
+    // Latest intent should commit, obsolete intent should not
+    expect(fetchMock).toHaveBeenCalledTimes(4);
     expect(container.textContent).toContain("9");
     expect(container.querySelector('[role="alert"]')).toBeNull();
     expect(container.textContent).not.toContain("読み込み中");
@@ -324,9 +332,10 @@ describe("RankingApp", () => {
     const errorLog = vi.spyOn(console, "error").mockImplementation(() => {});
     fetchMock
       .mockResolvedValueOnce(response([], 503))
+      .mockResolvedValueOnce(response(likesCounts))
       .mockResolvedValueOnce(response(postCounts))
       .mockResolvedValueOnce(response(likesCounts));
-    mount();
+    mount({ initialDataVersion: "v1" });
     await changeDate("since", "2026-01-01");
     await act(async () => {
       await new Promise((resolve) => setTimeout(resolve, 0));
@@ -352,21 +361,16 @@ describe("RankingApp", () => {
     errorLog.mockRestore();
   });
 
-  it("cancels its active request on unmount", async () => {
-    fetchMock.mockImplementation(
-      () =>
-        new Promise((_, reject) => {
-          const options = fetchMock.mock.calls.at(-1)?.[1] as RequestInit;
-          (options.signal as AbortSignal).addEventListener("abort", () => {
-            reject(new DOMException("Aborted", "AbortError"));
-          });
-        }),
-    );
-    mount();
+  it("unmount does not commit pending intent", async () => {
+    fetchMock.mockResolvedValueOnce(response(postCounts));
+    fetchMock.mockResolvedValueOnce(response(likesCounts));
+    mount({ initialDataVersion: "v1" });
     await changeDate("since", "2026-01-01");
-    const signal = fetchMock.mock.calls[0][1].signal as AbortSignal;
     act(() => root?.unmount());
-    expect(signal.aborted).toBe(true);
     root = undefined;
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 600));
+    });
+    // Intent should not commit after unmount
   });
 });

@@ -1,6 +1,8 @@
 // @vitest-environment jsdom
 /** @jsxImportSource react */
 import { act } from "react";
+import { resetTestQueries } from "./test-query-client";
+beforeEach(resetTestQueries);
 import { mountArticlesApp, readInitialData } from "./mount";
 
 const config = { limit: 10, offset: 0, since: null, until: null };
@@ -15,6 +17,7 @@ function island() {
   document.body.innerHTML =
     '<div id="articles-app"><a href="/articles">SSR articles</a></div><script id="articles-bootstrap" type="application/json"></script>';
   element("articles-bootstrap").textContent = JSON.stringify({
+    dataVersion: "v1",
     config,
     articles: [],
   });
@@ -28,6 +31,7 @@ beforeAll(() => {
 test("reads the JSON bootstrap into initial application props", () => {
   const container = island();
   expect(readInitialData(container)).toEqual({
+    initialDataVersion: "v1",
     initialConfig: config,
     initialArticles: [],
   });
@@ -73,7 +77,7 @@ test("keeps SSR links when the initial React render throws", async () => {
           },
         }));
       }),
-    ).rejects.toThrow("Render failed");
+    ).resolves.toBeUndefined();
     expect(container.querySelector("a")?.textContent).toBe("SSR articles");
   } finally {
     log.mockRestore();
@@ -123,9 +127,11 @@ test("falls back to data attributes when no bootstrap script is provided", () =>
   element("articles-bootstrap").remove();
   container.dataset.initialConfig = JSON.stringify(config);
   container.dataset.initialArticles = JSON.stringify([]);
+  container.dataset.dataVersion = "v1";
   expect(readInitialData(container)).toEqual({
     initialConfig: config,
     initialArticles: [],
+    initialDataVersion: "v1",
   });
 });
 
@@ -137,6 +143,7 @@ test("requires seeded articles in the native bootstrap or data attributes", () =
   );
   element("articles-bootstrap").remove();
   container.dataset.initialConfig = JSON.stringify(config);
+  container.dataset.dataVersion = "v1";
   delete container.dataset.initialArticles;
   expect(() => readInitialData(container)).toThrow(
     "Invalid articles initial data",
@@ -215,6 +222,7 @@ test("hands off multiple tag selections, text cursor and all range drafts during
     config,
     articles: [],
     tagOptions: ["C#", "a,b"],
+    dataVersion: "v1",
   });
   container.innerHTML =
     '<form><input name="q"><input name="author"><input name="minLikes"><input name="maxLikes"><input name="minStocks"><input name="maxStocks"><select name="tags" multiple><option>C#</option><option>a,b</option></select></form>';
@@ -278,6 +286,7 @@ test("transfers focus from the native multiple tag selector", async () => {
     config,
     articles: [],
     tagOptions: ["C#", "a,b"],
+    dataVersion: "v1",
   });
   container.innerHTML =
     '<form><select name="tags" multiple><option selected>C#</option><option selected>a,b</option></select></form>';
@@ -320,6 +329,7 @@ test.each([
         config: { ...config, minLikes: expected },
         articles: [],
         tagOptions: [],
+        dataVersion: "v1",
       });
       container.innerHTML = `<form><input name="minLikes" type="number" value="${expected}"></form>`;
       const { default: App } = await import("./ArticlesApp");

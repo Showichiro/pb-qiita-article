@@ -13,20 +13,32 @@ describe("getArticleCountGroupByUser", async () => {
 
   const record = 10;
   const db = await mf.getD1Database("DB");
+  const generationId = "test-generation";
 
   beforeAll(async () => {
+    // Create versioned schema
     await db.exec(
-      "CREATE TABLE `articles` (`id` text PRIMARY KEY NOT NULL,`title` text NOT NULL,`user_id` text NOT NULL,`user_name` text NOT NULL,`created_at` text NOT NULL,`likes_count` integer NOT NULL,`stocks_count` integer NOT NULL);",
+      "CREATE TABLE `data_generations` (`id` text PRIMARY KEY NOT NULL, `state` text NOT NULL, `created_at` text NOT NULL, `published_sequence` integer, `article_count` integer, `tag_count` integer);",
     );
     await db.exec(
-      "CREATE TABLE `tags` (`article_id` text,`id` integer PRIMARY KEY NOT NULL,`name` text NOT NULL,FOREIGN KEY (`article_id`) REFERENCES `articles`(`id`) ON UPDATE cascade ON DELETE cascade);",
+      "CREATE TABLE `generation_articles` (`generation_id` text NOT NULL, `id` text NOT NULL, `title` text NOT NULL, `user_id` text NOT NULL, `user_name` text NOT NULL, `created_at` text NOT NULL, `likes_count` integer NOT NULL, `stocks_count` integer NOT NULL, PRIMARY KEY(`generation_id`, `id`));",
     );
+
+    // Insert published generation
+    await db
+      .prepare(
+        "INSERT INTO `data_generations` (`id`, `state`, `created_at`, `published_sequence`) VALUES (?, ?, ?, ?)",
+      )
+      .bind(generationId, "published", "2026-10-03T00:00:00Z", 1)
+      .run();
+
     const promises = [...Array(record)].map(async (_, index) => {
       return await db
         .prepare(
-          "INSERT INTO `articles` (`id`, `title`, `user_id`, `user_name`, `created_at`, `likes_count`, `stocks_count`) VALUES (?, ?, ?, ?, ?, ?, ?);",
+          "INSERT INTO `generation_articles` (`generation_id`, `id`, `title`, `user_id`, `user_name`, `created_at`, `likes_count`, `stocks_count`) VALUES (?, ?, ?, ?, ?, ?, ?, ?);",
         )
         .bind(
+          generationId,
           `${index}`,
           `title-${index}`,
           `user-${index % 2 === 0 ? 0 : index}`,
@@ -35,13 +47,7 @@ describe("getArticleCountGroupByUser", async () => {
           0,
           0,
         )
-        .run()
-        .then(async () => {
-          return await db
-            .prepare("INSERT INTO `tags` (`article_id`, `name`) VALUES (?, ?);")
-            .bind(`${index}`, `tag-${index}`)
-            .run();
-        });
+        .run();
     });
     await Promise.all(promises);
   });
@@ -53,7 +59,7 @@ describe("getArticleCountGroupByUser", async () => {
   test("schema", async () => {
     const db = await mf.getD1Database("DB");
     const instance = drizzle(db, { schema, logger: true });
-    const results = await getArticleCountGroupByUser(instance, {
+    const results = await getArticleCountGroupByUser(instance, generationId, {
       since: null,
       until: null,
     });
@@ -71,7 +77,7 @@ describe("getArticleCountGroupByUser", async () => {
   test("since", async () => {
     const db = await mf.getD1Database("DB");
     const instance = drizzle(db, { schema, logger: true });
-    const results = await getArticleCountGroupByUser(instance, {
+    const results = await getArticleCountGroupByUser(instance, generationId, {
       since: new Date(9).toISOString(),
       until: null,
     });
@@ -84,7 +90,7 @@ describe("getArticleCountGroupByUser", async () => {
   test("until", async () => {
     const db = await mf.getD1Database("DB");
     const instance = drizzle(db, { schema, logger: true });
-    const results = await getArticleCountGroupByUser(instance, {
+    const results = await getArticleCountGroupByUser(instance, generationId, {
       since: null,
       until: new Date(0).toISOString(),
     });
@@ -97,7 +103,7 @@ describe("getArticleCountGroupByUser", async () => {
   test("since & until", async () => {
     const db = await mf.getD1Database("DB");
     const instance = drizzle(db, { schema, logger: true });
-    const results = await getArticleCountGroupByUser(instance, {
+    const results = await getArticleCountGroupByUser(instance, generationId, {
       since: new Date(0).toISOString(),
       until: new Date(1).toISOString(),
     });
@@ -111,7 +117,7 @@ describe("getArticleCountGroupByUser", async () => {
   test("sort", async () => {
     const db = await mf.getD1Database("DB");
     const instance = drizzle(db, { schema, logger: true });
-    const results = await getArticleCountGroupByUser(instance, {
+    const results = await getArticleCountGroupByUser(instance, generationId, {
       since: null,
       until: null,
       sort: "asc",

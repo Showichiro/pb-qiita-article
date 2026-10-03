@@ -423,7 +423,7 @@ describe("getArticleTimeSeries", () => {
       { schema },
     );
     await expect(
-      getArticleTimeSeries(db, {
+      getArticleTimeSeries(db, "test-generation", {
         since: "2020-01-01",
         until: "2021-06-01",
         bucket: "day",

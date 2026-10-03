@@ -1,5 +1,6 @@
 /** @jsxImportSource react */
-import { useLayoutEffect, type ComponentType } from "react";
+import { Suspense, useLayoutEffect, type ComponentType } from "react";
+import { QueryErrorResetBoundary } from "@tanstack/react-query";
 import { createRoot, type Root } from "react-dom/client";
 import {
   analysisDraftError,
@@ -9,6 +10,9 @@ import {
   type AnalysisMetric,
   type AnalysisView,
 } from "./analysis";
+import { analysisQueryKey, normalizeAnalysisQuery } from "./queries";
+import { QueryProvider, seedQueryData } from "./query-client";
+import { QueryErrorBoundary } from "./query-error-boundary";
 
 type AppProps = {
   initialData: AnalysisBootstrap;
@@ -72,6 +76,11 @@ export function readAnalysisInitialData(
     )
   )
     throw new Error("Invalid analysis tag options");
+  if (
+    typeof data.dataVersion !== "string" ||
+    data.dataVersion.length === 0
+  )
+    throw new Error("Invalid analysis data version");
   const rows = validateAnalysisResponse(
     {
       since: query.since,
@@ -82,6 +91,7 @@ export function readAnalysisInitialData(
     query,
   );
   return {
+    dataVersion: data.dataVersion,
     state: query,
     rows,
     tagOptions: data.tagOptions,
@@ -116,6 +126,17 @@ export async function mountAnalysisApp(
     stopTracking();
     return;
   }
+  const query = normalizeAnalysisQuery({
+    since: initialData.state.since,
+    until: initialData.state.until,
+    bucket: initialData.state.bucket,
+    author: initialData.state.author,
+    tags: initialData.state.tags,
+  });
+  seedQueryData(
+    analysisQueryKey(initialData.dataVersion, query),
+    { query, rows: initialData.rows },
+  );
 
   const clientContainer = document.createElement("div");
   const fallback = Array.from(container.childNodes);
@@ -201,7 +222,22 @@ export async function mountAnalysisApp(
     );
   }
 
-  root.render(<Ready />);
+  root.render(
+    <QueryProvider>
+      <QueryErrorResetBoundary>
+        {({ reset }) => (
+          <QueryErrorBoundary
+            onReset={reset}
+            fallbackMessage="時系列データを取得できませんでした"
+          >
+            <Suspense fallback={<p role="status">読み込み中…</p>}>
+              <Ready />
+            </Suspense>
+          </QueryErrorBoundary>
+        )}
+      </QueryErrorResetBoundary>
+    </QueryProvider>,
+  );
 }
 
 function readFormState(

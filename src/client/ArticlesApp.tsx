@@ -1,15 +1,16 @@
 /** @jsxImportSource react */
 import {
-  Component,
-  Suspense,
-  use,
   useCallback,
   useRef,
   useState,
   useTransition,
   type FormEvent,
-  type ReactNode,
 } from "react";
+import {
+  useIsFetching,
+  useQueryClient,
+  useSuspenseQuery,
+} from "@tanstack/react-query";
 import type { Article } from "@/schemas";
 import {
   Button,
@@ -47,7 +48,6 @@ import {
 } from "./articles-presentation";
 import {
   articleQueryParams,
-  fetchArticles,
   parseArticleQuery,
   type ArticleQuery,
   type ArticleDraft,
@@ -58,36 +58,59 @@ import {
   rangeFields,
   validateArticleDraft,
 } from "./articles";
+import { DataVersionControls } from "./data-version-controls";
+import { useDataVersion } from "./data-version";
+import {
+  articlesQueryOptions,
+  normalizeArticleQuery,
+} from "./queries";
+import {
+  isDataQuery,
+  protectDataQueries,
+  useRemovePreviousGeneration,
+} from "./query-client";
 import { useDebouncedAction } from "./hooks/useDebouncedAction";
 
 export type ArticlesAppProps = {
   initialConfig?: FindAllArticlesConfig;
   initialArticles: Article[];
+  initialDataVersion: string;
   initialDraft?: ArticleDraft;
   initialTagOptions?: string[];
 };
 export default function ArticlesApp({
   initialConfig,
-  initialArticles,
+  initialDataVersion,
   initialDraft,
   initialTagOptions = [],
 }: ArticlesAppProps) {
-  const initialQuery = () =>
+  const [query, setQuery] = useState(() =>
     initialConfig === undefined && typeof window !== "undefined"
       ? parseArticleQuery(new URLSearchParams(window.location.search))
-      : parseArticleQuery(configQueryParams(initialConfig ?? {}));
-  const [result, setResult] = useState<{
-    query: ArticleQuery;
-    data: Article[] | Promise<Article[]>;
-  }>(() => ({
-    query: initialQuery(),
-    data: initialArticles,
-  }));
-  const { query } = result;
+      : parseArticleQuery(configQueryParams(initialConfig ?? {})),
+  );
+  const versionState = useDataVersion(initialDataVersion);
+  const { adoptedVersion } = versionState;
+  const queryClient = useQueryClient();
+  const queryResult = useSuspenseQuery(
+    articlesQueryOptions(adoptedVersion, query),
+  );
+  const requestQuery = queryResult.data.query;
+  const articles = queryResult.data.rows;
+  const isFetching = useIsFetching({
+    predicate: (activeQuery) =>
+      isDataQuery(activeQuery) && activeQuery.queryKey[0] === "articles",
+  });
+  useRemovePreviousGeneration(adoptedVersion);
   const [draft, setDraft] = useState(
     () => initialDraft ?? toArticleDraft(query),
   );
   const [validationError, setValidationError] = useState<string | null>(null);
+  const [requestFailure, setRequestFailure] = useState<{
+    error: Error;
+    query: ArticleQuery;
+    version: string;
+  } | null>(null);
   const tagOptions = normalizeTags([...initialTagOptions, ...draft.tags]);
   const clearTagsQuery = isSearchDraftValid(draft)
     ? commitArticleDraft(draft)
@@ -98,54 +121,65 @@ export default function ArticlesApp({
     offset: 0,
   })}`;
   const [isPending, startTransition] = useTransition();
-  const active = useRef<{
-    query: ArticleQuery;
-    controller?: AbortController;
-    request?: Promise<Article[]>;
-  }>({ query });
-  // Deduplication: track the last canonical query to avoid duplicate requests
-  const lastCanonicalQuery = useRef<string | null>(
-    articleQueryParams(query).toString(),
-  );
+  const requestIntent = useRef(0);
+  const initialUrlChecked = useRef(false);
 
   // Stable ref for latest draft to avoid stale closures in debounce callback
   const latestDraftRef = useRef<ArticleDraft>(draft);
   const isComposing = useRef(false);
 
   const load = useCallback(
-    (
+    async (
       next: ArticleQuery,
-      options: { retry?: boolean } = {},
-    ): Promise<Article[]> => {
-      const canonical = articleQueryParams(next).toString();
-      if (
-        !options.retry &&
-        canonical === lastCanonicalQuery.current &&
-        !active.current.controller?.signal.aborted
-      )
-        return active.current.request ?? Promise.resolve([]);
-      lastCanonicalQuery.current = canonical;
-
-      active.current.controller?.abort();
-      const controller = new AbortController();
-      active.current = { query: next, controller };
-      const request = fetchArticles(next, controller.signal);
-      active.current.request = request;
-      const data = request.catch((error: unknown) => {
+      options: {
+        version?: string;
+        force?: boolean;
+        commit?: boolean;
+        onSuccess?: (intent: number) => void;
+      } = {},
+    ): Promise<boolean> => {
+      const normalized = normalizeArticleQuery(next);
+      const version = options.version ?? adoptedVersion;
+      const intent = ++requestIntent.current;
+      setRequestFailure(null);
+      const queryOptions = articlesQueryOptions(version, normalized);
+      const releaseProtection = protectDataQueries([queryOptions.queryKey]);
+      try {
+        await queryClient.prefetchQuery(
+          options.force ? { ...queryOptions, staleTime: 0 } : queryOptions,
+        );
+        const data = queryClient.getQueryData(queryOptions.queryKey);
+        const state = queryClient.getQueryState(queryOptions.queryKey);
         if (
-          controller.signal.aborted ||
-          (error instanceof Error && error.name === "AbortError")
+          data === undefined ||
+          (options.force && state?.status === "error")
         )
-          return pendingArticles;
-        if (active.current.controller === controller)
-          lastCanonicalQuery.current = null;
-        throw error;
-      });
-      void data.catch(() => {});
-      startTransition(() => setResult({ query: next, data }));
-      return request;
+          throw state?.error ?? new Error("記事を取得できませんでした");
+        if (requestIntent.current !== intent) {
+          releaseProtection();
+          return false;
+        }
+        if (options.onSuccess) options.onSuccess(intent);
+        else if (options.commit !== false)
+          startTransition(() =>
+            setQuery((current) =>
+              requestIntent.current === intent ? normalized : current,
+            ),
+          );
+        return true;
+      } catch (error) {
+        releaseProtection();
+        if (requestIntent.current !== intent) return false;
+        const normalizedError =
+          error instanceof Error
+            ? error
+            : new Error("記事を取得できませんでした");
+        setRequestFailure({ error: normalizedError, query: normalized, version });
+        versionState.reportError(normalizedError);
+        return false;
+      }
     },
-    [],
+    [adoptedVersion, queryClient, startTransition, versionState.reportError],
   );
 
   const writeSearchUrl = useCallback((next: ArticleQuery) => {
@@ -173,16 +207,7 @@ export default function ArticlesApp({
       setDraft(searchDraft);
       setValidationError(null);
       writeSearchUrl(next);
-      try {
-        await awaitOrAbort(load(next), signal);
-      } catch (error) {
-        if (
-          signal.aborted ||
-          (error instanceof Error && error.name === "AbortError")
-        )
-          return;
-        // The resource Promise carries non-abort failures to ResultsBoundary.
-      }
+      await load(next);
     },
     [load, writeSearchUrl],
   );
@@ -222,8 +247,8 @@ export default function ArticlesApp({
       }
       if (
         articleQueryParams(commitArticleDraft(nextDraft)).toString() ===
-          lastCanonicalQuery.current &&
-        !active.current.controller?.signal.aborted
+          articleQueryParams(query).toString() &&
+        !requestFailure
       ) {
         debouncedSearch.cancel();
         return;
@@ -234,7 +259,13 @@ export default function ArticlesApp({
       }
       debouncedSearch.trigger(nextDraft);
     },
-    [debouncedSearch.cancel, debouncedSearch.trigger, navigate],
+    [
+      debouncedSearch.cancel,
+      debouncedSearch.trigger,
+      navigate,
+      query,
+      requestFailure,
+    ],
   );
   const handleTextChange = useCallback(
     (
@@ -259,6 +290,7 @@ export default function ArticlesApp({
   );
   const subscribeHistory = useCallback(
     (_node: HTMLElement | null) => {
+      if (!_node) return;
       const onPop = () => {
         debouncedSearch.cancel();
         const current = parseArticleQuery(
@@ -274,19 +306,17 @@ export default function ArticlesApp({
       const current = parseArticleQuery(
         new URLSearchParams(window.location.search),
       );
-      if (
-        articleQueryParams(current).toString() !==
-          articleQueryParams(active.current.query).toString() ||
-        active.current.controller?.signal.aborted
-      )
-        void load(current);
+      if (!initialUrlChecked.current) {
+        initialUrlChecked.current = true;
+        if (articleQueryParams(current).toString() !== articleQueryParams(query).toString())
+          void load(current);
+      }
       return () => {
         window.removeEventListener("popstate", onPop);
-        active.current.controller?.abort();
         debouncedSearch.cancel();
       };
     },
-    [debouncedSearch.cancel, load],
+    [debouncedSearch.cancel, load, query],
   );
   const submit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -302,6 +332,46 @@ export default function ArticlesApp({
       return;
     }
     navigate(commitArticleDraft(currentDraft));
+  };
+  const retryFailedQuery = () => {
+    if (requestFailure)
+      void load(requestFailure.query, {
+        version: requestFailure.version,
+        force: true,
+      });
+  };
+  const refreshData = async () => {
+    let version: string;
+    try {
+      version = await versionState.checkLatestVersion();
+    } catch (error) {
+      versionState.reportError(error);
+      return;
+    }
+    const next = { ...query, offset: 0 };
+    const nextDraft = toArticleDraft(next);
+    await load(next, {
+      version,
+      force: true,
+      commit: false,
+      onSuccess: (intent) => {
+        if (requestIntent.current !== intent) return;
+        latestDraftRef.current = nextDraft;
+        setValidationError(null);
+        writeSearchUrl(next);
+        startTransition(() => {
+          versionState.setAdoptedVersion((current) =>
+            requestIntent.current === intent ? version : current,
+          );
+          setQuery((current) =>
+            requestIntent.current === intent ? next : current,
+          );
+          setDraft((current) =>
+            requestIntent.current === intent ? nextDraft : current,
+          );
+        });
+      },
+    });
   };
   return (
     <section
@@ -514,25 +584,37 @@ export default function ArticlesApp({
             {validationError}
           </p>
         )}
+        <DataVersionControls
+          availableVersion={versionState.availableVersion}
+          error={versionState.error}
+          isBusy={isFetching > 0 || isPending}
+          isChecking={versionState.isChecking}
+          onRefresh={() => void refreshData()}
+          onCheck={() =>
+            void versionState
+              .checkLatestVersion()
+              .catch(versionState.reportError)
+          }
+        />
+        {requestFailure && (
+          <div role="alert">
+            {requestFailure.error !== versionState.error && (
+              <p>{requestFailure.error.message}</p>
+            )}
+            <Button variant="outline" onClick={retryFailedQuery}>
+              再試行
+            </Button>
+          </div>
+        )}
         <div role="status" aria-live="polite">
-          {isPending ? "読み込み中…" : ""}
+          {isFetching > 0 || isPending ? "読み込み中…" : ""}
         </div>
-        <ResultsBoundary
-          resource={result.data}
-          retry={() => {
-            debouncedSearch.cancel();
-            void load(active.current.query, { retry: true });
-          }}
-        >
-          <Suspense fallback={<p role="status">読み込み中…</p>}>
-            <ArticleResults
-              result={result}
-              isPending={isPending}
-              navigate={navigate}
-              cancelDebounce={debouncedSearch.cancel}
-            />
-          </Suspense>
-        </ResultsBoundary>
+        <ArticleResults
+          result={{ query: requestQuery, data: articles }}
+          isPending={isPending || isFetching > 0}
+          navigate={navigate}
+          cancelDebounce={debouncedSearch.cancel}
+        />
       </Card>
     </section>
   );
@@ -564,42 +646,8 @@ function areSearchDraftsEqual(a: ArticleDraft, b: ArticleDraft): boolean {
   return key(a) === key(b);
 }
 
-function awaitOrAbort<T>(promise: Promise<T>, signal: AbortSignal): Promise<T> {
-  return new Promise((resolve, reject) => {
-    let settled = false;
-    const cleanup = () => signal.removeEventListener("abort", abort);
-    const abort = () => {
-      if (settled) return;
-      settled = true;
-      cleanup();
-      reject(new DOMException("Aborted", "AbortError"));
-    };
-    if (signal.aborted) {
-      abort();
-      return;
-    }
-    signal.addEventListener("abort", abort, { once: true });
-    promise.then(
-      (value) => {
-        if (settled) return;
-        settled = true;
-        cleanup();
-        resolve(value);
-      },
-      (error: unknown) => {
-        if (settled) return;
-        settled = true;
-        cleanup();
-        reject(error);
-      },
-    );
-  });
-}
-
-const pendingArticles: Promise<Article[]> = new Promise(() => {});
-
 type ResultsProps = {
-  result: { query: ArticleQuery; data: Article[] | Promise<Article[]> };
+  result: { query: ArticleQuery; data: Article[] };
   isPending: boolean;
   navigate: (query: ArticleQuery) => void;
   cancelDebounce: () => void;
@@ -611,7 +659,7 @@ function ArticleResults({
   cancelDebounce,
 }: ResultsProps) {
   const { query, data } = result;
-  const articles = Array.isArray(data) ? data : use(data);
+  const articles = data;
   return (
     <>
       <div role="status" aria-live="polite">
@@ -706,44 +754,4 @@ function ArticleResults({
       </nav>
     </>
   );
-}
-
-type BoundaryProps = {
-  resource: ResultsProps["result"]["data"];
-  retry: () => void;
-  children: ReactNode;
-};
-class ResultsBoundary extends Component<
-  BoundaryProps,
-  { resource: BoundaryProps["resource"]; error: Error | null }
-> {
-  state = { resource: this.props.resource, error: null as Error | null };
-  static getDerivedStateFromProps(
-    props: BoundaryProps,
-    state: { resource: BoundaryProps["resource"] },
-  ) {
-    return props.resource !== state.resource
-      ? { resource: props.resource, error: null }
-      : null;
-  }
-  static getDerivedStateFromError(error: unknown) {
-    return {
-      error:
-        error instanceof Error
-          ? error
-          : new Error("記事を取得できませんでした"),
-    };
-  }
-  render() {
-    if (this.state.error)
-      return (
-        <div role="alert">
-          <p>{this.state.error.message}</p>
-          <Button variant="outline" onClick={this.props.retry}>
-            再試行
-          </Button>
-        </div>
-      );
-    return this.props.children;
-  }
 }

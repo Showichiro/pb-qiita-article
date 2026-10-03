@@ -1,7 +1,8 @@
 /** @jsxImportSource react */
 import type { FindAllArticlesConfig } from "@/db/findAllArticles";
 import type { Article } from "@/schemas";
-import { useLayoutEffect, type ComponentType } from "react";
+import { Suspense, useLayoutEffect, type ComponentType } from "react";
+import { QueryErrorResetBoundary } from "@tanstack/react-query";
 import { createRoot, type Root } from "react-dom/client";
 import {
   parseArticleQuery,
@@ -10,11 +11,18 @@ import {
   toArticleDraft,
   type ArticleDraft,
 } from "./articles";
+import {
+  articlesQueryKey,
+  normalizeArticleQuery,
+} from "./queries";
+import { QueryProvider, seedQueryData } from "./query-client";
+import { QueryErrorBoundary } from "./query-error-boundary";
 
 export type ArticlesInitialData = {
   initialConfig: FindAllArticlesConfig;
   initialArticles: Article[];
   initialTagOptions?: string[];
+  initialDataVersion: string;
 };
 
 type AppModule = {
@@ -46,6 +54,10 @@ export function readInitialData(container: HTMLElement): ArticlesInitialData {
   if (!Array.isArray(initialArticles)) {
     throw new Error("Invalid articles initial data");
   }
+  const initialDataVersion: unknown =
+    data?.dataVersion ?? container.dataset.dataVersion;
+  if (typeof initialDataVersion !== "string" || initialDataVersion.length === 0)
+    throw new Error("Invalid articles data version");
   const initialTagOptions: unknown = data?.tagOptions;
   if (
     initialTagOptions !== undefined &&
@@ -56,6 +68,7 @@ export function readInitialData(container: HTMLElement): ArticlesInitialData {
   return {
     initialConfig,
     initialArticles,
+    initialDataVersion,
     ...(initialTagOptions === undefined
       ? {}
       : { initialTagOptions: initialTagOptions as string[] }),
@@ -91,6 +104,12 @@ export async function mountArticlesApp(
     stopTracking();
     return;
   }
+  const query = parseArticleQuery(configQueryParams(props.initialConfig));
+  const normalizedQuery = normalizeArticleQuery(query);
+  seedQueryData(
+    articlesQueryKey(props.initialDataVersion, normalizedQuery),
+    { query: normalizedQuery, rows: props.initialArticles },
+  );
   const clientContainer = document.createElement("div");
   const fallback = Array.from(container.childNodes);
   const root = createRoot(clientContainer, {
@@ -169,7 +188,22 @@ export async function mountArticlesApp(
     return <App {...props} initialDraft={draft} />;
   }
 
-  root.render(<Ready />);
+  root.render(
+    <QueryProvider>
+      <QueryErrorResetBoundary>
+        {({ reset }) => (
+          <QueryErrorBoundary
+            onReset={reset}
+            fallbackMessage="記事を取得できませんでした"
+          >
+            <Suspense fallback={<p role="status">読み込み中…</p>}>
+              <Ready />
+            </Suspense>
+          </QueryErrorBoundary>
+        )}
+      </QueryErrorResetBoundary>
+    </QueryProvider>,
+  );
 }
 
 function readDraft(

@@ -1,16 +1,17 @@
 /** @jsxImportSource react */
 import {
-  Component,
-  Suspense,
   useEffect,
-  use,
   useCallback,
   useRef,
   useState,
   useTransition,
   type FormEvent,
-  type ReactNode,
 } from "react";
+import {
+  useIsFetching,
+  useQueryClient,
+  useSuspenseQueries,
+} from "@tanstack/react-query";
 import {
   Bar,
   BarChart,
@@ -44,7 +45,6 @@ import {
   rankingResultsClass,
 } from "./ranking-presentation";
 import {
-  fetchRankingData,
   likesCountForChart,
   parseRankingQuery,
   rankingQueryParams,
@@ -57,6 +57,17 @@ import {
   commitRankingDraft,
   withRankingDisplay,
 } from "./ranking";
+import { DataVersionControls } from "./data-version-controls";
+import { useDataVersion } from "./data-version";
+import {
+  rankingLikesQueryOptions,
+  rankingPostsQueryOptions,
+} from "./queries";
+import {
+  isDataQuery,
+  protectDataQueries,
+  useRemovePreviousGeneration,
+} from "./query-client";
 
 type RankingData = {
   postCounts: ArticleCountGroupByUser[];
@@ -67,48 +78,62 @@ export type RankingAppProps = {
   initialConfig: RankingQuery;
   initialPostCounts: ArticleCountGroupByUser[];
   initialLikesCounts: LikesCountSchema[];
+  initialDataVersion: string;
   initialDraft?: RankingDraft;
 };
 
-type RequestRecord = {
-  controller: AbortController;
-  promise: Promise<RankingData>;
-  state: "pending" | "resolved" | "rejected" | "aborted";
-};
-
-const never = new Promise<RankingData>(() => {});
-
 export default function RankingApp({
   initialConfig,
-  initialPostCounts,
-  initialLikesCounts,
+  initialDataVersion,
   initialDraft,
 }: RankingAppProps) {
   const [query, setQuery] = useState(initialConfig);
   const queryRef = useRef(query);
-  const initialData = useRef<RankingData>({
-    postCounts: initialPostCounts,
-    likesCounts: initialLikesCounts,
-  }).current;
-  const [result, setResult] = useState<{
-    query: RankingRequestQuery;
-    data: RankingData | Promise<RankingData>;
-  }>({ query: dateQuery(initialConfig), data: initialData });
-  const lastSuccessful = useRef({
-    query: dateQuery(initialConfig),
-    data: initialData,
+  const versionState = useDataVersion(initialDataVersion);
+  const { adoptedVersion } = versionState;
+  const queryClient = useQueryClient();
+  const dates = dateQuery(query);
+  const queryResults = useSuspenseQueries({
+    queries: [
+      rankingPostsQueryOptions(adoptedVersion, dates),
+      rankingLikesQueryOptions(adoptedVersion, dates),
+    ],
   });
+  const data: RankingData = {
+    postCounts: queryResults[0].data.rows,
+    likesCounts: queryResults[1].data.rows,
+  };
+  const resultQuery = queryResults[0].data.query;
+  const isFetching = useIsFetching({
+    predicate: (activeQuery) =>
+      isDataQuery(activeQuery) && activeQuery.queryKey[0] === "ranking",
+  });
+  useRemovePreviousGeneration(adoptedVersion);
   const [draft, setDraft] = useState(
     () => initialDraft ?? toRankingDraft(initialConfig),
   );
   const latestDraft = useRef(draft);
   const [validationError, setValidationError] = useState<string | null>(null);
+  const [requestFailure, setRequestFailure] = useState<{
+    error: Error;
+    query: RankingQuery;
+    version: string;
+  } | null>(null);
   const [isPending, startTransition] = useTransition();
-  const requests = useRef(new Map<string, RequestRecord>());
-  const active = useRef<{
-    key: string;
-    record?: RequestRecord;
-  }>({ key: rankingRequestKey(initialConfig) });
+  const requestIntent = useRef(0);
+
+  const setCurrentQuery = useCallback(
+    (next: RankingQuery, intent?: number) => {
+      if (intent !== undefined && requestIntent.current !== intent) return;
+      queryRef.current = next;
+      setQuery((current) =>
+        intent === undefined || requestIntent.current === intent
+          ? next
+          : current,
+      );
+    },
+    [],
+  );
 
   const writeSearchUrl = useCallback((next: RankingQuery) => {
     const canonical = rankingQueryParams(next).toString();
@@ -125,102 +150,77 @@ export default function RankingApp({
     window.history.pushState(null, "", url);
   }, []);
 
-  const startRequest = useCallback(
-    (next: RankingQuery, retry = false) => {
-      const key = rankingRequestKey(next);
-      const current = active.current;
-      if (
-        !retry &&
-        key === current.key &&
-        (!current.record ||
-          (current.record.state !== "rejected" &&
-            current.record.state !== "aborted"))
-      ) {
-        return current.record?.promise;
-      }
-      if (current.record?.state === "pending") {
-        current.record.controller.abort();
-        current.record.state = "aborted";
-        if (requests.current.get(current.key) === current.record)
-          requests.current.delete(current.key);
-      }
-      if (retry) {
-        const cached = requests.current.get(key);
-        if (cached?.state === "pending") cached.controller.abort();
-        requests.current.delete(key);
-      }
-
-      let record = retry ? undefined : requests.current.get(key);
-      if (
-        !record ||
-        record.state === "aborted" ||
-        record.state === "rejected"
-      ) {
-        const controller = new AbortController();
-        const created: RequestRecord = {
-          controller,
-          state: "pending",
-          promise: Promise.resolve(initialData),
-        };
-        const promise = fetchRankingData(
-          dateQuery(next),
-          controller.signal,
-        ).then(
-          (data) => {
-            if (controller.signal.aborted) {
-              created.state = "aborted";
-              if (requests.current.get(key) === created)
-                requests.current.delete(key);
-              return never;
-            }
-            created.state = "resolved";
-            lastSuccessful.current = { query: dateQuery(next), data };
-            return data;
-          },
-          (error: unknown) => {
-            if (
-              controller.signal.aborted ||
-              (error instanceof Error && error.name === "AbortError")
-            ) {
-              created.state = "aborted";
-              if (requests.current.get(key) === created)
-                requests.current.delete(key);
-              return never;
-            }
-            created.state = "rejected";
-            if (requests.current.get(key) === created)
-              requests.current.delete(key);
-            throw error;
-          },
-        );
-        created.promise = promise;
-        record = created;
-        requests.current.set(key, created);
-        void promise.catch(() => {});
-        while (requests.current.size > 20) {
-          const oldest = requests.current.keys().next().value;
-          if (oldest === undefined) break;
-          const old = requests.current.get(oldest);
-          if (old?.state === "pending") {
-            old.controller.abort();
-            old.state = "aborted";
-          }
-          requests.current.delete(oldest);
+  const load = useCallback(
+    async (
+      next: RankingQuery,
+      options: {
+        version?: string;
+        force?: boolean;
+        commit?: boolean;
+        intent?: number;
+        onSuccess?: (intent: number) => void;
+      } = {},
+    ): Promise<boolean> => {
+      const requestQuery = dateQuery(next);
+      const version = options.version ?? adoptedVersion;
+      const intent = options.intent ?? ++requestIntent.current;
+      const postsOptions = rankingPostsQueryOptions(version, requestQuery);
+      const likesOptions = rankingLikesQueryOptions(version, requestQuery);
+      setRequestFailure(null);
+      const releaseProtection = protectDataQueries([
+        postsOptions.queryKey,
+        likesOptions.queryKey,
+      ]);
+      try {
+        await Promise.all([
+          queryClient.prefetchQuery(
+            options.force
+              ? { ...postsOptions, staleTime: 0 }
+              : postsOptions,
+          ),
+          queryClient.prefetchQuery(
+            options.force
+              ? { ...likesOptions, staleTime: 0 }
+              : likesOptions,
+          ),
+        ]);
+        for (const queryOptions of [postsOptions, likesOptions]) {
+          const data = queryClient.getQueryData(queryOptions.queryKey);
+          const state = queryClient.getQueryState(queryOptions.queryKey);
+          if (
+            data === undefined ||
+            (options.force && state?.status === "error")
+          )
+            throw state?.error ?? new Error("ランキングを取得できませんでした");
         }
+        if (requestIntent.current !== intent) {
+          releaseProtection();
+          return false;
+        }
+        if (options.onSuccess) options.onSuccess(intent);
+        else if (options.commit !== false)
+          startTransition(() => setCurrentQuery(withRankingDisplay(dateQuery(next), queryRef.current), intent));
+        return true;
+      } catch (error) {
+        releaseProtection();
+        if (requestIntent.current !== intent) return false;
+        const normalizedError =
+          error instanceof Error
+            ? error
+            : new Error("ランキングを取得できませんでした");
+        setRequestFailure({ error: normalizedError, query: next, version });
+        versionState.reportError(normalizedError);
+        return false;
       }
-      active.current = { key, record };
-      startTransition(() =>
-        setResult({ query: dateQuery(next), data: record.promise }),
-      );
-      return record.promise;
     },
-    [initialData],
+    [
+      adoptedVersion,
+      queryClient,
+      setCurrentQuery,
+      startTransition,
+      versionState.reportError,
+    ],
   );
-
-  const setCurrentQuery = useCallback((next: RankingQuery) => {
-    queryRef.current = next;
-    setQuery(next);
-  }, []);
 
   const navigateDates = useCallback(
     (nextDates: RankingRequestQuery) => {
@@ -228,18 +228,19 @@ export default function RankingApp({
         view: queryRef.current.view,
         topN: queryRef.current.topN,
       });
-      setCurrentQuery(next);
+      queryRef.current = next;
       setValidationError(null);
       writeSearchUrl(next);
-      void startRequest(next);
+      void load(next);
     },
-    [setCurrentQuery, startRequest, writeSearchUrl],
+    [load, writeSearchUrl],
   );
 
   const changeDisplay = useCallback(
     (display: Pick<RankingQuery, "view" | "topN">) => {
       const next = withRankingDisplay(dateQuery(queryRef.current), display);
-      setCurrentQuery(next);
+      queryRef.current = next;
+      setQuery((current) => withRankingDisplay(dateQuery(current), display));
       writeSearchUrl(next);
     },
     [setCurrentQuery, writeSearchUrl],
@@ -255,26 +256,18 @@ export default function RankingApp({
       );
       return;
     }
+    queryRef.current = next;
     const nextDraft = toRankingDraft(next);
     latestDraft.current = nextDraft;
     setDraft(nextDraft);
     setValidationError(null);
-    setCurrentQuery(next);
-    if (rankingRequestKey(next) !== active.current.key) void startRequest(next);
-  }, [setCurrentQuery, startRequest]);
-
-  useEffect(
-    () => () => {
-      const current = active.current;
-      if (current.record?.state === "pending") {
-        current.record.controller.abort();
-        current.record.state = "aborted";
-        if (requests.current.get(current.key) === current.record)
-          requests.current.delete(current.key);
-      }
-    },
-    [],
-  );
+    if (rankingRequestKey(next) === rankingRequestKey(queryRef.current)) {
+      const intent = ++requestIntent.current;
+      setCurrentQuery(next, intent);
+    } else {
+      void load(next);
+    }
+  }, [load, setCurrentQuery]);
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -295,6 +288,46 @@ export default function RankingApp({
     if (validateRankingDraft(nextDraft) === null)
       navigateDates(commitRankingDraft(nextDraft));
   };
+  const retryFailedQuery = () => {
+    if (requestFailure)
+      void load(requestFailure.query, {
+        version: requestFailure.version,
+        force: true,
+      });
+  };
+  const refreshData = async () => {
+    const intent = ++requestIntent.current;
+    let version: string;
+    try {
+      version = await versionState.checkLatestVersion();
+    } catch (error) {
+      versionState.reportError(error);
+      return;
+    }
+    if (requestIntent.current !== intent) return;
+    const next = { ...queryRef.current };
+    latestDraft.current = toRankingDraft(next);
+    setValidationError(null);
+    await load(next, {
+      version,
+      force: true,
+      commit: false,
+      intent,
+      onSuccess: (request) => {
+        if (requestIntent.current !== request) return;
+        startTransition(() => {
+          versionState.setAdoptedVersion((current) =>
+            requestIntent.current === request ? version : current,
+          );
+          setCurrentQuery(next, request);
+          setDraft((current) =>
+            requestIntent.current === request ? latestDraft.current : current,
+          );
+        });
+      },
+    });
+  };
+  const result = { query: resultQuery, data };
 
   return (
     <section className={rankingIslandClass} aria-label="ランキング検索">
@@ -379,28 +412,36 @@ export default function RankingApp({
           </span>
         </form>
         {validationError && <p role="alert">{validationError}</p>}
-        <div role="status" aria-live="polite">
-          {isPending ? "読み込み中…" : ""}
-        </div>
-        <ResultsBoundary
-          resource={result.data}
-          retry={() => void startRequest(queryRef.current, true)}
-          fallback={
-            <RankingResults
-              query={query}
-              result={{ ...lastSuccessful.current }}
-              isPending={false}
-            />
+        <DataVersionControls
+          availableVersion={versionState.availableVersion}
+          error={versionState.error}
+          isBusy={isFetching > 0 || isPending}
+          isChecking={versionState.isChecking}
+          onRefresh={() => void refreshData()}
+          onCheck={() =>
+            void versionState
+              .checkLatestVersion()
+              .catch(versionState.reportError)
           }
-        >
-          <Suspense fallback={<p role="status">読み込み中…</p>}>
-            <RankingResults
-              query={query}
-              result={result}
-              isPending={isPending}
-            />
-          </Suspense>
-        </ResultsBoundary>
+        />
+        {requestFailure && (
+          <div role="alert">
+            {requestFailure.error !== versionState.error && (
+              <p>{requestFailure.error.message}</p>
+            )}
+            <Button variant="outline" onClick={retryFailedQuery}>
+              再試行
+            </Button>
+          </div>
+        )}
+        <div role="status" aria-live="polite">
+          {isPending || isFetching > 0 ? "読み込み中…" : ""}
+        </div>
+        <RankingResults
+          query={query}
+          result={result}
+          isPending={isPending || isFetching > 0}
+        />
       </Card>
     </section>
   );
@@ -418,13 +459,13 @@ type ResultsProps = {
   query: RankingQuery;
   result: {
     query: RankingRequestQuery;
-    data: RankingData | Promise<RankingData>;
+    data: RankingData;
   };
   isPending: boolean;
 };
 
 function RankingResults({ query, result, isPending }: ResultsProps) {
-  const data = result.data instanceof Promise ? use(result.data) : result.data;
+  const data = result.data;
   const postRows = data.postCounts.slice(0, query.topN);
   const likeRows = data.likesCounts.slice(0, query.topN);
   const resultPeriod = describePeriod(result.query);
@@ -610,49 +651,4 @@ function describePeriod(query: RankingRequestQuery): string {
 function parseTopNControl(value: string): number {
   const count = Number(value);
   return Number.isInteger(count) ? Math.max(1, Math.min(100, count)) : 10;
-}
-
-type ResultsBoundaryProps = {
-  resource: RankingData | Promise<RankingData>;
-  retry: () => void;
-  fallback: ReactNode;
-  children: ReactNode;
-};
-
-class ResultsBoundary extends Component<
-  ResultsBoundaryProps,
-  { resource: ResultsBoundaryProps["resource"]; error: Error | null }
-> {
-  state = { resource: this.props.resource, error: null as Error | null };
-  static getDerivedStateFromProps(
-    props: ResultsBoundaryProps,
-    state: { resource: ResultsBoundaryProps["resource"] },
-  ) {
-    return props.resource !== state.resource
-      ? { resource: props.resource, error: null }
-      : null;
-  }
-  static getDerivedStateFromError(error: unknown) {
-    return {
-      error:
-        error instanceof Error
-          ? error
-          : new Error("ランキングを取得できませんでした"),
-    };
-  }
-  render() {
-    if (this.state.error)
-      return (
-        <>
-          <div role="alert">
-            <p>{this.state.error.message}</p>
-            <Button variant="outline" onClick={this.props.retry}>
-              再試行
-            </Button>
-          </div>
-          {this.props.fallback}
-        </>
-      );
-    return this.props.children;
-  }
 }

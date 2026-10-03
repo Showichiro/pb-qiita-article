@@ -13,20 +13,35 @@ describe("findAllArticles", async () => {
 
   const record = 10;
   const db = await mf.getD1Database("DB");
+  const generationId = "test-generation";
 
   beforeAll(async () => {
+    // Create versioned schema
     await db.exec(
-      "CREATE TABLE `articles` (`id` text PRIMARY KEY NOT NULL,`title` text NOT NULL,`user_id` text NOT NULL,`user_name` text NOT NULL,`created_at` text NOT NULL,`likes_count` integer NOT NULL,`stocks_count` integer NOT NULL);",
+      "CREATE TABLE `data_generations` (`id` text PRIMARY KEY NOT NULL, `state` text NOT NULL, `created_at` text NOT NULL, `published_sequence` integer, `article_count` integer, `tag_count` integer);",
     );
     await db.exec(
-      "CREATE TABLE `tags` (`article_id` text,`id` integer PRIMARY KEY NOT NULL,`name` text NOT NULL,FOREIGN KEY (`article_id`) REFERENCES `articles`(`id`) ON UPDATE cascade ON DELETE cascade);",
+      "CREATE TABLE `generation_articles` (`generation_id` text NOT NULL, `id` text NOT NULL, `title` text NOT NULL, `user_id` text NOT NULL, `user_name` text NOT NULL, `created_at` text NOT NULL, `likes_count` integer NOT NULL, `stocks_count` integer NOT NULL, PRIMARY KEY(`generation_id`, `id`));",
     );
+    await db.exec(
+      "CREATE TABLE `generation_tags` (`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL, `generation_id` text NOT NULL, `article_id` text NOT NULL, `name` text NOT NULL, `position` integer NOT NULL);",
+    );
+
+    // Insert published generation
+    await db
+      .prepare(
+        "INSERT INTO `data_generations` (`id`, `state`, `created_at`, `published_sequence`) VALUES (?, ?, ?, ?)",
+      )
+      .bind(generationId, "published", "2026-10-03T00:00:00Z", 1)
+      .run();
+
     const promises = [...Array(record)].map(async (_, index) => {
       return await db
         .prepare(
-          "INSERT INTO `articles` (`id`, `title`, `user_id`, `user_name`, `created_at`, `likes_count`, `stocks_count`) VALUES (?, ?, ?, ?, ?, ?, ?);",
+          "INSERT INTO `generation_articles` (`generation_id`, `id`, `title`, `user_id`, `user_name`, `created_at`, `likes_count`, `stocks_count`) VALUES (?, ?, ?, ?, ?, ?, ?, ?);",
         )
         .bind(
+          generationId,
           `${index}`,
           `title-${index}`,
           `user-${index}`,
@@ -38,8 +53,8 @@ describe("findAllArticles", async () => {
         .run()
         .then(async () => {
           return await db
-            .prepare("INSERT INTO `tags` (`article_id`, `name`) VALUES (?, ?);")
-            .bind(`${index}`, `tag-${index}`)
+            .prepare("INSERT INTO `generation_tags` (`generation_id`, `article_id`, `name`, `position`) VALUES (?, ?, ?, ?);")
+            .bind(generationId, `${index}`, `tag-${index}`, 0)
             .run();
         });
     });
@@ -53,7 +68,7 @@ describe("findAllArticles", async () => {
   test("limit", async () => {
     const db = await mf.getD1Database("DB");
     const instance = drizzle(db, { schema, logger: true });
-    const results = await findAllArticles(instance, {
+    const results = await findAllArticles(instance, generationId, {
       limit: 2,
       offset: 0,
       since: null,
@@ -95,7 +110,7 @@ describe("findAllArticles", async () => {
   test("default limit", async () => {
     const db = await mf.getD1Database("DB");
     const instance = drizzle(db, { schema, logger: true });
-    const results = await findAllArticles(instance, {
+    const results = await findAllArticles(instance, generationId, {
       limit: null,
       offset: 0,
       since: null,
@@ -127,7 +142,7 @@ describe("findAllArticles", async () => {
   test("offset", async () => {
     const db = await mf.getD1Database("DB");
     const instance = drizzle(db, { schema, logger: true });
-    const results = await findAllArticles(instance, {
+    const results = await findAllArticles(instance, generationId, {
       limit: 1,
       offset: 1,
       since: null,
@@ -155,7 +170,7 @@ describe("findAllArticles", async () => {
   test("default offset", async () => {
     const db = await mf.getD1Database("DB");
     const instance = drizzle(db, { schema, logger: true });
-    const results = await findAllArticles(instance, {
+    const results = await findAllArticles(instance, generationId, {
       limit: 1,
       offset: null,
       since: null,
@@ -183,7 +198,7 @@ describe("findAllArticles", async () => {
   test("since", async () => {
     const db = await mf.getD1Database("DB");
     const instance = drizzle(db, { schema, logger: true });
-    const results = await findAllArticles(instance, {
+    const results = await findAllArticles(instance, generationId, {
       limit: null,
       offset: null,
       since: new Date(9).toISOString(),
@@ -211,7 +226,7 @@ describe("findAllArticles", async () => {
   test("until", async () => {
     const db = await mf.getD1Database("DB");
     const instance = drizzle(db, { schema, logger: true });
-    const results = await findAllArticles(instance, {
+    const results = await findAllArticles(instance, generationId, {
       limit: null,
       offset: null,
       since: null,
@@ -239,7 +254,7 @@ describe("findAllArticles", async () => {
   test("since and util", async () => {
     const db = await mf.getD1Database("DB");
     const instance = drizzle(db, { schema, logger: true });
-    const results = await findAllArticles(instance, {
+    const results = await findAllArticles(instance, generationId, {
       limit: null,
       offset: null,
       since: new Date(0).toISOString(),
@@ -284,7 +299,7 @@ describe("findAllArticles", async () => {
       test("likesCount", async () => {
         const db = await mf.getD1Database("DB");
         const instance = drizzle(db, { schema, logger: true });
-        const results = await findAllArticles(instance, {
+        const results = await findAllArticles(instance, generationId, {
           limit: null,
           offset: null,
           since: null,
@@ -317,7 +332,7 @@ describe("findAllArticles", async () => {
       test("stocksCount", async () => {
         const db = await mf.getD1Database("DB");
         const instance = drizzle(db, { schema, logger: true });
-        const results = await findAllArticles(instance, {
+        const results = await findAllArticles(instance, generationId, {
           limit: null,
           offset: null,
           since: null,
@@ -350,7 +365,7 @@ describe("findAllArticles", async () => {
       test("createdAt", async () => {
         const db = await mf.getD1Database("DB");
         const instance = drizzle(db, { schema, logger: true });
-        const results = await findAllArticles(instance, {
+        const results = await findAllArticles(instance, generationId, {
           limit: null,
           offset: null,
           since: null,
@@ -386,7 +401,7 @@ describe("findAllArticles", async () => {
       test("likesCount", async () => {
         const db = await mf.getD1Database("DB");
         const instance = drizzle(db, { schema, logger: true });
-        const results = await findAllArticles(instance, {
+        const results = await findAllArticles(instance, generationId, {
           limit: null,
           offset: null,
           since: null,
@@ -417,7 +432,7 @@ describe("findAllArticles", async () => {
       test("stocksCount", async () => {
         const db = await mf.getD1Database("DB");
         const instance = drizzle(db, { schema, logger: true });
-        const results = await findAllArticles(instance, {
+        const results = await findAllArticles(instance, generationId, {
           limit: null,
           offset: null,
           since: null,
@@ -448,7 +463,7 @@ describe("findAllArticles", async () => {
       test("createdAt", async () => {
         const db = await mf.getD1Database("DB");
         const instance = drizzle(db, { schema, logger: true });
-        const results = await findAllArticles(instance, {
+        const results = await findAllArticles(instance, generationId, {
           limit: null,
           offset: null,
           since: null,
@@ -595,10 +610,10 @@ describe("literal substring filters beyond D1 LIKE pattern limits", () => {
           "name-match",
         ]);
         expect(
-          await findAllArticles(instance, { ...config, limit: 1, offset: 1 }),
+          await findAllArticles(instance, generationId, { ...config, limit: 1, offset: 1 }),
         ).toEqual([matches[1]]);
         expect(
-          await findAllArticles(instance, { ...config, offset: 2 }),
+          await findAllArticles(instance, generationId, { ...config, offset: 2 }),
         ).toEqual([]);
       } finally {
         await DB.prepare("DELETE FROM tags").run();
@@ -622,20 +637,20 @@ describe("literal substring filters beyond D1 LIKE pattern limits", () => {
       const instance = drizzle(DB, { schema });
       const base = { limit: 10, offset: 0, since: null, until: null };
       expect(
-        await findAllArticles(instance, {
+        await findAllArticles(instance, generationId, {
           ...base,
           q: "mixed ascii Ä日本語",
           author: "mixedwriter",
         }),
       ).toHaveLength(1);
       expect(
-        await findAllArticles(instance, { ...base, q: "ä日本語" }),
+        await findAllArticles(instance, generationId, { ...base, q: "ä日本語" }),
       ).toEqual([]);
       expect(
-        await findAllArticles(instance, { ...base, author: "ä投稿者" }),
+        await findAllArticles(instance, generationId, { ...base, author: "ä投稿者" }),
       ).toEqual([]);
       expect(
-        await findAllArticles(instance, { ...base, author: "Ä投稿者" }),
+        await findAllArticles(instance, generationId, { ...base, author: "Ä投稿者" }),
       ).toHaveLength(1);
     } finally {
       await DB.prepare("DELETE FROM articles").run();

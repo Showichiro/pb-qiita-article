@@ -144,7 +144,8 @@ export function useDebouncedAction<T>(
             return;
           }
 
-          // The action can use this signal to cancel work it owns.
+          // The action receives signal only for debounce timer cancellation
+          // Query transport cancellation is not used per Suspense constraints
           await onAction(value, controllerToUse.signal);
         } catch (error) {
           // Ignore abort errors (superseded by newer input)

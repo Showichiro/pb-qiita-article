@@ -2,6 +2,7 @@ import { getArticleTimeSeries } from "@/db";
 import type { TimeSeriesQuery } from "@/schemas";
 import type { Env } from "@/util";
 import type { Handler } from "hono";
+import { withDataVersion } from "@/util/dataVersion";
 export * from "./page";
 
 export const timeSeriesHandler: Handler<
@@ -13,12 +14,15 @@ export const timeSeriesHandler: Handler<
   }
 > = async (c) => {
   const query = c.req.valid("query");
-  const result = await getArticleTimeSeries(c.var.db, {
-    since: query.since,
-    until: query.until,
-    bucket: query.bucket,
-    author: query.author,
-    tags: query.tags,
+
+  return withDataVersion(c, async (db, generationId) => {
+    const result = await getArticleTimeSeries(db, generationId, {
+      since: query.since,
+      until: query.until,
+      bucket: query.bucket,
+      author: query.author,
+      tags: query.tags,
+    });
+    return c.json(result);
   });
-  return c.json(result);
 };

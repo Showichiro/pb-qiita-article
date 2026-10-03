@@ -1,6 +1,7 @@
 /** @jsxImportSource react */
 import type { ArticleCountGroupByUser, LikesCountSchema } from "@/schemas";
-import { useLayoutEffect, type ComponentType } from "react";
+import { Suspense, useLayoutEffect, type ComponentType } from "react";
+import { QueryErrorResetBoundary } from "@tanstack/react-query";
 import { createRoot, type Root } from "react-dom/client";
 import {
   parseRankingQuery,
@@ -12,11 +13,19 @@ import {
   type RankingDraft,
   type RankingQuery,
 } from "./ranking";
+import {
+  normalizeRankingQuery,
+  rankingLikesQueryKey,
+  rankingPostsQueryKey,
+} from "./queries";
+import { QueryProvider, seedQueryData } from "./query-client";
+import { QueryErrorBoundary } from "./query-error-boundary";
 
 export type RankingInitialData = {
   initialConfig: RankingQuery;
   initialPostCounts: ArticleCountGroupByUser[];
   initialLikesCounts: LikesCountSchema[];
+  initialDataVersion: string;
 };
 
 type AppModule = {
@@ -41,6 +50,12 @@ export function readInitialData(container: HTMLElement): RankingInitialData {
   if (!isRankingQuery(initialConfig)) {
     throw new Error("Invalid ranking initial configuration");
   }
+  const initialDataVersion: unknown =
+    isRecord(data)
+      ? data.dataVersion
+      : container.dataset.dataVersion;
+  if (typeof initialDataVersion !== "string" || initialDataVersion.length === 0)
+    throw new Error("Invalid ranking data version");
   const postCountsAttribute = container.dataset.initialPostCounts;
   const postCounts =
     data !== undefined
@@ -69,6 +84,7 @@ export function readInitialData(container: HTMLElement): RankingInitialData {
     initialConfig,
     initialPostCounts: postCounts,
     initialLikesCounts: likesCounts,
+    initialDataVersion,
   };
 }
 
@@ -103,6 +119,15 @@ export async function mountRankingApp(
     stopTracking();
     return;
   }
+  const requestQuery = normalizeRankingQuery(props.initialConfig);
+  seedQueryData(
+    rankingPostsQueryKey(props.initialDataVersion, requestQuery),
+    { query: requestQuery, rows: props.initialPostCounts },
+  );
+  seedQueryData(
+    rankingLikesQueryKey(props.initialDataVersion, requestQuery),
+    { query: requestQuery, rows: props.initialLikesCounts },
+  );
   const clientContainer = document.createElement("div");
   const fallback = Array.from(container.childNodes);
   const root = createRoot(clientContainer, {
@@ -175,7 +200,22 @@ export async function mountRankingApp(
     return <App {...props} initialDraft={draft} />;
   }
 
-  root.render(<Ready />);
+  root.render(
+    <QueryProvider>
+      <QueryErrorResetBoundary>
+        {({ reset }) => (
+          <QueryErrorBoundary
+            onReset={reset}
+            fallbackMessage="ランキングを取得できませんでした"
+          >
+            <Suspense fallback={<p role="status">読み込み中…</p>}>
+              <Ready />
+            </Suspense>
+          </QueryErrorBoundary>
+        )}
+      </QueryErrorResetBoundary>
+    </QueryProvider>,
+  );
 }
 
 export function readDraft(

@@ -10,6 +10,7 @@ import {
   type TimeSeriesBucket,
   type TimeSeriesResponse,
 } from "@/schemas";
+import { assertGenerationPublished } from "./dataGenerations";
 import { sql, type SQL } from "drizzle-orm";
 import * as schema from "./schema";
 
@@ -42,7 +43,7 @@ const toSafeNonnegativeInteger = (value: unknown): number => {
 };
 
 const bucketStartSql = (bucket: TimeSeriesBucket) => {
-  const utcDate = sql`date(${schema.articles.createdAt})`;
+  const utcDate = sql`date(${schema.generationArticles.createdAt})`;
   if (bucket === "day") return utcDate;
   // weekday 1 advances to Monday, so six days earlier selects Monday on or before.
   if (bucket === "week") return sql`date(${utcDate}, '-6 days', 'weekday 1')`;
@@ -67,8 +68,10 @@ const assertSupportedWindow = (
 
 export const getArticleTimeSeries = async (
   db: DrizzleD1Database<typeof schema>,
+  generationId: string,
   config: ArticleTimeSeriesConfig,
 ): Promise<TimeSeriesResponse> => {
+  await assertGenerationPublished(db, generationId);
   const { since, until, bucket } = config;
   assertSupportedWindow(since, until, bucket);
   const author = config.author?.trim();
@@ -76,24 +79,25 @@ export const getArticleTimeSeries = async (
     ...new Set(config.tags?.map((tag) => tag.trim()).filter(Boolean)),
   ];
   const filters: SQL[] = [
+    sql`${schema.generationArticles.generationId} = ${generationId}`,
     // Half-open UTC instant range: since 00:00 through the end of until.
-    sql`julianday(${schema.articles.createdAt}) >= julianday(${since}) and julianday(${schema.articles.createdAt}) < (julianday(${until}) + 1)`,
+    sql`julianday(${schema.generationArticles.createdAt}) >= julianday(${since}) and julianday(${schema.generationArticles.createdAt}) < (julianday(${until}) + 1)`,
   ];
   if (author) {
     filters.push(
-      sql`(instr(lower(${schema.articles.userId}), lower(${author})) > 0 or instr(lower(${schema.articles.userName}), lower(${author})) > 0)`,
+      sql`(instr(lower(${schema.generationArticles.userId}), lower(${author})) > 0 or instr(lower(${schema.generationArticles.userName}), lower(${author})) > 0)`,
     );
   }
   for (const tag of tags) {
     filters.push(
-      sql`exists (select 1 from tags as selected_tag where selected_tag.article_id = ${schema.articles.id} and selected_tag.name = ${tag})`,
+      sql`exists (select 1 from generation_tags as selected_tag where selected_tag.generation_id = ${generationId} and selected_tag.article_id = ${schema.generationArticles.id} and selected_tag.name = ${tag})`,
     );
   }
   const aggregated = await db.all<Record<string, unknown>>(sql`
     select ${bucketStartSql(bucket)} as bucketStart,
            count(*) as articleCount,
-           sum(${schema.articles.likesCount}) as publishedArticleLikes
-    from ${schema.articles}
+           sum(${schema.generationArticles.likesCount}) as publishedArticleLikes
+    from ${schema.generationArticles}
     where ${sql.join(filters, sql` and `)}
     group by 1
   `);

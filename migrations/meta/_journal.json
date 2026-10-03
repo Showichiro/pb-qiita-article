@@ -8,6 +8,13 @@
       "when": 1711032515004,
       "tag": "0000_quick_vanisher",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1791036422771,
+      "tag": "0001_add_versioned_data",
+      "breakpoints": true
     }
   ]
 }

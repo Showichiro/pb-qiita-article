@@ -1,6 +1,8 @@
 // @vitest-environment jsdom
 /** @jsxImportSource react */
 import { act } from "react";
+import { resetTestQueries } from "./test-query-client";
+beforeEach(resetTestQueries);
 import { mountRankingApp, readDraft, readInitialData } from "./ranking-mount";
 import type { RankingInitialData } from "./ranking-mount";
 import { defaultRankingQuery } from "./ranking";
@@ -21,6 +23,7 @@ function island() {
       config,
       postCounts: [],
       likesCounts: [],
+      dataVersion: "v1",
     },
   );
   return element<HTMLDivElement>("#ranking-app");
@@ -37,6 +40,7 @@ describe("ranking mount", () => {
       initialConfig: config,
       initialPostCounts: [],
       initialLikesCounts: [],
+      initialDataVersion: "v1",
     });
     element<HTMLScriptElement>("#ranking-bootstrap").textContent =
       '{"config":{"since":"","until":"","view":"table","topN":101},"postCounts":[],"likesCounts":[]}';
@@ -141,6 +145,7 @@ describe("ranking mount", () => {
           { userId: "bad", userName: "Bad", count: Number.POSITIVE_INFINITY },
         ],
         likesCounts: [],
+        dataVersion: "v1",
       });
     const load = vi.fn();
     expect(() => readInitialData(container)).toThrow(
@@ -158,6 +163,7 @@ describe("ranking mount", () => {
         config: { ...config, view: "chart", topN: 2 },
         postCounts: [{ userId: "a", userName: "A", count: 1 }],
         likesCounts: [{ userId: "a", userName: "A", totalLikesCount: null }],
+        dataVersion: "v1",
       });
     const data: RankingInitialData = readInitialData(container);
     expect(data.initialConfig).toEqual({

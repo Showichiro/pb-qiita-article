@@ -1,6 +1,8 @@
 // @vitest-environment jsdom
 /** @jsxImportSource react */
 import { act } from "react";
+import { resetTestQueries } from "./test-query-client";
+beforeEach(resetTestQueries);
 import AnalysisApp from "./AnalysisApp";
 import { analysisBucketStarts, type AnalysisBootstrap } from "./analysis";
 import { mountAnalysisApp, readAnalysisInitialData } from "./analysis-mount";
@@ -23,6 +25,7 @@ const bootstrap: AnalysisBootstrap = {
     },
   ],
   tagOptions: ["known"],
+  dataVersion: "v1",
 };
 
 function byId(id: string): HTMLElement {

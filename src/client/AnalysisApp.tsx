@@ -3,7 +3,6 @@ import {
   Component,
   Suspense,
   lazy,
-  use,
   useCallback,
   useRef,
   useState,
@@ -11,6 +10,11 @@ import {
   type FormEvent,
   type ReactNode,
 } from "react";
+import {
+  useIsFetching,
+  useQueryClient,
+  useSuspenseQuery,
+} from "@tanstack/react-query";
 import {
   Button,
   Card,
@@ -28,7 +32,6 @@ import {
   analysisQueryParams,
   analysisStateParams,
   commitAnalysisDraft,
-  fetchAnalysis,
   normalizeAnalysisTags,
   parseAnalysisState,
   toAnalysisDraft,
@@ -39,6 +42,13 @@ import {
   type AnalysisRow,
   type AnalysisView,
 } from "./analysis";
+import { DataVersionControls } from "./data-version-controls";
+import { useDataVersion } from "./data-version";
+import { analysisQueryOptions, normalizeAnalysisQuery } from "./queries";
+import {
+  isDataQuery,
+  useRemovePreviousGeneration,
+} from "./query-client";
 import {
   analysisCardClass,
   analysisActionFocusId,
@@ -86,10 +96,20 @@ export default function AnalysisApp({
     author: initialData.state.author,
     tags: [...initialData.state.tags],
   };
-  const [result, setResult] = useState<{
-    query: AnalysisQuery;
-    data: AnalysisRow[] | Promise<AnalysisRow[]>;
-  }>(() => ({ query: initialQuery, data: initialData.rows }));
+  const [query, setQuery] = useState(initialQuery);
+  const versionState = useDataVersion(initialData.dataVersion);
+  const { adoptedVersion } = versionState;
+  const queryClient = useQueryClient();
+  const queryResult = useSuspenseQuery(
+    analysisQueryOptions(adoptedVersion, query),
+  );
+  const requestQuery = queryResult.data.query;
+  const rows = queryResult.data.rows;
+  const isFetching = useIsFetching({
+    predicate: (activeQuery) =>
+      isDataQuery(activeQuery) && activeQuery.queryKey[0] === "analysis",
+  });
+  useRemovePreviousGeneration(adoptedVersion);
   const [draft, setDraft] = useState(
     () => initialDraft ?? toAnalysisDraft(initialQuery),
   );
@@ -105,48 +125,61 @@ export default function AnalysisApp({
   const [validationError, setValidationError] = useState<string | null>(() =>
     analysisDraftError(draft),
   );
-  const [isPending, startTransition] = useTransition();
-  const active = useRef<{
+  const [requestFailure, setRequestFailure] = useState<{
+    error: Error;
     query: AnalysisQuery;
-    canonical: string;
-    controller?: AbortController;
-    request?: Promise<AnalysisRow[]>;
-  }>({
-    query: initialQuery,
-    canonical: analysisQueryParams(initialQuery).toString(),
-  });
+    version: string;
+  } | null>(null);
+  const [isPending, startTransition] = useTransition();
   const acceptedQuery = useRef(initialQuery);
+  const requestIntent = useRef(0);
 
   const load = useCallback(
-    (query: AnalysisQuery, retry = false): Promise<AnalysisRow[]> => {
-      const canonical = analysisQueryParams(query).toString();
-      if (
-        !retry &&
-        active.current.canonical === canonical &&
-        !active.current.controller?.signal.aborted
-      )
-        return active.current.request ?? Promise.resolve(initialData.rows);
-
-      active.current.controller?.abort();
-      const controller = new AbortController();
-      active.current = { query, canonical, controller };
-      const request = fetchAnalysis(query, controller.signal);
-      const data = request.catch((error: unknown) => {
+    async (
+      next: AnalysisQuery,
+      options: {
+        version?: string;
+        force?: boolean;
+        commit?: boolean;
+        onSuccess?: (intent: number) => void;
+      } = {},
+    ): Promise<boolean> => {
+      const normalized = normalizeAnalysisQuery(next);
+      const version = options.version ?? adoptedVersion;
+      const intent = ++requestIntent.current;
+      const queryOptions = analysisQueryOptions(version, normalized);
+      setRequestFailure(null);
+      try {
+        await queryClient.prefetchQuery(
+          options.force ? { ...queryOptions, staleTime: 0 } : queryOptions,
+        );
+        const data = queryClient.getQueryData(queryOptions.queryKey);
+        const state = queryClient.getQueryState(queryOptions.queryKey);
         if (
-          controller.signal.aborted ||
-          (error instanceof Error && error.name === "AbortError")
+          data === undefined ||
+          (options.force && state?.status === "error")
         )
-          return pendingRows;
-        if (active.current.controller === controller)
-          active.current.canonical = "";
-        throw error;
-      });
-      active.current.request = data;
-      void data.catch(() => {});
-      startTransition(() => setResult({ query, data }));
-      return data;
+          throw state?.error ?? new Error("時系列データを取得できませんでした");
+        if (requestIntent.current !== intent) return false;
+        if (options.onSuccess) options.onSuccess(intent);
+        else if (options.commit !== false)
+          startTransition(() => {
+            acceptedQuery.current = normalized;
+            setQuery(normalized);
+          });
+        return true;
+      } catch (error) {
+        if (requestIntent.current !== intent) return false;
+        const normalizedError =
+          error instanceof Error
+            ? error
+            : new Error("時系列データを取得できませんでした");
+        setRequestFailure({ error: normalizedError, query: normalized, version });
+        versionState.reportError(normalizedError);
+        return false;
+      }
     },
-    [initialData.rows],
+    [adoptedVersion, queryClient, startTransition, versionState.reportError],
   );
 
   const writeUrl = useCallback(
@@ -187,14 +220,14 @@ export default function AnalysisApp({
   );
 
   const acceptDraft = useCallback(
-    (nextDraft: AnalysisDraft) => {
+    async (nextDraft: AnalysisDraft, signal?: AbortSignal) => {
+      if (signal?.aborted) return false;
       const query = commitAnalysisDraft(nextDraft);
-      acceptedQuery.current = query;
       latestDraft.current = toAnalysisDraft(query);
       setDraft(latestDraft.current);
       setValidationError(null);
       writeUrl(query, metric, view);
-      void load(query);
+      return load(query);
     },
     [load, metric, view, writeUrl],
   );
@@ -204,7 +237,7 @@ export default function AnalysisApp({
       if (signal.aborted) return;
       const currentDraft = latestDraft.current;
       if (analysisDraftError(currentDraft)) return;
-      acceptDraft(currentDraft);
+      await acceptDraft(currentDraft, signal);
     },
     [acceptDraft],
   );
@@ -300,7 +333,6 @@ export default function AnalysisApp({
       window.addEventListener("popstate", onPop);
       return () => {
         window.removeEventListener("popstate", onPop);
-        active.current.controller?.abort();
         debouncedSearch.cancel();
       };
     },
@@ -334,6 +366,37 @@ export default function AnalysisApp({
     metric,
     view,
   })}`;
+  const retryFailedQuery = () => {
+    if (requestFailure)
+      void load(requestFailure.query, {
+        version: requestFailure.version,
+        force: true,
+      });
+  };
+  const refreshData = async () => {
+    let version: string;
+    try {
+      version = await versionState.checkLatestVersion();
+    } catch (error) {
+      versionState.reportError(error);
+      return;
+    }
+    await load(query, {
+      version,
+      force: true,
+      commit: false,
+      onSuccess: (intent) => {
+        if (requestIntent.current !== intent) return;
+        writeUrl(query, metric, view);
+        startTransition(() => {
+          versionState.setAdoptedVersion(version);
+          acceptedQuery.current = query;
+          setQuery(query);
+        });
+      },
+    });
+  };
+  const _dataQueryKey = analysisQueryOptions(adoptedVersion, query).queryKey;
   return (
     <section
       ref={subscribeHistory}
@@ -545,20 +608,38 @@ export default function AnalysisApp({
         <p className={analysisNoteClass}>
           いいね数は各期間に公開された記事の現在値であり、その期間中に獲得した数ではありません。
         </p>
-        {isPending && (
+        <DataVersionControls
+          availableVersion={versionState.availableVersion}
+          error={versionState.error}
+          isBusy={isFetching > 0 || isPending}
+          isChecking={versionState.isChecking}
+          onRefresh={() => void refreshData()}
+          onCheck={() =>
+            void versionState
+              .checkLatestVersion()
+              .catch(versionState.reportError)
+          }
+        />
+        {requestFailure && (
+          <div role="alert">
+            {requestFailure.error !== versionState.error && (
+              <p>{requestFailure.error.message}</p>
+            )}
+            <Button variant="outline" onClick={retryFailedQuery}>
+              再試行
+            </Button>
+          </div>
+        )}
+        {(isPending || isFetching > 0) && (
           <div role="status" aria-live="polite">
             読み込み中…
           </div>
         )}
         <AnalysisResults
-          result={result}
+          result={{ query: requestQuery, data: rows }}
           metric={metric}
           view={view}
-          isPending={isPending}
-          retry={() => {
-            debouncedSearch.cancel();
-            void load(active.current.query, true);
-          }}
+          isPending={isPending || isFetching > 0}
         />
       </Card>
     </section>
@@ -570,28 +651,22 @@ function AnalysisResults({
   metric,
   view,
   isPending,
-  retry,
 }: {
   result: {
     query: AnalysisQuery;
-    data: AnalysisRow[] | Promise<AnalysisRow[]>;
+    data: AnalysisRow[];
   };
   metric: AnalysisMetric;
   view: AnalysisView;
   isPending: boolean;
-  retry: () => void;
 }) {
   return (
-    <AnalysisErrorBoundary resource={result.data} retry={retry}>
-      <Suspense fallback={<p role="status">読み込み中…</p>}>
-        <ResolvedAnalysis
-          result={result}
-          metric={metric}
-          view={view}
-          isPending={isPending}
-        />
-      </Suspense>
-    </AnalysisErrorBoundary>
+    <ResolvedAnalysis
+      result={result}
+      metric={metric}
+      view={view}
+      isPending={isPending}
+    />
   );
 }
 
@@ -603,13 +678,13 @@ function ResolvedAnalysis({
 }: {
   result: {
     query: AnalysisQuery;
-    data: AnalysisRow[] | Promise<AnalysisRow[]>;
+    data: AnalysisRow[];
   };
   metric: AnalysisMetric;
   view: AnalysisView;
   isPending: boolean;
 }) {
-  const rows = Array.isArray(result.data) ? result.data : use(result.data);
+  const rows = result.data;
   const likes = metric === "likes";
   const valueKey = likes ? "publishedArticleLikes" : "articleCount";
   const valueLabel = likes ? "公開記事の現在のいいね数" : "記事数";
@@ -688,50 +763,4 @@ function AnalysisChartFallback({ metric }: { metric: AnalysisMetric }) {
       <div className={analysisChartClass} aria-hidden="true" />
     </figure>
   );
-}
-
-const pendingRows: Promise<AnalysisRow[]> = new Promise(() => {});
-
-type BoundaryProps = {
-  resource: AnalysisRow[] | Promise<AnalysisRow[]>;
-  retry: () => void;
-  children: ReactNode;
-};
-
-class AnalysisErrorBoundary extends Component<
-  BoundaryProps,
-  { resource: BoundaryProps["resource"]; error: Error | null }
-> {
-  state = { resource: this.props.resource, error: null as Error | null };
-
-  static getDerivedStateFromProps(
-    props: BoundaryProps,
-    state: { resource: BoundaryProps["resource"] },
-  ) {
-    return props.resource !== state.resource
-      ? { resource: props.resource, error: null }
-      : null;
-  }
-
-  static getDerivedStateFromError(error: unknown) {
-    return {
-      error:
-        error instanceof Error
-          ? error
-          : new Error("時系列データを取得できませんでした"),
-    };
-  }
-
-  render() {
-    if (this.state.error)
-      return (
-        <div role="alert">
-          <p>{this.state.error.message}</p>
-          <Button variant="outline" onClick={this.props.retry}>
-            再試行
-          </Button>
-        </div>
-      );
-    return this.props.children;
-  }
 }

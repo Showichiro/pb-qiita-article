@@ -1,5 +1,8 @@
 import { drizzle, DrizzleD1Database } from "drizzle-orm/d1";
 import {
+  and,
+  eq,
+  sql,
   relations,
   count,
   asc,
@@ -9,15 +12,30 @@ import {
   lte,
   sum,
 } from "drizzle-orm";
-import { text, integer, sqliteTable } from "drizzle-orm/sqlite-core";
+import {
+  foreignKey,
+  index,
+  integer,
+  primaryKey,
+  sqliteTable,
+  text,
+  uniqueIndex,
+} from "drizzle-orm/sqlite-core";
 
 export {
+  and,
+  eq,
+  sql,
   drizzle,
   DrizzleD1Database,
   relations,
   text,
   integer,
   sqliteTable,
+  foreignKey,
+  index,
+  primaryKey,
+  uniqueIndex,
   count,
   asc,
   desc,

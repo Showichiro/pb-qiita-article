@@ -1,4 +1,3 @@
-import { readFile } from "node:fs/promises";
 import { drizzle } from "@/lib";
 import { Miniflare } from "miniflare";
 import { findAllArticles, findArticleTags, schema } from "@/db";
@@ -11,16 +10,33 @@ describe("article search on D1", () => {
     script: "export default { fetch() { return new Response('ok'); } };",
   });
   let db: ReturnType<typeof drizzle<typeof schema>>;
+  const generationId = "test-generation";
+
   beforeAll(async () => {
     const binding = await runtime.getD1Database("DB");
-    for (const statement of (
-      await readFile("migrations/0000_quick_vanisher.sql", "utf8")
-    ).split("--> statement-breakpoint")) {
-      await binding.prepare(statement.trim()).run();
-    }
+    // Create versioned schema
+    await binding.exec(
+      "CREATE TABLE `data_generations` (`id` text PRIMARY KEY NOT NULL, `state` text NOT NULL, `created_at` text NOT NULL, `published_sequence` integer, `article_count` integer, `tag_count` integer);",
+    );
+    await binding.exec(
+      "CREATE TABLE `generation_articles` (`generation_id` text NOT NULL, `id` text NOT NULL, `title` text NOT NULL, `user_id` text NOT NULL, `user_name` text NOT NULL, `created_at` text NOT NULL, `likes_count` integer NOT NULL, `stocks_count` integer NOT NULL, PRIMARY KEY(`generation_id`, `id`));",
+    );
+    await binding.exec(
+      "CREATE TABLE `generation_tags` (`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL, `generation_id` text NOT NULL, `article_id` text NOT NULL, `name` text NOT NULL, `position` integer NOT NULL);",
+    );
+
+    // Insert published generation
+    await binding
+      .prepare(
+        "INSERT INTO `data_generations` (`id`, `state`, `created_at`, `published_sequence`) VALUES (?, ?, ?, ?)",
+      )
+      .bind(generationId, "published", "2026-10-03T00:00:00Z", 1)
+      .run();
+
     db = drizzle(binding, { schema });
-    await db.insert(schema.articles).values([
+    await db.insert(schema.generationArticles).values([
       {
+        generationId,
         id: "a",
         title: "100%_\\ literal",
         userId: "alice",
@@ -30,6 +46,7 @@ describe("article search on D1", () => {
         stocksCount: 2,
       },
       {
+        generationId,
         id: "b",
         title: "100xx literal",
         userId: "bob",
@@ -39,6 +56,7 @@ describe("article search on D1", () => {
         stocksCount: 20,
       },
       {
+        generationId,
         id: "c",
         title: "Other",
         userId: "carol",
@@ -48,17 +66,17 @@ describe("article search on D1", () => {
         stocksCount: 21,
       },
     ]);
-    await db.insert(schema.tags).values([
-      { articleId: "a", name: "C#" },
-      { articleId: "a", name: "C#" },
-      { articleId: "a", name: "a,b" },
-      { articleId: "b", name: "C#" },
-      { articleId: "c", name: "z" },
+    await db.insert(schema.generationTags).values([
+      { generationId, articleId: "a", name: "C#", position: 0 },
+      { generationId, articleId: "a", name: "C#", position: 1 },
+      { generationId, articleId: "a", name: "a,b", position: 2 },
+      { generationId, articleId: "b", name: "C#", position: 0 },
+      { generationId, articleId: "c", name: "z", position: 0 },
     ]);
   });
   afterAll(() => runtime.dispose());
   const search = (filters: Partial<FindAllArticlesConfig>) =>
-    findAllArticles(db, {
+    findAllArticles(db, generationId, {
       limit: 100,
       offset: 0,
       since: null,
@@ -67,7 +85,7 @@ describe("article search on D1", () => {
     });
 
   test("sorted distinct options preserve punctuation", async () => {
-    expect(await findArticleTags(db)).toEqual(["C#", "a,b", "z"]);
+    expect(await findArticleTags(db, generationId)).toEqual(["C#", "a,b", "z"]);
   });
   test.each(["%", "_", "\\", "%_\\", " 100%_\\ "])(
     "title substring treats %s literally",

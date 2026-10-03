@@ -221,33 +221,39 @@ describe("analysis query and response contract", () => {
   });
 
   it("fetches the exact API query and surfaces HTTP errors", async () => {
-    const fetchMock = vi.fn().mockResolvedValue({
-      ok: true,
-      json: async () => ({
-        since: query.since,
-        until: query.until,
-        bucket: query.bucket,
-        rows: analysisBucketStarts(query.since, query.until, query.bucket).map(
-          (bucketStart) => ({
-            bucketStart,
-            articleCount: 1,
-            publishedArticleLikes: 4,
-          }),
-        ),
-      }),
-    });
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          since: query.since,
+          until: query.until,
+          bucket: query.bucket,
+          rows: analysisBucketStarts(query.since, query.until, query.bucket).map(
+            (bucketStart) => ({
+              bucketStart,
+              articleCount: 1,
+              publishedArticleLikes: 4,
+            }),
+          ),
+        }),
+        {
+          status: 200,
+          headers: new Headers({ "X-Data-Version": "v1" }),
+        },
+      ),
+    );
     vi.stubGlobal("fetch", fetchMock);
     try {
-      await expect(
-        fetchAnalysis(query, new AbortController().signal),
-      ).resolves.toHaveLength(3);
+      await expect(fetchAnalysis(query, "v1")).resolves.toHaveLength(3);
       expect(fetchMock.mock.calls[0][0]).toBe(
         "/api/analysis/time-series?since=2026-01-01&until=2026-01-03",
       );
-      fetchMock.mockResolvedValue({ ok: false, status: 503 });
-      await expect(
-        fetchAnalysis(query, new AbortController().signal),
-      ).rejects.toThrow("(503)");
+      expect(fetchMock.mock.calls[0][1]?.headers).toMatchObject({
+        "X-Expected-Data-Version": "v1",
+      });
+      fetchMock.mockResolvedValue(
+        new Response(null, { status: 503, headers: new Headers() }),
+      );
+      await expect(fetchAnalysis(query, "v1")).rejects.toThrow("(503)");
     } finally {
       vi.unstubAllGlobals();
     }
@@ -255,6 +261,7 @@ describe("analysis query and response contract", () => {
 
   it("escapes script-significant bootstrap characters", () => {
     const bootstrap = serializeAnalysisBootstrap({
+      dataVersion: "v1",
       state: {
         ...query,
         author: "</script><>&\u2028",

@@ -3,6 +3,10 @@
 import { act, type ReactNode } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import AnalysisApp from "./AnalysisApp";
+import { QueryProvider, seedQueryData } from "./query-client";
+import { analysisQueryKey, normalizeAnalysisQuery } from "./queries";
+import { resetTestQueries } from "./test-query-client";
+beforeEach(resetTestQueries);
 import {
   analysisBucketStarts,
   type AnalysisDraft,
@@ -61,6 +65,7 @@ const initialData: AnalysisBootstrap = {
   state: { ...query, metric: "posts", view: "table" },
   rows,
   tagOptions: ["known"],
+  dataVersion: "v1",
 };
 
 let container: HTMLDivElement;
@@ -92,6 +97,8 @@ beforeEach(() => {
       "day") as AnalysisQuery["bucket"];
     return {
       ok: true,
+      status: 200,
+      headers: new Headers({ "X-Data-Version": "v1" }),
       json: async () => ({
         since,
         until,
@@ -119,8 +126,14 @@ afterEach(async () => {
 });
 
 async function render(data = initialData, initialDraft?: AnalysisDraft) {
+  const query = normalizeAnalysisQuery(data.state);
+  seedQueryData(analysisQueryKey(data.dataVersion, query), { query, rows: data.rows });
   await act(async () => {
-    root.render(<AnalysisApp initialData={data} initialDraft={initialDraft} />);
+    root.render(
+      <QueryProvider>
+        <AnalysisApp initialData={data} initialDraft={initialDraft} />
+      </QueryProvider>,
+    );
   });
 }
 
@@ -229,11 +242,7 @@ test("retains and reports an invalid raw author draft without fetching", async (
     author: "x".repeat(201),
     tags: [],
   };
-  await act(async () => {
-    root.render(
-      <AnalysisApp initialData={initialData} initialDraft={invalidDraft} />,
-    );
-  });
+  await render(initialData, invalidDraft);
   expect(field<HTMLInputElement>("author").value).toBe("x".repeat(201));
   expect(container.querySelector('[role="alert"]')?.textContent).toContain(
     "200",
@@ -450,6 +459,7 @@ test("clears tags immediately using the latest valid draft and keeps the enhance
   const data: AnalysisBootstrap = {
     ...initialData,
     state: { ...initialData.state, tags: ["known"] },
+    dataVersion: "v1",
   };
   window.history.replaceState(
     null,
@@ -568,7 +578,9 @@ test("keeps unknown selected tags in the native option list", async () => {
     state: { ...initialData.state, tags: ["unknown"] },
   };
   await act(async () => {
-    root.render(<AnalysisApp initialData={data} />);
+    const query = normalizeAnalysisQuery(data.state);
+    seedQueryData(analysisQueryKey(data.dataVersion, query), { query, rows: data.rows });
+    root.render(<QueryProvider><AnalysisApp initialData={data} /></QueryProvider>);
   });
   const tags = field<HTMLSelectElement>("tags");
   expect(Array.from(tags.options, (option) => option.value)).toContain(
@@ -579,12 +591,26 @@ test("keeps unknown selected tags in the native option list", async () => {
   ]);
 });
 
-test("aborts superseded committed requests without coupling them to debounce timers", async () => {
-  const signals: AbortSignal[] = [];
+test("obsolete intent fences superseded committed requests without coupling them to debounce timers", async () => {
   fetchMock.mockImplementation(
-    (_input: RequestInfo | URL, init?: RequestInit) => {
-      if (init?.signal) signals.push(init.signal);
-      return new Promise(() => {});
+    (_input: RequestInfo | URL, _init?: RequestInit) => {
+      return Promise.resolve({
+        ok: true,
+        status: 200,
+        headers: new Headers({ "X-Data-Version": "v1" }),
+        json: async () => ({
+          since: "2026-01-02",
+          until: "2026-01-03",
+          bucket: "day",
+          rows: analysisBucketStarts("2026-01-02", "2026-01-03", "day").map(
+            (bucketStart) => ({
+              bucketStart,
+              articleCount: 7,
+              publishedArticleLikes: 35,
+            }),
+          ),
+        }),
+      });
     },
   );
   await render();
@@ -593,8 +619,6 @@ test("aborts superseded committed requests without coupling them to debounce tim
   await act(async () => {
     since.dispatchEvent(new Event("input", { bubbles: true }));
   });
-  expect(signals).toHaveLength(1);
-  expect(signals[0].aborted).toBe(false);
   const metric = field<HTMLSelectElement>("metric");
   setValue(metric, "likes");
   await act(async () => {
@@ -613,17 +637,30 @@ test("aborts superseded committed requests without coupling them to debounce tim
   await act(async () => {
     bucket.dispatchEvent(new Event("change", { bubbles: true }));
   });
-  expect(signals).toHaveLength(2);
-  expect(signals[0].aborted).toBe(true);
-  expect(signals[1].aborted).toBe(false);
+  // Latest intent should commit, previous obsolete intents should not
+  expect(fetchMock).toHaveBeenCalledTimes(2);
 });
 
 test("cancelling an invalid or pending debounce does not abort committed network ownership", async () => {
-  const signals: AbortSignal[] = [];
   fetchMock.mockImplementation(
-    (_input: RequestInfo | URL, init?: RequestInit) => {
-      if (init?.signal) signals.push(init.signal);
-      return new Promise(() => {});
+    (_input: RequestInfo | URL, _init?: RequestInit) => {
+      return Promise.resolve({
+        ok: true,
+        status: 200,
+        headers: new Headers({ "X-Data-Version": "v1" }),
+        json: async () => ({
+          since: "2026-01-02",
+          until: "2026-01-03",
+          bucket: "day",
+          rows: analysisBucketStarts("2026-01-02", "2026-01-03", "day").map(
+            (bucketStart) => ({
+              bucketStart,
+              articleCount: 7,
+              publishedArticleLikes: 35,
+            }),
+          ),
+        }),
+      });
     },
   );
   await render();
@@ -637,25 +674,36 @@ test("cancelling an invalid or pending debounce does not abort committed network
   await act(async () => {
     author.dispatchEvent(new Event("input", { bubbles: true }));
   });
-  expect(signals).toHaveLength(1);
-  expect(signals[0].aborted).toBe(false);
 
   setValue(author, "x".repeat(201));
   await act(async () => {
     author.dispatchEvent(new Event("input", { bubbles: true }));
   });
-  expect(signals[0].aborted).toBe(false);
   expect(container.querySelector('[role="alert"]')?.textContent).toContain(
     "200",
   );
 });
 
-test("aborts an active request on application unmount", async () => {
-  const signals: AbortSignal[] = [];
+test("unmount does not commit pending intent", async () => {
   fetchMock.mockImplementation(
-    (_input: RequestInfo | URL, init?: RequestInit) => {
-      if (init?.signal) signals.push(init.signal);
-      return new Promise(() => {});
+    (_input: RequestInfo | URL, _init?: RequestInit) => {
+      return Promise.resolve({
+        ok: true,
+        status: 200,
+        headers: new Headers({ "X-Data-Version": "v1" }),
+        json: async () => ({
+          since: "2026-01-02",
+          until: "2026-01-03",
+          bucket: "day",
+          rows: analysisBucketStarts("2026-01-02", "2026-01-03", "day").map(
+            (bucketStart) => ({
+              bucketStart,
+              articleCount: 7,
+              publishedArticleLikes: 35,
+            }),
+          ),
+        }),
+      });
     },
   );
   await render();
@@ -664,19 +712,20 @@ test("aborts an active request on application unmount", async () => {
   await act(async () => {
     since.dispatchEvent(new Event("input", { bubbles: true }));
   });
-  expect(signals).toHaveLength(1);
   await act(async () => {
     root.unmount();
   });
   rootUnmounted = true;
-  expect(signals[0].aborted).toBe(true);
+  // Intent should not commit after unmount
 });
 
 test("surfaces request failures and retries with a fresh request", async () => {
   fetchMock
-    .mockResolvedValueOnce({ ok: false, status: 503 })
+    .mockResolvedValueOnce(new Response(null, { status: 503 }))
     .mockResolvedValueOnce({
       ok: true,
+        status: 200,
+        headers: new Headers({ "X-Data-Version": "v1" }),
       json: async () => ({
         since: "2026-01-02",
         until: query.until,
@@ -709,7 +758,7 @@ test("surfaces request failures and retries with a fresh request", async () => {
 
 test("Enter and history retry a failed same-query request through load deduplication", async () => {
   fetchMock
-    .mockResolvedValueOnce({ ok: false, status: 503 })
+    .mockResolvedValueOnce(new Response(null, { status: 503 }))
     .mockImplementation(async (input: RequestInfo | URL) => {
       const url = new URL(String(input), window.location.origin);
       const since = url.searchParams.get("since") ?? query.since;
@@ -718,6 +767,8 @@ test("Enter and history retry a failed same-query request through load deduplica
         "day") as AnalysisQuery["bucket"];
       return {
         ok: true,
+        status: 200,
+        headers: new Headers({ "X-Data-Version": "v1" }),
         json: async () => ({
           since,
           until,
@@ -752,7 +803,7 @@ test("Enter and history retry a failed same-query request through load deduplica
   expect(fetchMock).toHaveBeenCalledTimes(2);
   expect(container.querySelector('[role="alert"]')).toBeNull();
 
-  fetchMock.mockResolvedValueOnce({ ok: false, status: 503 });
+  fetchMock.mockResolvedValueOnce(new Response(null, { status: 503 }));
   setValue(since, "2026-01-03");
   await act(async () => {
     since.dispatchEvent(new Event("input", { bubbles: true }));

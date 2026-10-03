@@ -1,3 +1,5 @@
+import { assertResponseVersion } from "./data-version";
+
 export type AnalysisBucket = "day" | "week" | "month";
 export type AnalysisMetric = "posts" | "likes";
 export type AnalysisView = "table" | "chart";
@@ -37,6 +39,7 @@ export type AnalysisResponse = Pick<
 };
 
 export type AnalysisBootstrap = {
+  dataVersion: string;
   state: AnalysisState;
   rows: AnalysisRow[];
   tagOptions: string[];
@@ -221,12 +224,18 @@ export function validateAnalysisResponse(
 
 export async function fetchAnalysis(
   query: AnalysisQuery,
-  signal: AbortSignal,
+  expectedVersion: string,
 ): Promise<AnalysisRow[]> {
   const response = await fetch(
     `/api/analysis/time-series?${analysisQueryParams(query)}`,
-    { signal, headers: { Accept: "application/json" } },
+    {
+      headers: {
+        Accept: "application/json",
+        "X-Expected-Data-Version": expectedVersion,
+      },
+    },
   );
+  assertResponseVersion(response, expectedVersion);
   if (!response.ok)
     throw new Error(`時系列データを取得できませんでした (${response.status})`);
   return validateAnalysisResponse(await response.json(), query);

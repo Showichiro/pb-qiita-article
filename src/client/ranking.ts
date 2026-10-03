@@ -1,4 +1,5 @@
 import type { ArticleCountGroupByUser, LikesCountSchema } from "@/schemas";
+import { assertResponseVersion } from "./data-version";
 
 export type RankingQuery = {
   since: string;
@@ -192,6 +193,8 @@ export function serializeRankingBootstrap(value: {
   config: RankingQuery;
   postCounts: ArticleCountGroupByUser[];
   likesCounts: LikesCountSchema[];
+  dataVersion?: string;
+  publishedSequence?: number;
 }): string {
   return JSON.stringify(value).replace(
     /[<>&\u2028\u2029]/g,
@@ -200,40 +203,54 @@ export function serializeRankingBootstrap(value: {
   );
 }
 
-export async function fetchRankingData(
+export async function fetchPostCounts(
   query: RankingRequestQuery,
-  signal: AbortSignal,
-): Promise<{
-  postCounts: ArticleCountGroupByUser[];
-  likesCounts: LikesCountSchema[];
-}> {
+  expectedVersion: string,
+): Promise<ArticleCountGroupByUser[]> {
   const response = await fetch(
     `/api/ranking/post-counts?${rankingRequestParams(query)}`,
-    { signal, headers: { Accept: "application/json" } },
+    {
+      headers: {
+        Accept: "application/json",
+        "X-Expected-Data-Version": expectedVersion,
+      },
+    },
   );
+  assertResponseVersion(response, expectedVersion);
   if (!response.ok)
     throw new Error(
       `記事数ランキングを取得できませんでした (${response.status})`,
     );
   const postCounts: unknown = await response.json();
+  if (!isPostCountRows(postCounts))
+    throw new Error(
+      "記事数ランキングデータの形式が正しくありません",
+    );
+  return postCounts;
+}
 
+export async function fetchLikesCounts(
+  query: RankingRequestQuery,
+  expectedVersion: string,
+): Promise<LikesCountSchema[]> {
   const likesResponse = await fetch(
     `/api/ranking/likes-counts?${rankingRequestParams(query)}`,
-    { signal, headers: { Accept: "application/json" } },
+    {
+      headers: {
+        Accept: "application/json",
+        "X-Expected-Data-Version": expectedVersion,
+      },
+    },
   );
+  assertResponseVersion(likesResponse, expectedVersion);
   if (!likesResponse.ok)
     throw new Error(
       `いいね数ランキングを取得できませんでした (${likesResponse.status})`,
     );
   const likesCounts: unknown = await likesResponse.json();
-
-  if (!isPostCountRows(postCounts))
-    throw new Error("記事数ランキングデータの形式が正しくありません");
-
   if (!isLikesCountRows(likesCounts))
     throw new Error("いいね数ランキングデータの形式が正しくありません");
-
-  return { postCounts, likesCounts };
+  return likesCounts;
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

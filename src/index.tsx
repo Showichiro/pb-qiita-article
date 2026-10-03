@@ -10,6 +10,8 @@ import {
 } from "@/schemas";
 import {
   articlesRoute,
+  dataVersionRoute,
+  dataVersionsRoute,
   likesCountsRankingRoute,
   postCountsRankingRoute,
   timeSeriesRoute,
@@ -18,6 +20,8 @@ import {
   articleApiHandler,
   articlePageHandler,
   analysisPageHandler,
+  dataVersionHandler,
+  dataVersionsHandler,
   likesCountsRankingHandler,
   postCountsHandler,
   rankingPageHandler,
@@ -34,7 +38,7 @@ app.openAPIRegistry.register("ArticleCount", articleCountGroupByUserSchema);
 app.openAPIRegistry.register("LikesCount", likesCountSchema);
 app.openAPIRegistry.register("TimeSeries", timeSeriesResponseSchema);
 
-export default app
+const routes = app
   // api
   .openapi(articlesRoute, articleApiHandler, BadRequestHandler)
   .openapi(postCountsRankingRoute, postCountsHandler, BadRequestHandler)
@@ -44,6 +48,8 @@ export default app
     BadRequestHandler,
   )
   .openapi(timeSeriesRoute, timeSeriesHandler, BadRequestHandler)
+  .openapi(dataVersionRoute, dataVersionHandler)
+  .openapi(dataVersionsRoute, dataVersionsHandler)
   // view
   .get("/", (c) => {
     return c.redirect("/articles");
@@ -63,3 +69,6 @@ export default app
     zValidator("query", timeSeriesQuery, BadRequestHandler),
     analysisPageHandler,
   );
+
+export default routes;
+export type AppType = typeof routes;

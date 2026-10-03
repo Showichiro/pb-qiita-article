@@ -19,15 +19,17 @@ import { ArticlesSearch } from "./search";
 export const ArticlesPage: FC<{
   db: DrizzleD1Database<typeof schema>;
   config: FindAllArticlesConfig;
-}> = async ({ config, db }) => {
+  dataVersion: string;
+  publishedSequence: number;
+}> = async ({ config, db, dataVersion, publishedSequence }) => {
   const query = parseArticleQuery(configQueryParams(config));
-  const articles = await findAllArticles(db, {
+  const articles = await findAllArticles(db, dataVersion, {
     ...query,
     since: query.since || null,
     until: query.until || null,
   });
   const tagOptions = normalizeTags([
-    ...(await findArticleTags(db)),
+    ...(await findArticleTags(db, dataVersion)),
     ...query.tags,
   ]);
   return (
@@ -44,7 +46,13 @@ export const ArticlesPage: FC<{
         </div>
         <script id="articles-bootstrap" type="application/json">
           {raw(
-            serializeArticleBootstrap({ config: query, articles, tagOptions }),
+            serializeArticleBootstrap({
+              config: query,
+              articles,
+              tagOptions,
+              dataVersion,
+              publishedSequence,
+            }),
           )}
         </script>
       </PageLayout>
