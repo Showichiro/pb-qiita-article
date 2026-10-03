@@ -255,6 +255,10 @@ export default function ArticlesApp({
       if (
         articleQueryParams(commitArticleDraft(nextDraft)).toString() ===
           articleQueryParams(query).toString() &&
+        articleQueryParams(commitArticleDraft(nextDraft)).toString() ===
+          articleQueryParams(
+            parseArticleQuery(new URLSearchParams(window.location.search)),
+          ).toString() &&
         !requestFailure
       ) {
         debouncedSearch.cancel();

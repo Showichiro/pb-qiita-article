@@ -275,6 +275,37 @@ it("does not submit an Enter key while tracked IME composition is active", async
   });
   expect(resultCalls()).toHaveLength(0);
 });
+it("clears a pending tag selection back to the displayed cached query", async () => {
+  await mount();
+  let finish: (response: Response) => void = () => {
+    throw new Error("No pending tag request");
+  };
+  resultRequest = () =>
+    new Promise<Response>((resolve) => {
+      finish = resolve;
+    });
+  const select = host.querySelector('[name="tags"]');
+  if (!(select instanceof HTMLSelectElement)) throw new Error("Missing tags");
+  await act(async () => {
+    select.options[0].selected = true;
+    select.dispatchEvent(new Event("change", { bubbles: true }));
+  });
+  await settle();
+  expect(new URLSearchParams(window.location.search).getAll("tags")).toEqual([
+    "test",
+  ]);
+  await click('[data-focus-id="articles-tag-clear"]');
+  expect(new URLSearchParams(window.location.search).getAll("tags")).toEqual(
+    [],
+  );
+  expect(resultCalls()).toHaveLength(1);
+  await act(async () =>
+    finish(resultResponse([{ ...rows[0], title: "Obsolete tagged result" }])),
+  );
+  await settle();
+  expect(host.textContent).toContain("Original article");
+  expect(host.textContent).not.toContain("Obsolete tagged result");
+});
 it("cancels debounce work when the island unmounts", async () => {
   await mount();
   vi.useFakeTimers();
