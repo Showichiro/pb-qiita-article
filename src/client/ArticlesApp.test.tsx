@@ -367,3 +367,36 @@ it("starts a fresh mobile feed when search conditions change", async () => {
   expect(host.textContent).not.toContain("Next article");
   delete (window as Partial<Window>).matchMedia;
 });
+
+test("period shortcuts preserve filters, reset pagination, and restore selection on history navigation", async () => {
+  await mount({
+    ...defaultArticleQuery,
+    q: "React",
+    author: "writer",
+    tags: ["test"],
+    offset: 20,
+  });
+  await click('[data-focus-id="period-30days"]');
+  const params = new URLSearchParams(window.location.search);
+  expect(params.get("q")).toBe("React");
+  expect(params.get("author")).toBe("writer");
+  expect(params.getAll("tags")).toEqual(["test"]);
+  expect(params.get("offset") ?? "0").toBe("0");
+  expect(params.get("until")).toMatch(/T23:59:59.999Z$/);
+  expect(resultCalls()).toHaveLength(1);
+  expect(
+    host
+      .querySelector('[data-focus-id="period-30days"]')
+      ?.getAttribute("aria-pressed"),
+  ).toBe("true");
+  await click('[data-focus-id="period-all"]');
+  expect(new URLSearchParams(window.location.search).has("until")).toBe(false);
+  window.history.replaceState(null, "", `/articles?${params}`);
+  await act(async () => window.dispatchEvent(new PopStateEvent("popstate")));
+  await settle();
+  expect(
+    host
+      .querySelector('[data-focus-id="period-30days"]')
+      ?.getAttribute("aria-pressed"),
+  ).toBe("true");
+});

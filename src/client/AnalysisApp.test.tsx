@@ -834,3 +834,34 @@ test("Enter and history retry a failed same-query request through load deduplica
   expect(fetchMock).toHaveBeenCalledTimes(4);
   expect(container.querySelector('[role="alert"]')).toBeNull();
 });
+
+test("period shortcuts apply both dates in one request and retain analysis settings", async () => {
+  await render({
+    ...initialData,
+    state: {
+      ...initialData.state,
+      author: "ada",
+      tags: ["React"],
+      metric: "likes",
+      view: "chart",
+    },
+  });
+  await act(async () =>
+    container
+      .querySelector<HTMLButtonElement>('[data-focus-id="period-30days"]')
+      ?.click(),
+  );
+  const params = new URLSearchParams(window.location.search);
+  expect(params.get("author")).toBe("ada");
+  expect(params.getAll("tags")).toEqual(["React"]);
+  expect(params.get("metric")).toBe("likes");
+  expect(params.get("view")).toBe("chart");
+  expect(params.get("until")).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+  expect(fetchMock).toHaveBeenCalledTimes(1);
+  expect(container.querySelector('[data-focus-id="period-all"]')).toBeNull();
+  expect(
+    container
+      .querySelector('[data-focus-id="period-30days"]')
+      ?.getAttribute("aria-pressed"),
+  ).toBe("true");
+});

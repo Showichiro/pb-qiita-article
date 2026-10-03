@@ -1,3 +1,4 @@
+import { NativePeriodShortcuts } from "@/pages/period-shortcuts";
 import { NativeFilterSheet } from "@/pages/filter-sheet";
 import {
   articleQueryParams,
@@ -123,6 +124,12 @@ export const ArticlesSearch: FC<{
   return (
     <section class={articlesIslandClass} aria-label="記事検索">
       <div data-slot="card" class={cn(cardClass, articlesCardExtraClass)}>
+        <NativePeriodShortcuts
+          range={query}
+          href={(range) =>
+            `/articles?${articleQueryParams({ ...query, ...range, offset: 0 })}`
+          }
+        />
         <NativeFilterSheet id="articles-filters">
           <form
             id="articles-filters-form"

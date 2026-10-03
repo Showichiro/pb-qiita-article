@@ -1,4 +1,5 @@
 /** @jsxImportSource react */
+import { PeriodShortcuts } from "./PeriodShortcuts";
 import { FilterSheet } from "./filter-sheet";
 import {
   useEffect,
@@ -334,6 +335,17 @@ export default function RankingApp({
     <section className={rankingIslandClass} aria-label="ランキング検索">
       <HistorySubscription onPopState={onPopState} />
       <Card className={rankingCardExtraClass}>
+        <PeriodShortcuts
+          range={draft}
+          onChange={(range) => {
+            const next = { ...latestDraft.current, ...range };
+            latestDraft.current = next;
+            setDraft(next);
+            const error = validateRankingDraft(next);
+            setValidationError(error);
+            if (!error) navigateDates(commitRankingDraft(next));
+          }}
+        />
         <FilterSheet id="ranking-filters">
           <form
             action="/ranking"

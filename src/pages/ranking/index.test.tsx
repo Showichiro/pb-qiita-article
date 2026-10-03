@@ -124,3 +124,9 @@ describe("RankingPage SSR integration", () => {
     expect(text).toContain("期間内に公開された記事の現在の合計いいね数です。");
   });
 });
+
+beforeEach(() => {
+  vi.useFakeTimers({ toFake: ["Date"] });
+  vi.setSystemTime(new Date("2026-10-04T00:00:00Z"));
+});
+afterEach(() => vi.useRealTimers());

@@ -1,4 +1,5 @@
 /** @jsxImportSource react */
+import { PeriodShortcuts } from "./PeriodShortcuts";
 import { FilterSheet } from "./filter-sheet";
 import {
   Component,
@@ -423,6 +424,17 @@ export default function AnalysisApp({
       aria-label="時系列分析"
     >
       <Card className={analysisCardClass}>
+        <PeriodShortcuts
+          range={draft}
+          dateOnly
+          onChange={(range) => {
+            requestIntent.current++;
+            const next = { ...latestDraft.current, ...range };
+            latestDraft.current = next;
+            setDraft(next);
+            scheduleSearch(next, true);
+          }}
+        />
         <FilterSheet id="analysis-filters">
           <form
             action="/analysis"
