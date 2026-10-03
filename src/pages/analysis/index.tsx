@@ -1,3 +1,4 @@
+import { NativePeriodShortcuts } from "@/pages/period-shortcuts";
 import { NativeFilterSheet } from "@/pages/filter-sheet";
 import { Header, PageLayout, PageTitle } from "@/components";
 import {
@@ -103,6 +104,13 @@ export const AnalysisPage: FC<AnalysisBootstrap> = (bootstrap) => {
         <div id="analysis-app">
           <section class={analysisIslandClass} aria-label="時系列分析">
             <div data-slot="card" class={cn(cardClass, analysisCardClass)}>
+              <NativePeriodShortcuts
+                range={state}
+                dateOnly
+                href={(range) =>
+                  `/analysis?${analysisStateParams({ ...state, ...range })}`
+                }
+              />
               <NativeFilterSheet id="analysis-filters">
                 <form
                   id="analysis-filters-form"

@@ -226,3 +226,9 @@ describe("ArticlesPage", async () => {
     expect(text).toMatchSnapshot();
   });
 });
+
+beforeEach(() => {
+  vi.useFakeTimers({ toFake: ["Date"] });
+  vi.setSystemTime(new Date("2026-10-04T00:00:00Z"));
+});
+afterEach(() => vi.useRealTimers());

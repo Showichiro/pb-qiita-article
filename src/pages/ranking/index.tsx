@@ -1,3 +1,5 @@
+import { NativePeriodShortcuts } from "@/pages/period-shortcuts";
+import { configQueryParams } from "@/client/articles";
 import { NativeFilterSheet } from "@/pages/filter-sheet";
 import {
   Header,
@@ -65,6 +67,12 @@ export const RankingPage: FC<{
           </script>
           <section aria-label="ランキング検索">
             <div data-slot="card" class={cn(cardClass, rankingCardExtraClass)}>
+              <NativePeriodShortcuts
+                range={{ since: config.since ?? "", until: config.until ?? "" }}
+                href={(range) =>
+                  `/ranking?${configQueryParams({ ...config, ...range })}`
+                }
+              />
               <NativeFilterSheet id="ranking-filters">
                 <form
                   id="ranking-filters-form"

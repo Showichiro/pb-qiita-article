@@ -1,4 +1,5 @@
 /** @jsxImportSource react */
+import { PeriodShortcuts } from "./PeriodShortcuts";
 import { FilterSheet } from "./filter-sheet";
 import {
   useCallback,
@@ -400,6 +401,16 @@ export default function ArticlesApp({
       aria-label="記事検索"
     >
       <Card className={articlesCardExtraClass}>
+        <PeriodShortcuts
+          range={draft}
+          onChange={(range) => {
+            requestIntent.current++;
+            const next = { ...latestDraftRef.current, ...range };
+            latestDraftRef.current = next;
+            setDraft(next);
+            scheduleSearch(next, true);
+          }}
+        />
         <FilterSheet id="articles-filters">
           <form
             action="/articles"
