@@ -8,8 +8,6 @@ import {
 import {
   periodGroupClass,
   periodButtonClass,
-  periodNoteClass,
-  periodNote,
 } from "@/client/period-shortcuts-presentation";
 import { buttonVariants } from "@/client/ui/classes";
 export const NativePeriodShortcuts: FC<{
@@ -40,7 +38,6 @@ export const NativePeriodShortcuts: FC<{
             </a>
           );
         })}
-      <p class={periodNoteClass}>{periodNote}</p>
     </fieldset>
   );
 };

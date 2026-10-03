@@ -9,8 +9,6 @@ import {
 import {
   periodGroupClass,
   periodButtonClass,
-  periodNoteClass,
-  periodNote,
 } from "./period-shortcuts-presentation";
 export function PeriodShortcuts({
   range,
@@ -43,7 +41,6 @@ export function PeriodShortcuts({
             </Button>
           );
         })}
-      <p className={periodNoteClass}>{periodNote}</p>
     </fieldset>
   );
 }
