@@ -108,10 +108,27 @@ Official references:
 
 CI validates pull requests without Cloudflare credentials. Same-repository PRs also deploy Worker previews; forks and Dependabot skip this credential-dependent job.
 Pushes to main deploy the Worker. Set repository secrets CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID.
-The token must allow Workers deployment and access to the existing D1 binding; a Pages-only token needs updated permissions.
-Hosted Worker previews use the existing D1 binding, so they read the same data as
-production. This is separate from local `bun run preview`, which uses local D1.
-Preview validation does not run remote migrations.
+The token must allow Worker Preview deployment and D1 database list/create/query access.
+
+Each hosted preview uses a dedicated shared nonproduction D1 named
+`pb-qiita-preview`, never the production binding. The workflow creates that
+database on first use and reuses it by exact name; it applies the checked-in
+schema and inserts eight fictional articles and sixteen fictional tags once,
+in one atomic batch marked `fixture-v1`. It does not read or export production
+data or the `data/` seed files. Every run verifies the actual `isPreview`
+configuration resolves to the provisioned nonproduction D1 before deployment.
+The four requested PR previews share this small synthetic fixture database.
+The articles are dated 2026-07-08 through 2026-10-02; for the default 90-day
+analysis view at the time of this change, use
+`/analysis?since=2026-07-06&until=2026-10-03&bucket=day`.
+
+The preview job checks out the exact PR head SHA, records both stable and
+immutable deployment URLs in the job summary, a PR comment, and a
+`worker-preview-pr-<number>-<sha>` artifact. The current `cf` beta exposes no
+preview-delete command; after a PR closes, remove its Preview using the
+Cloudflare dashboard. Retire the shared preview D1 only after all previews
+using it are removed, and verify its ID is not the production database first.
+Local `bun run preview` remains separate and uses local D1.
 
 ~~~sh
 # Authenticate separately from an existing Wrangler login:
@@ -127,8 +144,10 @@ After the first successful Worker deployment, update external links or configure
 No production deployment or remote migration is required for local verification.
 Qiita refresh runs in the Worker at 15:00 UTC (00:00 JST) daily. Configure the secret QIITA_API_KEY in Cloudflare Dashboard: Workers & Pages > pb-qiita-articles > Settings > Variables and Secrets (type: Secret); the former GitHub QIITA_API secret is not automatically available to Workers. All org:primebrains pages are fetched and validated before D1 is read or changed. Only changed articles and tag sets are written with prepared statements in one transactional D1 batch. API errors, invalid responses, duplicate IDs, changing totals or pagination limits abort the run without writes. Successful runs log change counts; failures propagate to Cron monitoring. SQL snapshots and the update-PR workflow have been removed. Local databases start empty after migrations; tests create their own fixtures.
 
+Hosted preview D1 usage is isolated from production but still counts against account-level D1 usage limits.
+
 Dependency overrides pin patched esbuild, sharp and undici versions; bun audit reports no vulnerabilities. Drizzle migration generation and D1 tests are verified against these overrides.
-Local cf D1 migration checks run on Windows in CI: the beta CLI stalled during local migration setup on the Ubuntu runner. Linux still validates types, lint, all D1 tests, Workers builds and deployment dry-runs; preview deployment is verified on Linux.
+Local cf D1 migration checks run on Windows in CI: the beta CLI stalled during local migration setup on the Ubuntu runner. Linux still validates types, lint, all D1 tests, Workers builds and deployment dry-runs; preview deployment is verified on Linux. The preview bootstrap/config/output helpers have standalone mock and Miniflare coverage via `bun run test:preview`.
 
 
 ### Article search
