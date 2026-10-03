@@ -1,3 +1,7 @@
+import {
+  migrateTestGeneration,
+  refreshTestGeneration,
+} from "@/db/test-generation";
 import { renderer } from "@/util";
 import { Miniflare } from "miniflare";
 import { ArticlesContainer } from ".";
@@ -46,6 +50,7 @@ describe("ArticlesContainer", async () => {
         });
     });
     await Promise.all(promises);
+    await migrateTestGeneration(db);
   });
 
   afterAll(async () => {
@@ -55,8 +60,10 @@ describe("ArticlesContainer", async () => {
   const instance = drizzle(db, { schema, logger: true });
 
   it("should render article table", async () => {
+    await refreshTestGeneration(db);
     const { text } = await renderer(
       <ArticlesContainer
+        dataVersion="legacy"
         db={instance}
         config={{ limit: null, offset: null, since: null, until: null }}
       />,

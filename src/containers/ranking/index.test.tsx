@@ -1,3 +1,7 @@
+import {
+  migrateTestGeneration,
+  refreshTestGeneration,
+} from "@/db/test-generation";
 import { schema } from "@/db";
 import { drizzle } from "@/lib";
 import { renderer } from "@/util";
@@ -46,6 +50,7 @@ describe("RankningContainer", async () => {
         });
     });
     await Promise.all(promises);
+    await migrateTestGeneration(db);
   });
 
   afterAll(async () => {
@@ -55,8 +60,13 @@ describe("RankningContainer", async () => {
   const instance = drizzle(db, { schema, logger: true });
 
   it("should render ranking page", async () => {
+    await refreshTestGeneration(db);
     const { text } = await renderer(
-      <RankningContainer db={instance} config={{ since: null, until: null }} />,
+      <RankningContainer
+        dataVersion="legacy"
+        db={instance}
+        config={{ since: null, until: null }}
+      />,
     );
     expect(text).toMatchSnapshot();
   });

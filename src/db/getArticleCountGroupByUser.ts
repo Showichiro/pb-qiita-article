@@ -1,12 +1,15 @@
 import {
   type DrizzleD1Database,
   asc,
+  and,
   count,
   desc,
   between,
+  eq,
   gte,
   lte,
 } from "@/lib";
+import { assertGenerationPublished } from "./dataGenerations";
 import { schema } from "@/db";
 import type { ArticleCountGroupByUser } from "@/schemas";
 
@@ -55,35 +58,33 @@ export type RankingConfig = {
  */
 export const getArticleCountGroupByUser = async (
   db: DrizzleD1Database<typeof schema>,
+  generationId: string,
   { since, until, sort = "desc" }: RankingConfig,
 ): Promise<Array<ArticleCountGroupByUser>> => {
+  await assertGenerationPublished(db, generationId);
   const results = await db
     .select({
-      count: count(schema.articles.id),
-      userId: schema.articles.userId,
-      userName: schema.articles.userName,
-      createdAt: schema.articles.createdAt,
+      count: count(schema.generationArticles.id),
+      userId: schema.generationArticles.userId,
+      userName: schema.generationArticles.userName,
     })
-    .from(schema.articles)
+    .from(schema.generationArticles)
     .where(
-      !since && !until
-        ? undefined
-        : (fileds) => {
-            if (since && until) {
-              return between(fileds.createdAt, since, until);
-            }
-            if (since) {
-              return gte(fileds.createdAt, since);
-            }
-            if (until) {
-              return lte(fileds.createdAt, until);
-            }
-          },
+      and(
+        eq(schema.generationArticles.generationId, generationId),
+        since && until
+          ? between(schema.generationArticles.createdAt, since, until)
+          : since
+            ? gte(schema.generationArticles.createdAt, since)
+            : until
+              ? lte(schema.generationArticles.createdAt, until)
+              : undefined,
+      ),
     )
-    .groupBy((fileds) => fileds.userId)
-    .orderBy((fileds) => [
-      sort === "asc" ? asc(fileds.count) : desc(fileds.count),
+    .groupBy((fields) => fields.userId)
+    .orderBy((fields) => [
+      sort === "asc" ? asc(fields.count) : desc(fields.count),
     ])
     .all();
-  return results.map(({ createdAt, ...rest }) => ({ ...rest }));
+  return results;
 };

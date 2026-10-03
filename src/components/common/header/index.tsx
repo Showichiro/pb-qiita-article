@@ -37,6 +37,9 @@ export const Header: FC<{ children?: Child }> = ({ children }) => {
             <li>
               <a href="/ranking">いいね・投稿数ランキング</a>
             </li>
+            <li>
+              <a href="/analysis">記事の時系列分析</a>
+            </li>
           </ul>
         </div>
       </div>

@@ -1,12 +1,15 @@
 import {
   asc,
+  and,
   between,
   desc,
   type DrizzleD1Database,
+  eq,
   gte,
   lte,
   sum,
 } from "@/lib";
+import { assertGenerationPublished } from "./dataGenerations";
 import type { LikesCountSchema } from "@/schemas";
 import { type RankingConfig, schema } from "@/db";
 
@@ -24,39 +27,35 @@ import { type RankingConfig, schema } from "@/db";
  */
 export const getLikesCountGroupByUser = async (
   db: DrizzleD1Database<typeof schema>,
+  generationId: string,
   { since, until, sort = "desc" }: RankingConfig,
 ): Promise<Array<LikesCountSchema>> => {
+  await assertGenerationPublished(db, generationId);
   const results = await db
     .select({
-      totalLikesCount: sum(schema.articles.likesCount),
-      userId: schema.articles.userId,
-      userName: schema.articles.userName,
-      createdAt: schema.articles.createdAt,
+      totalLikesCount: sum(schema.generationArticles.likesCount),
+      userId: schema.generationArticles.userId,
+      userName: schema.generationArticles.userName,
     })
-    .from(schema.articles)
+    .from(schema.generationArticles)
     .where(
-      !since && !until
-        ? undefined
-        : (fileds) => {
-            if (since && until) {
-              return between(fileds.createdAt, since, until);
-            }
-            if (since) {
-              return gte(fileds.createdAt, since);
-            }
-            if (until) {
-              return lte(fileds.createdAt, until);
-            }
-          },
+      and(
+        eq(schema.generationArticles.generationId, generationId),
+        since && until
+          ? between(schema.generationArticles.createdAt, since, until)
+          : since
+            ? gte(schema.generationArticles.createdAt, since)
+            : until
+              ? lte(schema.generationArticles.createdAt, until)
+              : undefined,
+      ),
     )
-    .groupBy((fileds) => fileds.userId)
-    .orderBy((fileds) => [
+    .groupBy((fields) => fields.userId)
+    .orderBy((fields) => [
       sort === "asc"
-        ? asc(fileds.totalLikesCount)
-        : desc(fileds.totalLikesCount),
+        ? asc(fields.totalLikesCount)
+        : desc(fields.totalLikesCount),
     ])
     .all();
-  return results.map(({ createdAt, ...rest }) => ({
-    ...rest,
-  }));
+  return results;
 };

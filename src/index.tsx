@@ -5,18 +5,27 @@ import {
   articlesQuery,
   countQuery,
   likesCountSchema,
+  timeSeriesQuery,
+  timeSeriesResponseSchema,
 } from "@/schemas";
 import {
   articlesRoute,
+  dataVersionRoute,
+  dataVersionsRoute,
   likesCountsRankingRoute,
   postCountsRankingRoute,
+  timeSeriesRoute,
 } from "@/openapi";
 import {
   articleApiHandler,
   articlePageHandler,
+  analysisPageHandler,
+  dataVersionHandler,
+  dataVersionsHandler,
   likesCountsRankingHandler,
   postCountsHandler,
   rankingPageHandler,
+  timeSeriesHandler,
   BadRequestHandler,
 } from "@/handlers";
 import { createHonoWithDBAndOpenAPI } from "./util/factory";
@@ -27,8 +36,9 @@ const app = createHonoWithDBAndOpenAPI();
 app.openAPIRegistry.register("Article", articleSchema);
 app.openAPIRegistry.register("ArticleCount", articleCountGroupByUserSchema);
 app.openAPIRegistry.register("LikesCount", likesCountSchema);
+app.openAPIRegistry.register("TimeSeries", timeSeriesResponseSchema);
 
-export default app
+const routes = app
   // api
   .openapi(articlesRoute, articleApiHandler, BadRequestHandler)
   .openapi(postCountsRankingRoute, postCountsHandler, BadRequestHandler)
@@ -37,6 +47,9 @@ export default app
     likesCountsRankingHandler,
     BadRequestHandler,
   )
+  .openapi(timeSeriesRoute, timeSeriesHandler, BadRequestHandler)
+  .openapi(dataVersionRoute, dataVersionHandler)
+  .openapi(dataVersionsRoute, dataVersionsHandler)
   // view
   .get("/", (c) => {
     return c.redirect("/articles");
@@ -50,4 +63,12 @@ export default app
     "/ranking",
     zValidator("query", countQuery, BadRequestHandler),
     rankingPageHandler,
+  )
+  .get(
+    "/analysis",
+    zValidator("query", timeSeriesQuery, BadRequestHandler),
+    analysisPageHandler,
   );
+
+export default routes;
+export type AppType = typeof routes;

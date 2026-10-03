@@ -13,6 +13,11 @@ export const postCountsRankingRoute = createRoute({
     query: countQuery,
   },
   responses: {
+    409: {
+      description:
+        "Requested immutable data generation is no longer retained; X-Data-Version identifies the current generation",
+    },
+    503: { description: "No published active data generation" },
     200: {
       description: "get post counts ranking",
       content: {
@@ -35,6 +40,11 @@ export const likesCountsRankingRoute = createRoute({
     query: countQuery,
   },
   responses: {
+    409: {
+      description:
+        "Requested immutable data generation is no longer retained; X-Data-Version identifies the current generation",
+    },
+    503: { description: "No published active data generation" },
     200: {
       description: "get likes counts ranking",
       content: {

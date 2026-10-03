@@ -6,8 +6,9 @@ import type { FC } from "hono/jsx";
 export const ArticlesContainer: FC<{
   db: DrizzleD1Database<typeof schema>;
   config: FindAllArticlesConfig;
-}> = async ({ config, db }) => {
-  const articles = await findAllArticles(db, config);
+  dataVersion: string;
+}> = async ({ config, db, dataVersion }) => {
+  const articles = await findAllArticles(db, dataVersion, config);
 
   return <ArticlesTable articles={articles} />;
 };

@@ -1,4 +1,8 @@
 @import "tailwindcss";
+/* Must stay with the top-level imports. Vite drops a later @import, which
+   left these token rules on the ArticlesApp chunk and changed control paint
+   only after that chunk loaded. */
+@import "./client/ui.css";
 
 @config "../tailwind.config.js";
 @plugin "daisyui" {

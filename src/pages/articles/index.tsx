@@ -1,40 +1,60 @@
+import { Header, PageLayout, PageTitle } from "@/components";
 import {
-  ArticleRangeAndOrder,
-  Header,
-  PageLayout,
-  Pagenation,
-  PageTitle,
-  SelectBoxPageLimit,
-  Spinner,
-} from "@/components";
-import { ArticlesContainer } from "@/containers";
-import type { FindAllArticlesConfig, schema } from "@/db";
+  findAllArticles,
+  findArticleTags,
+  type FindAllArticlesConfig,
+  type schema,
+} from "@/db";
 import type { DrizzleD1Database } from "@/lib";
-import { type FC, Suspense } from "hono/jsx";
+import {
+  parseArticleQuery,
+  configQueryParams,
+  normalizeTags,
+  serializeArticleBootstrap,
+} from "@/client/articles";
+import { raw } from "hono/html";
+import type { FC } from "hono/jsx";
+import { ArticlesSearch } from "./search";
 
 export const ArticlesPage: FC<{
   db: DrizzleD1Database<typeof schema>;
   config: FindAllArticlesConfig;
-}> = ({ config, db }) => {
-  const limit = config.limit ?? 10;
-  const page = (config.offset ?? 0) / limit + 1;
+  dataVersion: string;
+  publishedSequence: number;
+}> = async ({ config, db, dataVersion, publishedSequence }) => {
+  const query = parseArticleQuery(configQueryParams(config));
+  const articles = await findAllArticles(db, dataVersion, {
+    ...query,
+    since: query.since || null,
+    until: query.until || null,
+  });
+  const tagOptions = normalizeTags([
+    ...(await findArticleTags(db, dataVersion)),
+    ...query.tags,
+  ]);
   return (
     <>
       <Header />
       <PageTitle label="記事一覧" />
       <PageLayout>
-        <ArticleRangeAndOrder default={{ ...config, page, limit }} />
-        <Suspense fallback={<Spinner />}>
-          <ArticlesContainer db={db} config={config} />
-        </Suspense>
-        <div class="my-4 flex">
-          <div>
-            <Pagenation {...config} page={page} limit={limit} />
-          </div>
-          <div class="ml-2">
-            <SelectBoxPageLimit page={page} limit={limit} />
-          </div>
+        <div id="articles-app">
+          <ArticlesSearch
+            query={query}
+            articles={articles}
+            tagOptions={tagOptions}
+          />
         </div>
+        <script id="articles-bootstrap" type="application/json">
+          {raw(
+            serializeArticleBootstrap({
+              config: query,
+              articles,
+              tagOptions,
+              dataVersion,
+              publishedSequence,
+            }),
+          )}
+        </script>
       </PageLayout>
     </>
   );
