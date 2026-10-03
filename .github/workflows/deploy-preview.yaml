@@ -1,31 +1,95 @@
 name: deploy-preview
 on:
   pull_request:
-    branches: [main]
+    types: [opened, reopened, synchronize, ready_for_review]
 permissions:
   contents: read
 concurrency:
   group: workers-preview-${{ github.event.pull_request.number }}
   cancel-in-progress: true
 jobs:
-  deploy:
+  validate:
     if: github.event.pull_request.head.repo.full_name == github.repository && github.actor != 'dependabot[bot]'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
       - uses: actions/setup-node@v7
         with:
           node-version-file: .node-version
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version-file: .bun-version
+      - name: Verify exact same-repository PR head
+        env:
+          GITHUB_EVENT_PATH: ${{ github.event_path }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          GITHUB_ACTOR: ${{ github.actor }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: node scripts/check-preview-event.mjs
       - run: bun install --frozen-lockfile
       - run: bun run typecheck
       - run: bun run test:ci
-      - name: Deploy Worker preview
-        run: node node_modules/cf/bin/cf previews deploy "pr-$PR_NUMBER" --mode production
+      - run: bun run test:preview
+  deploy:
+    needs: validate
+    if: github.event.pull_request.head.repo.full_name == github.repository && github.actor != 'dependabot[bot]'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .node-version
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version-file: .bun-version
+      - name: Verify exact same-repository PR head
         env:
-          CF_PREVIEW: "1"
+          GITHUB_EVENT_PATH: ${{ github.event_path }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          GITHUB_ACTOR: ${{ github.actor }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: node scripts/check-preview-event.mjs
+      - run: bun install --frozen-lockfile
+      - name: Provision or reuse isolated preview D1 and seed fixtures once
+        id: preview-db
+        run: node scripts/preview-db.mjs
+        env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      - name: Verify Cloudflare config binds the isolated preview D1
+        run: node scripts/check-preview-config.mjs
+        env:
+          CLOUDFLARE_PREVIEW_D1_DATABASE_ID: ${{ steps.preview-db.outputs.database_id }}
+          EXPECTED_PREVIEW_D1_DATABASE_ID: ${{ steps.preview-db.outputs.database_id }}
+      - name: Deploy exact-head Worker preview and record URLs
+        run: node scripts/publish-preview.mjs
+        env:
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          CLOUDFLARE_PREVIEW_D1_DATABASE_ID: ${{ steps.preview-db.outputs.database_id }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      - name: Publish preview links on the PR
+        run: node scripts/comment-preview.mjs
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: worker-preview-pr-${{ github.event.pull_request.number }}-${{ github.event.pull_request.head.sha }}
+          path: preview-result.json
+          if-no-files-found: warn
