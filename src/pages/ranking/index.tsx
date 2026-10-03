@@ -64,96 +64,100 @@ export const RankingPage: FC<{
           </script>
           <section aria-label="ランキング検索">
             <div data-slot="card" class={cn(cardClass, rankingCardExtraClass)}>
-              <form action="/ranking" method="get" class={rankingFormClass}>
-                <label for={rankingFieldId("since")}>
-                  開始日{" "}
-                  <input
-                    data-slot="input"
-                    class={inputClass}
-                    type="date"
-                    id={rankingFieldId("since")}
-                    name="since"
-                    value={
-                      config.since
-                        ? dateTimetoDateString(config.since)
-                        : undefined
-                    }
-                  />
-                </label>
-                <label for={rankingFieldId("until")}>
-                  終了日{" "}
-                  <input
-                    data-slot="input"
-                    class={inputClass}
-                    type="date"
-                    id={rankingFieldId("until")}
-                    name="until"
-                    value={
-                      config.until
-                        ? dateTimetoDateString(config.until)
-                        : undefined
-                    }
-                  />
-                </label>
-                <label for={rankingFieldId("view")}>
-                  表示形式{" "}
-                  <div data-slot="select-wrapper" class={selectWrapperClass}>
-                    <select
-                      data-slot="select"
-                      class={selectClass}
-                      id={rankingFieldId("view")}
-                      name="view"
-                    >
-                      <option
-                        data-slot="select-option"
-                        class={selectOptionClass}
-                        value="table"
-                        selected={config.view === "table"}
+              <details class="mobile-filters">
+                <summary>絞り込み・表示設定</summary>
+                <form action="/ranking" method="get" class={rankingFormClass}>
+                  <label for={rankingFieldId("since")}>
+                    開始日{" "}
+                    <input
+                      data-slot="input"
+                      class={inputClass}
+                      type="date"
+                      id={rankingFieldId("since")}
+                      name="since"
+                      value={
+                        config.since
+                          ? dateTimetoDateString(config.since)
+                          : undefined
+                      }
+                    />
+                  </label>
+                  <label for={rankingFieldId("until")}>
+                    終了日{" "}
+                    <input
+                      data-slot="input"
+                      class={inputClass}
+                      type="date"
+                      id={rankingFieldId("until")}
+                      name="until"
+                      value={
+                        config.until
+                          ? dateTimetoDateString(config.until)
+                          : undefined
+                      }
+                    />
+                  </label>
+                  <label for={rankingFieldId("view")}>
+                    表示形式{" "}
+                    <div data-slot="select-wrapper" class={selectWrapperClass}>
+                      <select
+                        data-slot="select"
+                        class={selectClass}
+                        id={rankingFieldId("view")}
+                        name="view"
                       >
-                        表
-                      </option>
-                      <option
-                        data-slot="select-option"
-                        class={selectOptionClass}
-                        value="chart"
-                        selected={config.view === "chart"}
-                      >
-                        グラフ
-                      </option>
-                    </select>
-                    <span
-                      data-slot="select-icon"
-                      aria-hidden="true"
-                      class={selectIconClass}
-                    >
-                      <svg
-                        class={selectChevronClass}
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        stroke-width="2"
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
+                        <option
+                          data-slot="select-option"
+                          class={selectOptionClass}
+                          value="table"
+                          selected={config.view === "table"}
+                        >
+                          表
+                        </option>
+                        <option
+                          data-slot="select-option"
+                          class={selectOptionClass}
+                          value="chart"
+                          selected={config.view === "chart"}
+                        >
+                          グラフ
+                        </option>
+                      </select>
+                      <span
+                        data-slot="select-icon"
                         aria-hidden="true"
+                        class={selectIconClass}
                       >
-                        <title>Chevron</title>
-                        <path d="m6 9 6 6 6-6" />
-                      </svg>
-                    </span>
-                  </div>
-                </label>
-                <label for={rankingFieldId("topN")}>
-                  表示件数{" "}
-                  <div data-slot="select-wrapper" class={selectWrapperClass}>
-                    <select
-                      data-slot="select"
-                      class={selectClass}
-                      id={rankingFieldId("topN")}
-                      name="topN"
-                    >
-                      {Array.from({ length: 100 }, (_, index) => index + 1).map(
-                        (count) => (
+                        <svg
+                          class={selectChevronClass}
+                          xmlns="http://www.w3.org/2000/svg"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          aria-hidden="true"
+                        >
+                          <title>Chevron</title>
+                          <path d="m6 9 6 6 6-6" />
+                        </svg>
+                      </span>
+                    </div>
+                  </label>
+                  <label for={rankingFieldId("topN")}>
+                    表示件数{" "}
+                    <div data-slot="select-wrapper" class={selectWrapperClass}>
+                      <select
+                        data-slot="select"
+                        class={selectClass}
+                        id={rankingFieldId("topN")}
+                        name="topN"
+                      >
+                        {Array.from(
+                          { length: 100 },
+                          (_, index) => index + 1,
+                        ).map((count) => (
                           <option
                             data-slot="select-option"
                             class={selectOptionClass}
@@ -163,42 +167,42 @@ export const RankingPage: FC<{
                           >
                             {count}件
                           </option>
-                        ),
-                      )}
-                    </select>
-                    <span
-                      data-slot="select-icon"
-                      aria-hidden="true"
-                      class={selectIconClass}
-                    >
-                      <svg
-                        class={selectChevronClass}
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        stroke-width="2"
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
+                        ))}
+                      </select>
+                      <span
+                        data-slot="select-icon"
                         aria-hidden="true"
+                        class={selectIconClass}
                       >
-                        <title>Chevron</title>
-                        <path d="m6 9 6 6 6-6" />
-                      </svg>
-                    </span>
-                  </div>
-                </label>
-                <button
-                  type="submit"
-                  data-slot="button"
-                  data-variant="default"
-                  data-size="default"
-                  data-ranking-action=""
-                  class={cn(buttonClass, rankingActionClass)}
-                >
-                  検索する
-                </button>
-              </form>
+                        <svg
+                          class={selectChevronClass}
+                          xmlns="http://www.w3.org/2000/svg"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          aria-hidden="true"
+                        >
+                          <title>Chevron</title>
+                          <path d="m6 9 6 6 6-6" />
+                        </svg>
+                      </span>
+                    </div>
+                  </label>
+                  <button
+                    type="submit"
+                    data-slot="button"
+                    data-variant="default"
+                    data-size="default"
+                    data-ranking-action=""
+                    class={cn(buttonClass, rankingActionClass)}
+                  >
+                    検索する
+                  </button>
+                </form>
+              </details>
               <div role="status" aria-live="polite" />
               <div role="status" aria-live="polite">
                 {postRows.length}件の投稿, {likesRows.length}件のいいね

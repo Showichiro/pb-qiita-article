@@ -10,7 +10,7 @@
  * This file is `.tsx` so Tailwind's tsx content glob can see the class literals.
  */
 
-export const articlesIslandClass = "react-island";
+export const articlesIslandClass = "react-island articles-mobile";
 export const articlesCardExtraClass = "gap-4 p-4";
 export const articlesFormClass = "flex flex-wrap items-end gap-3";
 export const articlesTagFieldClass = "block w-full min-w-0 max-w-full sm:w-64";

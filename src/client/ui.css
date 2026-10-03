@@ -113,7 +113,8 @@
   --tw-ring-color: color-mix(in srgb, var(--ring) 50%, transparent);
 }
 .react-island .focus-visible\:ring-2:focus-visible {
-  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000),
+  box-shadow:
+    var(--tw-ring-offset-shadow, 0 0 #0000),
     0 0 0 2px var(--tw-ring-color, var(--ring)),
     var(--tw-shadow, 0 0 #0000);
 }
@@ -156,4 +157,156 @@
     --muted-foreground,
     color-mix(in srgb, var(--color-base-content, #1f2937) 65%, transparent)
   );
+}
+
+/* Shared by React islands and their native GET fallbacks. */
+.react-island {
+  min-width: 0;
+}
+.react-island [data-slot="card"] {
+  min-width: 0;
+}
+@media (max-width: 639px) {
+  .react-island form {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    align-items: end;
+    gap: 1rem;
+  }
+  .react-island form > label,
+  .react-island form > div,
+  .react-island form > button {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    height: auto;
+  }
+  .react-island form label {
+    display: block;
+  }
+  .react-island [data-slot="input"],
+  .react-island [data-slot="select"] {
+    width: 100%;
+    min-width: 0;
+    min-height: 44px;
+    font-size: 16px;
+  }
+  .react-island [data-slot="button"],
+  .react-island [data-focus-id$="tag-clear"] {
+    min-height: 44px;
+  }
+  .react-island form [data-slot="button"] {
+    width: 100%;
+  }
+  .react-island [data-slot="card"] {
+    padding: 1rem;
+  }
+  .react-island h2 {
+    font-size: 1.5rem;
+    overflow-wrap: anywhere;
+  }
+  .react-island p,
+  .react-island [role="status"],
+  .react-island [role="alert"] {
+    overflow-wrap: anywhere;
+  }
+  .react-island nav {
+    justify-content: space-between;
+  }
+
+  /* Keep one semantic table and one set of links across viewport sizes. */
+  .articles-mobile [data-slot="table-container"] {
+    overflow: visible;
+  }
+  .articles-mobile [data-slot="table"] {
+    display: block;
+  }
+  .articles-mobile [data-slot="table-header"] {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  .articles-mobile [data-slot="table-body"] {
+    display: grid;
+    gap: 1rem;
+  }
+  .articles-mobile [data-slot="table-body"] [data-slot="table-row"] {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    padding: 0.75rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    gap: 0.5rem;
+  }
+  .articles-mobile [data-slot="table-cell"] {
+    display: block;
+    min-width: 0;
+    padding: 0;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+  .articles-mobile [data-slot="table-cell"]:nth-child(-n + 3),
+  .articles-mobile [data-slot="table-cell"]:last-child {
+    grid-column: 1 / -1;
+  }
+  .articles-mobile [data-slot="table-cell"]::before {
+    content: attr(data-label);
+    display: block;
+    color: var(--muted-foreground);
+    font-size: 0.75rem;
+  }
+  .articles-mobile [data-slot="table-cell"]:first-child {
+    font-size: 1rem;
+    font-weight: 600;
+  }
+  .articles-mobile [data-slot="table-cell"] ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+  }
+}
+/* Filter disclosure stays expanded on desktop and starts compact on SP. */
+.mobile-filters > summary {
+  cursor: pointer;
+  min-height: 44px;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  font-weight: 500;
+}
+.mobile-filters[open] > summary {
+  margin-bottom: 1rem;
+}
+@media (min-width: 640px) {
+  .mobile-filters > summary {
+    display: none;
+  }
+  .mobile-filters > form {
+    display: flex;
+  }
+}
+@media (max-width: 639px) {
+  .articles-mobile [data-slot="table-body"] {
+    gap: 0;
+  }
+  .articles-mobile [data-slot="table-body"] [data-slot="table-row"] {
+    border: 0;
+    border-bottom: 1px solid var(--border);
+    border-radius: 0;
+    padding: 1rem 0;
+  }
+  .articles-mobile [data-slot="table-cell"]:nth-child(-n + 3)::before {
+    display: none;
+  }
+  .mobile-feed {
+    text-align: center;
+  }
+}
+@media (min-width: 640px) {
+  .mobile-filters::details-content { content-visibility: visible; }
 }

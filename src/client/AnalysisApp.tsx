@@ -422,202 +422,205 @@ export default function AnalysisApp({
       aria-label="時系列分析"
     >
       <Card className={analysisCardClass}>
-        <form
-          action="/analysis"
-          method="get"
-          onSubmit={submit}
-          onKeyDown={(event) => {
-            if (
-              event.key !== "Enter" ||
-              event.nativeEvent.isComposing ||
-              composingRef.current ||
-              !(event.target instanceof HTMLInputElement)
-            )
-              return;
-            event.preventDefault();
-            event.currentTarget.requestSubmit();
-          }}
-          className={analysisFormClass}
-        >
-          <label
-            className={analysisFieldClass}
-            htmlFor={analysisFieldId("since")}
-          >
-            開始日（UTC）{" "}
-            <Input
-              id={analysisFieldId("since")}
-              name="since"
-              type="date"
-              value={draft.since}
-              aria-describedby={
-                validationError ? "analysis-validation" : undefined
-              }
-              onChange={(event) =>
-                handleImmediateChange("since", event.currentTarget.value)
-              }
-            />
-          </label>
-          <label
-            className={analysisFieldClass}
-            htmlFor={analysisFieldId("until")}
-          >
-            終了日（UTC）{" "}
-            <Input
-              id={analysisFieldId("until")}
-              name="until"
-              type="date"
-              value={draft.until}
-              aria-describedby={
-                validationError ? "analysis-validation" : undefined
-              }
-              onChange={(event) =>
-                handleImmediateChange("until", event.currentTarget.value)
-              }
-            />
-          </label>
-          <label
-            className={analysisFieldClass}
-            htmlFor={analysisFieldId("bucket")}
-          >
-            集計単位{" "}
-            <Select
-              id={analysisFieldId("bucket")}
-              name="bucket"
-              value={draft.bucket}
-              onChange={(event) =>
-                handleImmediateChange("bucket", event.currentTarget.value)
-              }
-            >
-              <option value="day">日</option>
-              <option value="week">週</option>
-              <option value="month">月</option>
-            </Select>
-          </label>
-          <label
-            className={analysisFieldClass}
-            htmlFor={analysisFieldId("author")}
-          >
-            投稿者（ID・名前）{" "}
-            <Input
-              id={analysisFieldId("author")}
-              name="author"
-              value={draft.author}
-              onChange={(event) =>
-                handleAuthorChange(
-                  event.currentTarget.value,
-                  event.nativeEvent instanceof InputEvent &&
-                    event.nativeEvent.isComposing,
-                )
-              }
-              onCompositionStart={() => {
-                composingRef.current = true;
-                debouncedSearch.cancel();
-              }}
-              onCompositionEnd={(event) => {
-                composingRef.current = false;
-                handleAuthorChange(event.currentTarget.value, false);
-              }}
-            />
-          </label>
-          <div
-            className={analysisTagFieldClass}
-            data-slot="analysis-tags-field"
+        <details className="mobile-filters">
+          <summary>絞り込み・表示設定</summary>
+          <form
+            action="/analysis"
+            method="get"
+            onSubmit={submit}
+            onKeyDown={(event) => {
+              if (
+                event.key !== "Enter" ||
+                event.nativeEvent.isComposing ||
+                composingRef.current ||
+                !(event.target instanceof HTMLInputElement)
+              )
+                return;
+              event.preventDefault();
+              event.currentTarget.requestSubmit();
+            }}
+            className={analysisFormClass}
           >
             <label
-              className={analysisTagLabelClass}
-              htmlFor={analysisFieldId("tags")}
+              className={analysisFieldClass}
+              htmlFor={analysisFieldId("since")}
             >
-              タグ（すべて一致）{" "}
-              <Select
-                id={analysisFieldId("tags")}
-                name="tags"
-                multiple
-                size={4}
-                className={analysisTagsClass}
-                wrapperClassName={analysisTagsClass}
-                value={draft.tags}
+              開始日（UTC）{" "}
+              <Input
+                id={analysisFieldId("since")}
+                name="since"
+                type="date"
+                value={draft.since}
+                aria-describedby={
+                  validationError ? "analysis-validation" : undefined
+                }
                 onChange={(event) =>
-                  handleImmediateChange(
-                    "tags",
-                    Array.from(
-                      event.currentTarget.selectedOptions,
-                      (option) => option.value,
-                    ),
+                  handleImmediateChange("since", event.currentTarget.value)
+                }
+              />
+            </label>
+            <label
+              className={analysisFieldClass}
+              htmlFor={analysisFieldId("until")}
+            >
+              終了日（UTC）{" "}
+              <Input
+                id={analysisFieldId("until")}
+                name="until"
+                type="date"
+                value={draft.until}
+                aria-describedby={
+                  validationError ? "analysis-validation" : undefined
+                }
+                onChange={(event) =>
+                  handleImmediateChange("until", event.currentTarget.value)
+                }
+              />
+            </label>
+            <label
+              className={analysisFieldClass}
+              htmlFor={analysisFieldId("bucket")}
+            >
+              集計単位{" "}
+              <Select
+                id={analysisFieldId("bucket")}
+                name="bucket"
+                value={draft.bucket}
+                onChange={(event) =>
+                  handleImmediateChange("bucket", event.currentTarget.value)
+                }
+              >
+                <option value="day">日</option>
+                <option value="week">週</option>
+                <option value="month">月</option>
+              </Select>
+            </label>
+            <label
+              className={analysisFieldClass}
+              htmlFor={analysisFieldId("author")}
+            >
+              投稿者（ID・名前）{" "}
+              <Input
+                id={analysisFieldId("author")}
+                name="author"
+                value={draft.author}
+                onChange={(event) =>
+                  handleAuthorChange(
+                    event.currentTarget.value,
+                    event.nativeEvent instanceof InputEvent &&
+                      event.nativeEvent.isComposing,
+                  )
+                }
+                onCompositionStart={() => {
+                  composingRef.current = true;
+                  debouncedSearch.cancel();
+                }}
+                onCompositionEnd={(event) => {
+                  composingRef.current = false;
+                  handleAuthorChange(event.currentTarget.value, false);
+                }}
+              />
+            </label>
+            <div
+              className={analysisTagFieldClass}
+              data-slot="analysis-tags-field"
+            >
+              <label
+                className={analysisTagLabelClass}
+                htmlFor={analysisFieldId("tags")}
+              >
+                タグ（すべて一致）{" "}
+                <Select
+                  id={analysisFieldId("tags")}
+                  name="tags"
+                  multiple
+                  size={4}
+                  className={analysisTagsClass}
+                  wrapperClassName={analysisTagsClass}
+                  value={draft.tags}
+                  onChange={(event) =>
+                    handleImmediateChange(
+                      "tags",
+                      Array.from(
+                        event.currentTarget.selectedOptions,
+                        (option) => option.value,
+                      ),
+                    )
+                  }
+                >
+                  {tagOptions.map((tag) => (
+                    <option key={tag} value={tag}>
+                      {tag}
+                    </option>
+                  ))}
+                </Select>
+              </label>
+              <a
+                href={clearTagsHref}
+                className={analysisTagClearClass}
+                data-focus-id={analysisTagClearFocusId}
+                onClick={(event) => {
+                  event.preventDefault();
+                  handleImmediateChange("tags", []);
+                }}
+              >
+                タグを解除
+              </a>
+            </div>
+            <label
+              className={analysisFieldClass}
+              htmlFor={analysisFieldId("metric")}
+            >
+              指標{" "}
+              <Select
+                id={analysisFieldId("metric")}
+                name="metric"
+                value={metric}
+                onChange={(event) =>
+                  setDisplay(
+                    event.currentTarget.value === "likes" ? "likes" : "posts",
+                    view,
                   )
                 }
               >
-                {tagOptions.map((tag) => (
-                  <option key={tag} value={tag}>
-                    {tag}
-                  </option>
-                ))}
+                <option value="posts">記事数</option>
+                <option value="likes">いいね数</option>
               </Select>
             </label>
-            <a
-              href={clearTagsHref}
-              className={analysisTagClearClass}
-              data-focus-id={analysisTagClearFocusId}
-              onClick={(event) => {
-                event.preventDefault();
-                handleImmediateChange("tags", []);
-              }}
+            <label
+              className={analysisFieldClass}
+              htmlFor={analysisFieldId("view")}
             >
-              タグを解除
-            </a>
-          </div>
-          <label
-            className={analysisFieldClass}
-            htmlFor={analysisFieldId("metric")}
-          >
-            指標{" "}
-            <Select
-              id={analysisFieldId("metric")}
-              name="metric"
-              value={metric}
-              onChange={(event) =>
-                setDisplay(
-                  event.currentTarget.value === "likes" ? "likes" : "posts",
-                  view,
-                )
-              }
+              表示{" "}
+              <Select
+                id={analysisFieldId("view")}
+                name="view"
+                value={view}
+                onChange={(event) =>
+                  setDisplay(
+                    metric,
+                    event.currentTarget.value === "chart" ? "chart" : "table",
+                  )
+                }
+              >
+                <option value="table">表</option>
+                <option value="chart">グラフ</option>
+              </Select>
+            </label>
+            <div
+              className={analysisActionSlotClass}
+              data-slot="analysis-search-action"
             >
-              <option value="posts">記事数</option>
-              <option value="likes">いいね数</option>
-            </Select>
-          </label>
-          <label
-            className={analysisFieldClass}
-            htmlFor={analysisFieldId("view")}
-          >
-            表示{" "}
-            <Select
-              id={analysisFieldId("view")}
-              name="view"
-              value={view}
-              onChange={(event) =>
-                setDisplay(
-                  metric,
-                  event.currentTarget.value === "chart" ? "chart" : "table",
-                )
-              }
-            >
-              <option value="table">表</option>
-              <option value="chart">グラフ</option>
-            </Select>
-          </label>
-          <div
-            className={analysisActionSlotClass}
-            data-slot="analysis-search-action"
-          >
-            <span
-              className={analysisActionHintClass}
-              data-focus-id={analysisActionFocusId}
-              tabIndex={-1}
-            >
-              自動検索
-            </span>
-          </div>
-        </form>
+              <span
+                className={analysisActionHintClass}
+                data-focus-id={analysisActionFocusId}
+                tabIndex={-1}
+              >
+                自動検索
+              </span>
+            </div>
+          </form>
+        </details>
         {validationError && (
           <p id="analysis-validation" role="alert">
             {validationError}

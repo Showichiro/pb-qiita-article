@@ -161,8 +161,10 @@ export function serializeArticleBootstrap(value: {
 export async function fetchArticles(
   query: ArticleQuery,
   expectedVersion: string,
+  signal?: AbortSignal,
 ): Promise<Article[]> {
   const response = await fetch(`/api/articles?${articleQueryParams(query)}`, {
+    signal,
     headers: {
       Accept: "application/json",
       "X-Expected-Data-Version": expectedVersion,

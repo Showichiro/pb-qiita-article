@@ -208,7 +208,11 @@ export async function mountAnalysisApp(
         return;
       }
       container.replaceChildren(clientContainer);
-      if (target instanceof HTMLElement) target.focus({ preventScroll: true });
+      if (target instanceof HTMLElement) {
+        const disclosure = target.closest("details");
+        if (disclosure) disclosure.open = true;
+        target.focus({ preventScroll: true });
+      }
       if (selection && target instanceof HTMLInputElement)
         target.setSelectionRange(
           selection.start,

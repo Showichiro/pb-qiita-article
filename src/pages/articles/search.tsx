@@ -122,180 +122,183 @@ export const ArticlesSearch: FC<{
   return (
     <section class={articlesIslandClass} aria-label="記事検索">
       <div data-slot="card" class={cn(cardClass, articlesCardExtraClass)}>
-        <form action="/articles" method="get" class={articlesFormClass}>
-          {(["q", "author"] as const).map((name) => (
-            <SearchField
-              key={name}
-              id={articleFieldId(name)}
-              label={
-                name === "q" ? "キーワード（タイトル）" : "投稿者（ID・名前）"
-              }
-            >
+        <details class="mobile-filters">
+          <summary>絞り込み・表示設定</summary>
+          <form action="/articles" method="get" class={articlesFormClass}>
+            {(["q", "author"] as const).map((name) => (
+              <SearchField
+                key={name}
+                id={articleFieldId(name)}
+                label={
+                  name === "q" ? "キーワード（タイトル）" : "投稿者（ID・名前）"
+                }
+              >
+                <input
+                  data-slot="input"
+                  class={inputClass}
+                  id={articleFieldId(name)}
+                  name={name}
+                  maxLength={200}
+                  value={query[name]}
+                />
+              </SearchField>
+            ))}
+            <div class={articlesTagFieldClass} data-slot="article-tags-field">
+              <label class={articlesTagLabelClass} for={articleFieldId("tags")}>
+                タグ（すべて一致）{" "}
+                <div
+                  data-slot="select-wrapper"
+                  class={cn(selectWrapperClass, articlesTagControlClass)}
+                >
+                  <select
+                    data-slot="select"
+                    class={cn(
+                      selectClass,
+                      selectMultipleClass,
+                      articlesTagControlClass,
+                    )}
+                    id={articleFieldId("tags")}
+                    name="tags"
+                    multiple
+                    size={4}
+                  >
+                    {options.map((tag) => (
+                      <option
+                        key={tag}
+                        value={tag}
+                        selected={query.tags.includes(tag)}
+                      >
+                        {tag}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </label>
+              <a
+                href={clearTagsUrl}
+                class={articlesTagClearClass}
+                data-focus-id={articlesTagClearFocusId}
+              >
+                タグを解除
+              </a>
+            </div>
+            {rangeFields.map((name) => (
+              <SearchField
+                key={name}
+                id={articleFieldId(name)}
+                label={rangeLabels[name]}
+              >
+                <input
+                  data-slot="input"
+                  class={inputClass}
+                  id={articleFieldId(name)}
+                  name={name}
+                  type="number"
+                  min="0"
+                  max={Number.MAX_SAFE_INTEGER}
+                  step="1"
+                  value={query[name] ?? ""}
+                />
+              </SearchField>
+            ))}
+            <SearchField id={articleFieldId("since")} label="投稿日（開始）">
               <input
                 data-slot="input"
                 class={inputClass}
-                id={articleFieldId(name)}
-                name={name}
-                maxLength={200}
-                value={query[name]}
+                type="date"
+                id={articleFieldId("since")}
+                name="since"
+                value={query.since.slice(0, 10)}
               />
             </SearchField>
-          ))}
-          <div class={articlesTagFieldClass} data-slot="article-tags-field">
-            <label class={articlesTagLabelClass} for={articleFieldId("tags")}>
-              タグ（すべて一致）{" "}
-              <div
-                data-slot="select-wrapper"
-                class={cn(selectWrapperClass, articlesTagControlClass)}
-              >
+            <SearchField id={articleFieldId("until")} label="投稿日（終了）">
+              <input
+                data-slot="input"
+                class={inputClass}
+                type="date"
+                id={articleFieldId("until")}
+                name="until"
+                value={query.until.slice(0, 10)}
+              />
+            </SearchField>
+            <SearchField id={articleFieldId("orderField")} label="並び替え">
+              <div data-slot="select-wrapper" class={selectWrapperClass}>
                 <select
                   data-slot="select"
-                  class={cn(
-                    selectClass,
-                    selectMultipleClass,
-                    articlesTagControlClass,
-                  )}
-                  id={articleFieldId("tags")}
-                  name="tags"
-                  multiple
-                  size={4}
+                  class={selectClass}
+                  id={articleFieldId("orderField")}
+                  name="orderField"
                 >
-                  {options.map((tag) => (
+                  {articleOrderFields.map((option) => (
                     <option
-                      key={tag}
-                      value={tag}
-                      selected={query.tags.includes(tag)}
+                      key={option.value}
+                      value={option.value}
+                      selected={query.orderField === option.value}
                     >
-                      {tag}
+                      {option.label}
                     </option>
                   ))}
                 </select>
+                <SelectChevron />
               </div>
-            </label>
-            <a
-              href={clearTagsUrl}
-              class={articlesTagClearClass}
-              data-focus-id={articlesTagClearFocusId}
-            >
-              タグを解除
-            </a>
-          </div>
-          {rangeFields.map((name) => (
-            <SearchField
-              key={name}
-              id={articleFieldId(name)}
-              label={rangeLabels[name]}
-            >
+            </SearchField>
+            <SearchField id={articleFieldId("orderDirection")} label="順序">
+              <div data-slot="select-wrapper" class={selectWrapperClass}>
+                <select
+                  data-slot="select"
+                  class={selectClass}
+                  id={articleFieldId("orderDirection")}
+                  name="orderDirection"
+                >
+                  {articleOrderDirections.map((option) => (
+                    <option
+                      key={option.value}
+                      value={option.value}
+                      selected={query.orderDirection === option.value}
+                    >
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+                <SelectChevron />
+              </div>
+            </SearchField>
+            <SearchField id={articleFieldId("limit")} label="表示件数">
               <input
                 data-slot="input"
                 class={inputClass}
-                id={articleFieldId(name)}
-                name={name}
+                id={articleFieldId("limit")}
+                name="limit"
                 type="number"
-                min="0"
-                max={Number.MAX_SAFE_INTEGER}
-                step="1"
-                value={query[name] ?? ""}
+                min="1"
+                max="100"
+                value={query.limit}
               />
             </SearchField>
-          ))}
-          <SearchField id={articleFieldId("since")} label="投稿日（開始）">
             <input
               data-slot="input"
               class={inputClass}
-              type="date"
-              id={articleFieldId("since")}
-              name="since"
-              value={query.since.slice(0, 10)}
+              type="hidden"
+              name="offset"
+              value="0"
             />
-          </SearchField>
-          <SearchField id={articleFieldId("until")} label="投稿日（終了）">
-            <input
-              data-slot="input"
-              class={inputClass}
-              type="date"
-              id={articleFieldId("until")}
-              name="until"
-              value={query.until.slice(0, 10)}
-            />
-          </SearchField>
-          <SearchField id={articleFieldId("orderField")} label="並び替え">
-            <div data-slot="select-wrapper" class={selectWrapperClass}>
-              <select
-                data-slot="select"
-                class={selectClass}
-                id={articleFieldId("orderField")}
-                name="orderField"
-              >
-                {articleOrderFields.map((option) => (
-                  <option
-                    key={option.value}
-                    value={option.value}
-                    selected={query.orderField === option.value}
-                  >
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-              <SelectChevron />
-            </div>
-          </SearchField>
-          <SearchField id={articleFieldId("orderDirection")} label="順序">
-            <div data-slot="select-wrapper" class={selectWrapperClass}>
-              <select
-                data-slot="select"
-                class={selectClass}
-                id={articleFieldId("orderDirection")}
-                name="orderDirection"
-              >
-                {articleOrderDirections.map((option) => (
-                  <option
-                    key={option.value}
-                    value={option.value}
-                    selected={query.orderDirection === option.value}
-                  >
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-              <SelectChevron />
-            </div>
-          </SearchField>
-          <SearchField id={articleFieldId("limit")} label="表示件数">
-            <input
-              data-slot="input"
-              class={inputClass}
-              id={articleFieldId("limit")}
-              name="limit"
-              type="number"
-              min="1"
-              max="100"
-              value={query.limit}
-            />
-          </SearchField>
-          <input
-            data-slot="input"
-            class={inputClass}
-            type="hidden"
-            name="offset"
-            value="0"
-          />
-          <div
-            class={articlesActionSlotClass}
-            data-slot="article-search-action"
-          >
-            <button
-              type="submit"
-              data-slot="button"
-              data-variant="default"
-              data-size="default"
-              data-focus-id={articlesActionFocusId}
-              class={buttonVariants({ className: "h-9 w-28" })}
+            <div
+              class={articlesActionSlotClass}
+              data-slot="article-search-action"
             >
-              検索する
-            </button>
-          </div>
-        </form>
+              <button
+                type="submit"
+                data-slot="button"
+                data-variant="default"
+                data-size="default"
+                data-focus-id={articlesActionFocusId}
+                class={buttonVariants({ className: "h-9 w-28" })}
+              >
+                検索する
+              </button>
+            </div>
+          </form>
+        </details>
         <div role="status" aria-live="polite" />
         <div role="status" aria-live="polite">
           {articles.length}件
@@ -325,7 +328,11 @@ export const ArticlesSearch: FC<{
                     data-slot="table-row"
                     class={tableRowClass}
                   >
-                    <td data-slot="table-cell" class={tableCellClass}>
+                    <td
+                      data-slot="table-cell"
+                      data-label={articleColumnLabels[0]}
+                      class={tableCellClass}
+                    >
                       <a
                         class={articlesLinkClass}
                         target="_blank"
@@ -335,7 +342,11 @@ export const ArticlesSearch: FC<{
                         {article.title}
                       </a>
                     </td>
-                    <td data-slot="table-cell" class={tableCellClass}>
+                    <td
+                      data-slot="table-cell"
+                      data-label={articleColumnLabels[1]}
+                      class={tableCellClass}
+                    >
                       <a
                         class={articlesLinkClass}
                         target="_blank"
@@ -346,7 +357,11 @@ export const ArticlesSearch: FC<{
                         {article.userName && `(${article.userName})`}
                       </a>
                     </td>
-                    <td data-slot="table-cell" class={tableCellClass}>
+                    <td
+                      data-slot="table-cell"
+                      data-label={articleColumnLabels[2]}
+                      class={tableCellClass}
+                    >
                       <ul>
                         {article.tags.map((tag) => (
                           <li key={tag.name} class={articlesTagClass}>
@@ -361,13 +376,25 @@ export const ArticlesSearch: FC<{
                         ))}
                       </ul>
                     </td>
-                    <td data-slot="table-cell" class={tableCellClass}>
+                    <td
+                      data-slot="table-cell"
+                      data-label={articleColumnLabels[3]}
+                      class={tableCellClass}
+                    >
                       {article.likesCount}
                     </td>
-                    <td data-slot="table-cell" class={tableCellClass}>
+                    <td
+                      data-slot="table-cell"
+                      data-label={articleColumnLabels[4]}
+                      class={tableCellClass}
+                    >
                       {article.stocksCount}
                     </td>
-                    <td data-slot="table-cell" class={tableCellClass}>
+                    <td
+                      data-slot="table-cell"
+                      data-label={articleColumnLabels[5]}
+                      class={tableCellClass}
+                    >
                       {article.createdAt.slice(0, 10)}
                     </td>
                   </tr>
