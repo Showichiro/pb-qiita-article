@@ -28,5 +28,3 @@ jobs:
       - run: bun run deploy:check
       - if: runner.os == 'Windows'
         run: bun run schema:apply
-      - if: runner.os == 'Windows'
-        run: bun run data:apply
