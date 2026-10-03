@@ -363,6 +363,33 @@ export async function ensurePreviewFixture(
   }
 }
 
+export async function ensurePreviewGeneration(databaseId, runCfCommand = runCf) {
+  const safeId = selectDatabaseId(true, databaseId);
+  const state = await readSeedMarker(safeId, runCfCommand);
+  if (state.marker !== PREVIEW_SEED_VERSION) throw new Error("Generation migration requires a recognized preview fixture");
+  const names = ["data_generations", "active_data_generation", "generation_articles", "generation_tags"];
+  const present = names.filter(name => state.tables.some(table => table.name === name));
+  if (present.length && present.length !== names.length) throw new Error("Incomplete preview generation schema");
+  if (!present.length) {
+    const migration = readFileSync(join(process.cwd(), "migrations", "0001_add_versioned_data.sql"), "utf8");
+    const batch = migration.split("--> statement-breakpoint").map(sql => sql.trim()).filter(Boolean).map(sql => ({sql}));
+    const tempDir = mkdtempSync(join(tmpdir(), "pb-qiita-preview-generation-"));
+    try {
+      const batchFile = join(tempDir, "migration.json");
+      writeFileSync(batchFile, JSON.stringify(batch));
+      try { await runCfCommand(["d1", "raw", safeId, "--batch", `@${batchFile}`]); }
+      catch (error) {
+        // A concurrent preview may have committed the same atomic migration.
+        const final = await readSeedMarker(safeId, runCfCommand);
+        if (!names.every(name => final.tables.some(table => table.name === name))) throw error;
+      }
+    } finally { rmSync(tempDir, {recursive: true, force: true}); }
+  }
+  const active = await queryRows(safeId,
+    "SELECT a.generation_id FROM active_data_generation a JOIN data_generations g ON g.id=a.generation_id WHERE a.singleton=1 AND g.state='published'", runCfCommand);
+  if (active.length !== 1) throw new Error("Preview has no published fixture generation");
+}
+
 function writeGithubOutputs(values) {
   const outputFile = process.env.GITHUB_OUTPUT;
   if (!outputFile) return;
@@ -377,6 +404,7 @@ function writeGithubOutputs(values) {
 async function main() {
   const databaseId = await ensurePreviewDatabase();
   const seedStatus = await ensurePreviewFixture(databaseId);
+  await ensurePreviewGeneration(databaseId);
   writeGithubOutputs({ database_id: databaseId, seed_status: seedStatus });
   process.stdout.write(
     `Preview D1 ready (${databaseId}); fixture ${seedStatus}.\n`,

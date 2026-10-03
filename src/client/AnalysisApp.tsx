@@ -4,6 +4,7 @@ import {
   Suspense,
   lazy,
   useCallback,
+  useEffect,
   useRef,
   useState,
   useTransition,
@@ -47,6 +48,7 @@ import { useDataVersion } from "./data-version";
 import { analysisQueryOptions, normalizeAnalysisQuery } from "./queries";
 import {
   isDataQuery,
+  useProtectedDataQueries,
   useRemovePreviousGeneration,
 } from "./query-client";
 import {
@@ -100,6 +102,7 @@ export default function AnalysisApp({
   const versionState = useDataVersion(initialData.dataVersion);
   const { adoptedVersion } = versionState;
   const queryClient = useQueryClient();
+  const protectQueries = useProtectedDataQueries();
   const queryResult = useSuspenseQuery(
     analysisQueryOptions(adoptedVersion, query),
   );
@@ -133,6 +136,12 @@ export default function AnalysisApp({
   const [isPending, startTransition] = useTransition();
   const acceptedQuery = useRef(initialQuery);
   const requestIntent = useRef(0);
+  useEffect(
+    () => () => {
+      requestIntent.current++;
+    },
+    [],
+  );
 
   const load = useCallback(
     async (
@@ -149,18 +158,19 @@ export default function AnalysisApp({
       const intent = ++requestIntent.current;
       const queryOptions = analysisQueryOptions(version, normalized);
       setRequestFailure(null);
+      const releaseProtection = protectQueries([queryOptions.queryKey]);
       try {
         await queryClient.prefetchQuery(
           options.force ? { ...queryOptions, staleTime: 0 } : queryOptions,
         );
         const data = queryClient.getQueryData(queryOptions.queryKey);
         const state = queryClient.getQueryState(queryOptions.queryKey);
-        if (
-          data === undefined ||
-          (options.force && state?.status === "error")
-        )
+        if (data === undefined || (options.force && state?.status === "error"))
           throw state?.error ?? new Error("時系列データを取得できませんでした");
-        if (requestIntent.current !== intent) return false;
+        if (requestIntent.current !== intent) {
+          releaseProtection();
+          return false;
+        }
         if (options.onSuccess) options.onSuccess(intent);
         else if (options.commit !== false)
           startTransition(() => {
@@ -169,17 +179,22 @@ export default function AnalysisApp({
           });
         return true;
       } catch (error) {
+        releaseProtection();
         if (requestIntent.current !== intent) return false;
         const normalizedError =
           error instanceof Error
             ? error
             : new Error("時系列データを取得できませんでした");
-        setRequestFailure({ error: normalizedError, query: normalized, version });
+        setRequestFailure({
+          error: normalizedError,
+          query: normalized,
+          version,
+        });
         versionState.reportError(normalizedError);
         return false;
       }
     },
-    [adoptedVersion, queryClient, startTransition, versionState.reportError],
+    [adoptedVersion, queryClient, protectQueries, versionState.reportError],
   );
 
   const writeUrl = useCallback(
@@ -254,6 +269,7 @@ export default function AnalysisApp({
 
   const updateDraft = useCallback(
     (field: keyof AnalysisDraft, value: string | string[]) => {
+      requestIntent.current++;
       const next = { ...latestDraft.current, [field]: value };
       latestDraft.current = next;
       setDraft(next);
@@ -374,6 +390,7 @@ export default function AnalysisApp({
       });
   };
   const refreshData = async () => {
+    const refreshIntent = ++requestIntent.current;
     let version: string;
     try {
       version = await versionState.checkLatestVersion();
@@ -381,6 +398,7 @@ export default function AnalysisApp({
       versionState.reportError(error);
       return;
     }
+    if (requestIntent.current !== refreshIntent) return;
     await load(query, {
       version,
       force: true,

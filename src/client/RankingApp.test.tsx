@@ -41,8 +41,14 @@ function mount(
 ) {
   const query = options.query ?? defaultRankingQuery;
   const dates = { since: query.since, until: query.until };
-  seedQueryData(rankingPostsQueryKey("v1", dates), { query: dates, rows: options.posts ?? postCounts });
-  seedQueryData(rankingLikesQueryKey("v1", dates), { query: dates, rows: options.likes ?? likesCounts });
+  seedQueryData(rankingPostsQueryKey("v1", dates), {
+    query: dates,
+    rows: options.posts ?? postCounts,
+  });
+  seedQueryData(rankingLikesQueryKey("v1", dates), {
+    query: dates,
+    rows: options.likes ?? likesCounts,
+  });
   container = document.createElement("div");
   document.body.appendChild(container);
   const appRoot = createRoot(container);
@@ -228,7 +234,7 @@ describe("RankingApp", () => {
     }
     vi.stubGlobal("ResizeObserver", TestResizeObserver);
     mount({
-      query: { ...defaultRankingQuery, view: "chart", topN:2 },
+      query: { ...defaultRankingQuery, view: "chart", topN: 2 },
       initialDataVersion: "v1",
     });
     await act(async () => {
@@ -288,7 +294,9 @@ describe("RankingApp", () => {
     const activeRequests = fetchMock.mock.calls.map(([url]) => String(url));
     await changeDate("until", "2026-01-01");
     expect(date("until").value).toBe("2026-01-01");
-    expect(fetchMock.mock.calls.map(([url]) => String(url))).toEqual(activeRequests);
+    expect(fetchMock.mock.calls.map(([url]) => String(url))).toEqual(
+      activeRequests,
+    );
     await act(async () => {
       select("view").value = "chart";
       select("view").dispatchEvent(new Event("change", { bubbles: true }));
@@ -297,7 +305,9 @@ describe("RankingApp", () => {
       await Promise.resolve();
     });
     expect(date("until").value).toBe("2026-01-01");
-    expect(fetchMock.mock.calls.map(([url]) => String(url))).toEqual(activeRequests);
+    expect(fetchMock.mock.calls.map(([url]) => String(url))).toEqual(
+      activeRequests,
+    );
     expect(fetchMock).toHaveBeenCalledTimes(2);
     expect(window.location.search).toBe("?since=2026-12-31&view=chart&topN=3");
     post.resolve(response(postCounts));

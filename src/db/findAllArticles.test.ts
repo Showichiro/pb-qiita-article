@@ -1,3 +1,7 @@
+import {
+  migrateTestGeneration,
+  refreshTestGeneration,
+} from "./test-generation";
 import { drizzle } from "@/lib";
 import { Miniflare } from "miniflare";
 import { findAllArticles, schema } from "@/db";
@@ -53,7 +57,9 @@ describe("findAllArticles", async () => {
         .run()
         .then(async () => {
           return await db
-            .prepare("INSERT INTO `generation_tags` (`generation_id`, `article_id`, `name`, `position`) VALUES (?, ?, ?, ?);")
+            .prepare(
+              "INSERT INTO `generation_tags` (`generation_id`, `article_id`, `name`, `position`) VALUES (?, ?, ?, ?);",
+            )
             .bind(generationId, `${index}`, `tag-${index}`, 0)
             .run();
         });
@@ -502,6 +508,7 @@ describe("literal substring filters beyond D1 LIKE pattern limits", () => {
     d1Databases: ["DB"],
   });
   let DB: D1Database;
+  const generationId = "legacy";
   beforeAll(async () => {
     DB = await runtime.getD1Database("DB");
     const { readFile } = await import("node:fs/promises");
@@ -511,6 +518,7 @@ describe("literal substring filters beyond D1 LIKE pattern limits", () => {
     );
     for (const statement of migration.split("--> statement-breakpoint"))
       await DB.prepare(statement.trim()).run();
+    await migrateTestGeneration(DB);
   });
   afterAll(() => runtime.dispose());
 
@@ -603,17 +611,25 @@ describe("literal substring filters beyond D1 LIKE pattern limits", () => {
           limit: 100,
           offset: 0,
         };
+        await refreshTestGeneration(DB);
         const instance = drizzle(DB, { schema });
-        const matches = await findAllArticles(instance, config);
+        const matches = await findAllArticles(instance, generationId, config);
         expect(matches.map((article) => article.id).sort()).toEqual([
           "id-match",
           "name-match",
         ]);
         expect(
-          await findAllArticles(instance, generationId, { ...config, limit: 1, offset: 1 }),
+          await findAllArticles(instance, generationId, {
+            ...config,
+            limit: 1,
+            offset: 1,
+          }),
         ).toEqual([matches[1]]);
         expect(
-          await findAllArticles(instance, generationId, { ...config, offset: 2 }),
+          await findAllArticles(instance, generationId, {
+            ...config,
+            offset: 2,
+          }),
         ).toEqual([]);
       } finally {
         await DB.prepare("DELETE FROM tags").run();
@@ -635,6 +651,7 @@ describe("literal substring filters beyond D1 LIKE pattern limits", () => {
       .run();
     try {
       const instance = drizzle(DB, { schema });
+      await refreshTestGeneration(DB);
       const base = { limit: 10, offset: 0, since: null, until: null };
       expect(
         await findAllArticles(instance, generationId, {
@@ -644,13 +661,22 @@ describe("literal substring filters beyond D1 LIKE pattern limits", () => {
         }),
       ).toHaveLength(1);
       expect(
-        await findAllArticles(instance, generationId, { ...base, q: "ä日本語" }),
+        await findAllArticles(instance, generationId, {
+          ...base,
+          q: "ä日本語",
+        }),
       ).toEqual([]);
       expect(
-        await findAllArticles(instance, generationId, { ...base, author: "ä投稿者" }),
+        await findAllArticles(instance, generationId, {
+          ...base,
+          author: "ä投稿者",
+        }),
       ).toEqual([]);
       expect(
-        await findAllArticles(instance, generationId, { ...base, author: "Ä投稿者" }),
+        await findAllArticles(instance, generationId, {
+          ...base,
+          author: "Ä投稿者",
+        }),
       ).toHaveLength(1);
     } finally {
       await DB.prepare("DELETE FROM articles").run();

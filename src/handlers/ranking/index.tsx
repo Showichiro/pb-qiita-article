@@ -21,7 +21,7 @@ export const postCountsHandler: Handler<
 > = async (c) => {
   const query = c.req.valid("query");
 
-  return withDataVersion(c, async (db, generationId, publishedSequence) => {
+  return withDataVersion(c, async (db, generationId, _publishedSequence) => {
     const results = await getArticleCountGroupByUser(db, generationId, {
       since:
         typeof query.since === "string"
@@ -50,7 +50,7 @@ export const likesCountsRankingHandler: Handler<
 > = async (c) => {
   const query = c.req.valid("query");
 
-  return withDataVersion(c, async (db, generationId, publishedSequence) => {
+  return withDataVersion(c, async (db, generationId, _publishedSequence) => {
     const results = await getLikesCountGroupByUser(db, generationId, {
       since: processDateParam(query.since),
       until: processDateParam(query.until),
@@ -77,8 +77,16 @@ export const rankingPageHandler: Handler<
     };
 
     // Bootstrap both datasets for SSR
-    const postCounts = await getArticleCountGroupByUser(db, generationId, config);
-    const likesCounts = await getLikesCountGroupByUser(db, generationId, config);
+    const postCounts = await getArticleCountGroupByUser(
+      db,
+      generationId,
+      config,
+    );
+    const likesCounts = await getLikesCountGroupByUser(
+      db,
+      generationId,
+      config,
+    );
 
     // Normalize config for client bootstrap (null -> empty string)
     const requestUrl = new URL(c.req.url);

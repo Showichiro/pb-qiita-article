@@ -127,7 +127,10 @@ afterEach(async () => {
 
 async function render(data = initialData, initialDraft?: AnalysisDraft) {
   const query = normalizeAnalysisQuery(data.state);
-  seedQueryData(analysisQueryKey(data.dataVersion, query), { query, rows: data.rows });
+  seedQueryData(analysisQueryKey(data.dataVersion, query), {
+    query,
+    rows: data.rows,
+  });
   await act(async () => {
     root.render(
       <QueryProvider>
@@ -579,8 +582,15 @@ test("keeps unknown selected tags in the native option list", async () => {
   };
   await act(async () => {
     const query = normalizeAnalysisQuery(data.state);
-    seedQueryData(analysisQueryKey(data.dataVersion, query), { query, rows: data.rows });
-    root.render(<QueryProvider><AnalysisApp initialData={data} /></QueryProvider>);
+    seedQueryData(analysisQueryKey(data.dataVersion, query), {
+      query,
+      rows: data.rows,
+    });
+    root.render(
+      <QueryProvider>
+        <AnalysisApp initialData={data} />
+      </QueryProvider>,
+    );
   });
   const tags = field<HTMLSelectElement>("tags");
   expect(Array.from(tags.options, (option) => option.value)).toContain(
@@ -724,8 +734,8 @@ test("surfaces request failures and retries with a fresh request", async () => {
     .mockResolvedValueOnce(new Response(null, { status: 503 }))
     .mockResolvedValueOnce({
       ok: true,
-        status: 200,
-        headers: new Headers({ "X-Data-Version": "v1" }),
+      status: 200,
+      headers: new Headers({ "X-Data-Version": "v1" }),
       json: async () => ({
         since: "2026-01-02",
         until: query.until,

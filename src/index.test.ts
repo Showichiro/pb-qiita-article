@@ -1,3 +1,7 @@
+import {
+  migrateTestGeneration,
+  refreshTestGeneration,
+} from "./db/test-generation";
 import { readFile } from "node:fs/promises";
 import {
   addUtcDays,
@@ -21,23 +25,33 @@ describe("Workers application", () => {
     for (const statement of sql.split("--> statement-breakpoint")) {
       await DB.prepare(statement.trim()).run();
     }
+    await migrateTestGeneration(DB);
+    await refreshTestGeneration(DB);
+    await DB.prepare(
+      "INSERT INTO active_data_generation VALUES (1,'legacy',1)",
+    ).run();
   });
+  const request = async (...args: Parameters<typeof app.request>) => {
+    if (args[2] && "DB" in args[2] && args[2].DB === DB)
+      await refreshTestGeneration(DB);
+    return app.request(...args);
+  };
   afterAll(() => runtime.dispose());
 
   test("redirects the root to articles", async () => {
-    const response = await app.request("/", {}, { DB });
+    const response = await request("/", {}, { DB });
     expect(response.status).toBe(302);
     expect(response.headers.get("location")).toBe("/articles");
   });
 
   test("serves the article API against D1", async () => {
-    const response = await app.request("/api/articles?limit=1", {}, { DB });
+    const response = await request("/api/articles?limit=1", {}, { DB });
     expect(response.status).toBe(200);
     expect(await response.json()).toEqual([]);
   });
 
   test("serves the native analysis page with a 90-day UTC bootstrap", async () => {
-    const response = await app.request("/analysis", {}, { DB });
+    const response = await request("/analysis", {}, { DB });
     expect(response.status).toBe(200);
     const html = await response.text();
     expect(html).toContain('id="analysis-app"');
@@ -61,7 +75,7 @@ describe("Workers application", () => {
   });
 
   test("renders a full native GET analysis state and clear-tags URL", async () => {
-    const response = await app.request(
+    const response = await request(
       "/analysis?since=2026-01-01&until=2026-01-03&bucket=week&author=Writer&tags=unknown&metric=likes&view=chart",
       {},
       { DB },
@@ -118,7 +132,7 @@ describe("Workers application", () => {
     `tags=${"a".repeat(101)}`,
     Array.from({ length: 21 }, (_, i) => `tags=${i}`).join("&"),
   ])("preserves formatted validation errors for %s", async (query) => {
-    const response = await app.request(`/api/articles?${query}`, {}, { DB });
+    const response = await request(`/api/articles?${query}`, {}, { DB });
     expect(response.status).toBe(400);
     expect(await response.json()).toMatchObject({
       title: "Bad Request",
@@ -149,7 +163,7 @@ describe("Workers application", () => {
       query.append("tags", "a,b");
       query.append("tags", "C#");
       query.append("tags", "");
-      const response = await app.request(`/api/articles?${query}`, {}, { DB });
+      const response = await request(`/api/articles?${query}`, {}, { DB });
       expect(response.status).toBe(200);
       expect(await response.json()).toEqual([
         {
@@ -163,13 +177,13 @@ describe("Workers application", () => {
           tags: [{ name: "C#" }, { name: "a,b" }, { name: "C#" }],
         },
       ]);
-      const missing = await app.request(
+      const missing = await request(
         "/api/articles?tags=C%23&tags=missing",
         {},
         { DB },
       );
       expect(await missing.json()).toEqual([]);
-      const empty = await app.request(
+      const empty = await request(
         "/api/articles?minLikes=&maxStocks=&q=&author=&tags=",
         {},
         { DB },
@@ -245,11 +259,7 @@ describe("Workers application", () => {
         });
         params.append("tags", "C#");
         params.append("tags", "a,b");
-        const response = await app.request(
-          `/api/articles?${params}`,
-          {},
-          { DB },
-        );
+        const response = await request(`/api/articles?${params}`, {}, { DB });
         expect(response.status).toBe(200);
         expect(await response.json()).toEqual([
           expect.objectContaining({
@@ -258,16 +268,12 @@ describe("Workers application", () => {
           }),
         ]);
         params.set("offset", "1");
-        const next = await app.request(`/api/articles?${params}`, {}, { DB });
+        const next = await request(`/api/articles?${params}`, {}, { DB });
         expect(next.status).toBe(200);
         expect(await next.json()).toEqual([]);
         params.delete("offset");
         params.set("author", `${author.slice(0, -1)}!`);
-        const mismatch = await app.request(
-          `/api/articles?${params}`,
-          {},
-          { DB },
-        );
+        const mismatch = await request(`/api/articles?${params}`, {}, { DB });
         expect(mismatch.status).toBe(200);
         expect(await mismatch.json()).toEqual([]);
       } finally {
@@ -300,11 +306,7 @@ describe("Workers application", () => {
         ["Mixed", "Ä投稿者", 1],
       ] as const) {
         const params = new URLSearchParams({ q, author });
-        const response = await app.request(
-          `/api/articles?${params}`,
-          {},
-          { DB },
-        );
+        const response = await request(`/api/articles?${params}`, {}, { DB });
         expect(response.status).toBe(200);
         expect(await response.json()).toHaveLength(count);
       }
@@ -323,7 +325,7 @@ describe("Workers application", () => {
   ] as const)(
     "normalizes count syntax %s in native SSR bootstrap and controls",
     async (raw, expected) => {
-      const response = await app.request(
+      const response = await request(
         `/articles?${new URLSearchParams({ minLikes: raw })}`,
         {},
         { DB },
@@ -342,7 +344,7 @@ describe("Workers application", () => {
   );
 
   test("publishes OpenAPI with a deployment-relative server", async () => {
-    const response = await app.request("/doc", {}, { DB });
+    const response = await request("/doc", {}, { DB });
     expect(response.status).toBe(200);
     expect(await response.json()).toMatchObject({
       servers: expect.arrayContaining([
@@ -353,7 +355,7 @@ describe("Workers application", () => {
   });
 
   test("documents repeated tags using form/explode parameters", async () => {
-    const response = await app.request("/doc", {}, { DB });
+    const response = await request("/doc", {}, { DB });
     const document = (await response.json()) as {
       paths: { "/api/articles": { get: { parameters: unknown[] } } };
     };
@@ -394,7 +396,7 @@ describe("Workers application", () => {
       "until=0001-03-30",
     ];
     for (const query of cases) {
-      const response = await app.request(
+      const response = await request(
         `/api/analysis/time-series?${query}`,
         {},
         { DB: unread },
@@ -407,7 +409,7 @@ describe("Workers application", () => {
       });
     }
     expect(reads).toBe(0);
-    const invalidDate = await app.request(
+    const invalidDate = await request(
       "/api/analysis/time-series?since=2026-02-31",
       {},
       { DB: unread },
@@ -426,7 +428,7 @@ describe("Workers application", () => {
     const stored = await DB.prepare(
       "SELECT count(*) AS articleCount FROM articles",
     ).first<{ articleCount: number }>();
-    const response = await app.request("/api/analysis/time-series", {}, { DB });
+    const response = await request("/api/analysis/time-series", {}, { DB });
     expect(response.status).toBe(200);
     const body = (await response.json()) as {
       since: string;
@@ -457,7 +459,7 @@ describe("Workers application", () => {
     }
 
     const until = addUtcDays("2020-01-01", 399);
-    const capped = await app.request(
+    const capped = await request(
       `/api/analysis/time-series?since=2020-01-01&until=${until}&bucket=day`,
       {},
       { DB },
@@ -505,7 +507,7 @@ describe("Workers application", () => {
       )
       .run();
     try {
-      const sample = await app.request(
+      const sample = await request(
         "/api/analysis/time-series?since=2026-01-01&until=2026-01-03&bucket=day",
         {},
         { DB },
@@ -541,7 +543,7 @@ describe("Workers application", () => {
   });
 
   test("keeps the earliest supported Monday bucket serializable", async () => {
-    const response = await app.request(
+    const response = await request(
       "/api/analysis/time-series?since=0001-01-01&until=0001-01-01&bucket=week",
       {},
       { DB },
@@ -595,7 +597,7 @@ describe("Workers application", () => {
       });
       params.append("tags", "Rust");
       params.append("tags", "Go");
-      const response = await app.request(
+      const response = await request(
         `/api/analysis/time-series?${params}`,
         {},
         { DB },
@@ -624,7 +626,7 @@ describe("Workers application", () => {
   });
 
   test("publishes the time series operation", async () => {
-    const response = await app.request("/doc", {}, { DB });
+    const response = await request("/doc", {}, { DB });
     expect(response.status).toBe(200);
     const document = (await response.json()) as {
       paths: {

@@ -9,6 +9,11 @@ export const timeSeriesRoute = createRoute({
     query: timeSeriesQuery,
   },
   responses: {
+    409: {
+      description:
+        "Requested immutable data generation is no longer retained; X-Data-Version identifies the current generation",
+    },
+    503: { description: "No published active data generation" },
     200: {
       description:
         "Buckets articles by the UTC calendar day, Monday-start week, or month of publication. publishedArticleLikes is the sum of the current likes_count snapshot for articles published in each bucket, not likes earned during that bucket.",

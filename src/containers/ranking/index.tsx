@@ -11,9 +11,14 @@ import type { FC } from "hono/jsx";
 export const RankningContainer: FC<{
   db: DrizzleD1Database<typeof schema>;
   config: RankingConfig;
-}> = async ({ db, config }) => {
-  const articleCountGroupByUsers = await getArticleCountGroupByUser(db, config);
-  const likesCount = await getLikesCountGroupByUser(db, config);
+  dataVersion: string;
+}> = async ({ db, config, dataVersion }) => {
+  const articleCountGroupByUsers = await getArticleCountGroupByUser(
+    db,
+    dataVersion,
+    config,
+  );
+  const likesCount = await getLikesCountGroupByUser(db, dataVersion, config);
 
   return (
     <Ranking

@@ -1,6 +1,7 @@
 /** @jsxImportSource react */
 import {
   useCallback,
+  useEffect,
   useRef,
   useState,
   useTransition,
@@ -60,13 +61,10 @@ import {
 } from "./articles";
 import { DataVersionControls } from "./data-version-controls";
 import { useDataVersion } from "./data-version";
-import {
-  articlesQueryOptions,
-  normalizeArticleQuery,
-} from "./queries";
+import { articlesQueryOptions, normalizeArticleQuery } from "./queries";
 import {
   isDataQuery,
-  protectDataQueries,
+  useProtectedDataQueries,
   useRemovePreviousGeneration,
 } from "./query-client";
 import { useDebouncedAction } from "./hooks/useDebouncedAction";
@@ -92,6 +90,7 @@ export default function ArticlesApp({
   const versionState = useDataVersion(initialDataVersion);
   const { adoptedVersion } = versionState;
   const queryClient = useQueryClient();
+  const protectQueries = useProtectedDataQueries();
   const queryResult = useSuspenseQuery(
     articlesQueryOptions(adoptedVersion, query),
   );
@@ -122,6 +121,12 @@ export default function ArticlesApp({
   })}`;
   const [isPending, startTransition] = useTransition();
   const requestIntent = useRef(0);
+  useEffect(
+    () => () => {
+      requestIntent.current++;
+    },
+    [],
+  );
   const initialUrlChecked = useRef(false);
 
   // Stable ref for latest draft to avoid stale closures in debounce callback
@@ -143,17 +148,14 @@ export default function ArticlesApp({
       const intent = ++requestIntent.current;
       setRequestFailure(null);
       const queryOptions = articlesQueryOptions(version, normalized);
-      const releaseProtection = protectDataQueries([queryOptions.queryKey]);
+      const releaseProtection = protectQueries([queryOptions.queryKey]);
       try {
         await queryClient.prefetchQuery(
           options.force ? { ...queryOptions, staleTime: 0 } : queryOptions,
         );
         const data = queryClient.getQueryData(queryOptions.queryKey);
         const state = queryClient.getQueryState(queryOptions.queryKey);
-        if (
-          data === undefined ||
-          (options.force && state?.status === "error")
-        )
+        if (data === undefined || (options.force && state?.status === "error"))
           throw state?.error ?? new Error("記事を取得できませんでした");
         if (requestIntent.current !== intent) {
           releaseProtection();
@@ -174,12 +176,16 @@ export default function ArticlesApp({
           error instanceof Error
             ? error
             : new Error("記事を取得できませんでした");
-        setRequestFailure({ error: normalizedError, query: normalized, version });
+        setRequestFailure({
+          error: normalizedError,
+          query: normalized,
+          version,
+        });
         versionState.reportError(normalizedError);
         return false;
       }
     },
-    [adoptedVersion, queryClient, startTransition, versionState.reportError],
+    [adoptedVersion, queryClient, protectQueries, versionState.reportError],
   );
 
   const writeSearchUrl = useCallback((next: ArticleQuery) => {
@@ -219,6 +225,7 @@ export default function ArticlesApp({
   });
   const updateDraft = useCallback(
     (field: keyof ArticleDraft, value: string | string[]) => {
+      requestIntent.current++;
       const nextDraft = { ...latestDraftRef.current, [field]: value };
       latestDraftRef.current = nextDraft;
       setDraft(nextDraft);
@@ -308,7 +315,10 @@ export default function ArticlesApp({
       );
       if (!initialUrlChecked.current) {
         initialUrlChecked.current = true;
-        if (articleQueryParams(current).toString() !== articleQueryParams(query).toString())
+        if (
+          articleQueryParams(current).toString() !==
+          articleQueryParams(query).toString()
+        )
           void load(current);
       }
       return () => {
@@ -341,6 +351,7 @@ export default function ArticlesApp({
       });
   };
   const refreshData = async () => {
+    const refreshIntent = ++requestIntent.current;
     let version: string;
     try {
       version = await versionState.checkLatestVersion();
@@ -348,6 +359,7 @@ export default function ArticlesApp({
       versionState.reportError(error);
       return;
     }
+    if (requestIntent.current !== refreshIntent) return;
     const next = { ...query, offset: 0 };
     const nextDraft = toArticleDraft(next);
     await load(next, {

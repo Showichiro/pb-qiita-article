@@ -76,10 +76,7 @@ export function readAnalysisInitialData(
     )
   )
     throw new Error("Invalid analysis tag options");
-  if (
-    typeof data.dataVersion !== "string" ||
-    data.dataVersion.length === 0
-  )
+  if (typeof data.dataVersion !== "string" || data.dataVersion.length === 0)
     throw new Error("Invalid analysis data version");
   const rows = validateAnalysisResponse(
     {
@@ -133,14 +130,21 @@ export async function mountAnalysisApp(
     author: initialData.state.author,
     tags: initialData.state.tags,
   });
-  seedQueryData(
-    analysisQueryKey(initialData.dataVersion, query),
-    { query, rows: initialData.rows },
-  );
+  seedQueryData(analysisQueryKey(initialData.dataVersion, query), {
+    query,
+    rows: initialData.rows,
+  });
 
   const clientContainer = document.createElement("div");
   const fallback = Array.from(container.childNodes);
   const root = createRoot(clientContainer, {
+    onCaughtError() {
+      if (clientContainer.parentNode !== container) {
+        stopTracking();
+        roots.delete(container);
+        queueMicrotask(() => root.unmount());
+      }
+    },
     onUncaughtError(error) {
       stopTracking();
       console.error("Could not render the analysis application", error);

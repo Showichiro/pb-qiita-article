@@ -1,4 +1,9 @@
-import { getActiveDataGeneration, getPublishedDataGeneration, schema } from "@/db";
+import {
+  GenerationNotPublishedError,
+  getActiveDataGeneration,
+  getPublishedDataGeneration,
+  schema,
+} from "@/db";
 import { drizzle, type DrizzleD1Database } from "@/lib";
 import type { Context } from "hono";
 import type { Env } from "./factory";
@@ -37,7 +42,7 @@ export const withDataVersion = async (
   const session = c.env.DB.withSession("first-primary");
   const db = drizzle(session as unknown as D1Database, { schema });
   const active = await getActiveDataGeneration(db);
-  if (!active || active.state !== "published") {
+  if (active?.state !== "published") {
     return generationError(c, 503);
   }
 
@@ -51,7 +56,14 @@ export const withDataVersion = async (
   }
 
   c.header("X-Data-Version", selected.id);
-  const response = await handler(db, selected.id, selected.publishedSequence ?? 0);
+  let response: Response;
+  try {
+    response = await handler(db, selected.id, selected.publishedSequence ?? 0);
+  } catch (error) {
+    if (!(error instanceof GenerationNotPublishedError)) throw error;
+    const latest = await getActiveDataGeneration(db);
+    return generationError(c, latest?.id ? 409 : 503, latest?.id);
+  }
   const stillPublished = await getPublishedDataGeneration(db, selected.id);
   if (!stillPublished) {
     const latest = await getActiveDataGeneration(db);

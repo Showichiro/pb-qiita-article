@@ -1,23 +1,29 @@
-import { getActiveDataGeneration, listRetainedDataGenerations } from "@/db";
+import {
+  getActiveDataGeneration,
+  listRetainedDataGenerations,
+  schema,
+} from "@/db";
+import { drizzle } from "@/lib";
 import type { DataVersionResponse, DataVersionsResponse } from "@/schemas";
 import type { Env } from "@/util";
 import type { Handler } from "hono";
 
-export const dataVersionHandler: Handler<Env, "/api/data-version"> = async (c) => {
-  const activeGeneration = await getActiveDataGeneration(c.var.db);
+export const dataVersionHandler: Handler<Env, "/api/data-version"> = async (
+  c,
+) => {
+  c.header("Cache-Control", "no-store");
+  const db = drizzle(
+    c.env.DB.withSession("first-primary") as unknown as D1Database,
+    { schema },
+  );
+  const activeGeneration = await getActiveDataGeneration(db);
 
   if (!activeGeneration) {
-    return c.json(
-      { error: "No active data generation" },
-      503,
-    );
+    return c.json({ error: "No active data generation" }, 503);
   }
 
   if (activeGeneration.state !== "published") {
-    return c.json(
-      { error: "Active generation is not published" },
-      503,
-    );
+    return c.json({ error: "Active generation is not published" }, 503);
   }
 
   const response: DataVersionResponse = {
@@ -34,9 +40,11 @@ export const dataVersionHandler: Handler<Env, "/api/data-version"> = async (c) =
   return c.json(response);
 };
 
-export const dataVersionsHandler: Handler<Env, "/api/data-versions"> = async (c) => {
+export const dataVersionsHandler: Handler<Env, "/api/data-versions"> = async (
+  c,
+) => {
   const limitParam = c.req.query("limit");
-  const limit = limitParam ? Math.min(Math.max(Number.parseInt(limitParam, 10), 1), 10) : 3;
+  const limit = limitParam ? Math.min(Number(limitParam), 10) : 3;
 
   const generations = await listRetainedDataGenerations(c.var.db, limit);
 

@@ -1,3 +1,4 @@
+import { migrateTestGeneration } from "./test-generation";
 import { readFile } from "node:fs/promises";
 import { getArticleTimeSeries, schema } from "@/db";
 import { drizzle } from "@/lib";
@@ -13,15 +14,24 @@ describe("getArticleTimeSeries", () => {
 
   beforeAll(async () => {
     d1 = await runtime.getD1Database("DB");
-    const migration = await readFile("migrations/0000_quick_vanisher.sql", "utf8");
+    const migration = await readFile(
+      "migrations/0000_quick_vanisher.sql",
+      "utf8",
+    );
     for (const statement of migration.split("--> statement-breakpoint")) {
       await d1.prepare(statement.trim()).run();
     }
+    await migrateTestGeneration(d1);
+    await d1
+      .prepare(
+        "UPDATE data_generations SET state='published',published_sequence=1 WHERE id='legacy'",
+      )
+      .run();
   });
   afterAll(() => runtime.dispose());
   beforeEach(async () => {
-    await d1.exec("DELETE FROM tags");
-    await d1.exec("DELETE FROM articles");
+    await d1.exec("DELETE FROM generation_tags");
+    await d1.exec("DELETE FROM generation_articles");
   });
 
   const database = () => drizzle(d1, { schema });
@@ -36,7 +46,7 @@ describe("getArticleTimeSeries", () => {
   }) => {
     await d1
       .prepare(
-        "INSERT INTO articles (id, title, user_id, user_name, created_at, likes_count, stocks_count) VALUES (?, ?, ?, ?, ?, ?, ?)",
+        "INSERT INTO generation_articles (generation_id, id, title, user_id, user_name, created_at, likes_count, stocks_count) VALUES ('legacy', ?, ?, ?, ?, ?, ?, ?)",
       )
       .bind(
         article.id,
@@ -48,17 +58,19 @@ describe("getArticleTimeSeries", () => {
         0,
       )
       .run();
-    for (const tag of article.tags ?? []) {
+    for (const [position, tag] of (article.tags ?? []).entries()) {
       await d1
-        .prepare("INSERT INTO tags (article_id, name) VALUES (?, ?)")
-        .bind(article.id, tag)
+        .prepare(
+          "INSERT INTO generation_tags (generation_id, article_id, name, position) VALUES ('legacy', ?, ?, ?)",
+        )
+        .bind(article.id, tag, position)
         .run();
     }
   };
 
   test("zero-fills every selected day when nothing matches", async () => {
     await expect(
-      getArticleTimeSeries(database(), {
+      getArticleTimeSeries(database(), "legacy", {
         since: "2026-03-01",
         until: "2026-03-02",
         bucket: "day",
@@ -68,8 +80,16 @@ describe("getArticleTimeSeries", () => {
       until: "2026-03-02",
       bucket: "day",
       rows: [
-        { bucketStart: "2026-03-01", articleCount: 0, publishedArticleLikes: 0 },
-        { bucketStart: "2026-03-02", articleCount: 0, publishedArticleLikes: 0 },
+        {
+          bucketStart: "2026-03-01",
+          articleCount: 0,
+          publishedArticleLikes: 0,
+        },
+        {
+          bucketStart: "2026-03-02",
+          articleCount: 0,
+          publishedArticleLikes: 0,
+        },
       ],
     });
   });
@@ -96,7 +116,7 @@ describe("getArticleTimeSeries", () => {
       likes: 7,
     });
     await expect(
-      getArticleTimeSeries(database(), {
+      getArticleTimeSeries(database(), "legacy", {
         since: "2026-01-01",
         until: "2026-01-03",
         bucket: "day",
@@ -106,9 +126,21 @@ describe("getArticleTimeSeries", () => {
       until: "2026-01-03",
       bucket: "day",
       rows: [
-        { bucketStart: "2026-01-01", articleCount: 1, publishedArticleLikes: 2 },
-        { bucketStart: "2026-01-02", articleCount: 0, publishedArticleLikes: 0 },
-        { bucketStart: "2026-01-03", articleCount: 1, publishedArticleLikes: 5 },
+        {
+          bucketStart: "2026-01-01",
+          articleCount: 1,
+          publishedArticleLikes: 2,
+        },
+        {
+          bucketStart: "2026-01-02",
+          articleCount: 0,
+          publishedArticleLikes: 0,
+        },
+        {
+          bucketStart: "2026-01-03",
+          articleCount: 1,
+          publishedArticleLikes: 5,
+        },
       ],
     });
   });
@@ -119,12 +151,12 @@ describe("getArticleTimeSeries", () => {
       createdAt: "2025-05-07T08:36:24+09:00",
       likes: 11,
     });
-    const onPreviousDay = await getArticleTimeSeries(database(), {
+    const onPreviousDay = await getArticleTimeSeries(database(), "legacy", {
       since: "2025-05-06",
       until: "2025-05-06",
       bucket: "day",
     });
-    const onPrefixDay = await getArticleTimeSeries(database(), {
+    const onPrefixDay = await getArticleTimeSeries(database(), "legacy", {
       since: "2025-05-07",
       until: "2025-05-07",
       bucket: "day",
@@ -174,7 +206,7 @@ describe("getArticleTimeSeries", () => {
       likes: 100,
     });
     await expect(
-      getArticleTimeSeries(database(), {
+      getArticleTimeSeries(database(), "legacy", {
         since: "2026-01-01",
         until: "2026-01-10",
         bucket: "week",
@@ -225,7 +257,7 @@ describe("getArticleTimeSeries", () => {
       likes: 30,
     });
     await expect(
-      getArticleTimeSeries(database(), {
+      getArticleTimeSeries(database(), "legacy", {
         since: "2024-02-15",
         until: "2024-03-01",
         bucket: "month",
@@ -235,8 +267,16 @@ describe("getArticleTimeSeries", () => {
       until: "2024-03-01",
       bucket: "month",
       rows: [
-        { bucketStart: "2024-02-01", articleCount: 2, publishedArticleLikes: 7 },
-        { bucketStart: "2024-03-01", articleCount: 1, publishedArticleLikes: 4 },
+        {
+          bucketStart: "2024-02-01",
+          articleCount: 2,
+          publishedArticleLikes: 7,
+        },
+        {
+          bucketStart: "2024-03-01",
+          articleCount: 1,
+          publishedArticleLikes: 4,
+        },
       ],
     });
   });
@@ -296,52 +336,88 @@ describe("getArticleTimeSeries", () => {
       tags: ["Rust", "Go"],
     };
     await expect(
-      getArticleTimeSeries(database(), { ...config, author: "writerid" }),
+      getArticleTimeSeries(database(), "legacy", {
+        ...config,
+        author: "writerid",
+      }),
     ).resolves.toMatchObject({
       rows: [
-        { bucketStart: "2026-05-01", articleCount: 2, publishedArticleLikes: 10 },
+        {
+          bucketStart: "2026-05-01",
+          articleCount: 2,
+          publishedArticleLikes: 10,
+        },
       ],
     });
     await expect(
-      getArticleTimeSeries(database(), { ...config, author: "ä投稿者" }),
+      getArticleTimeSeries(database(), "legacy", {
+        ...config,
+        author: "ä投稿者",
+      }),
     ).resolves.toMatchObject({
       rows: [
-        { bucketStart: "2026-05-01", articleCount: 0, publishedArticleLikes: 0 },
+        {
+          bucketStart: "2026-05-01",
+          articleCount: 0,
+          publishedArticleLikes: 0,
+        },
       ],
     });
     await expect(
-      getArticleTimeSeries(database(), { ...config, author: "Ä投稿者" }),
+      getArticleTimeSeries(database(), "legacy", {
+        ...config,
+        author: "Ä投稿者",
+      }),
     ).resolves.toMatchObject({
       rows: [
-        { bucketStart: "2026-05-01", articleCount: 1, publishedArticleLikes: 1 },
+        {
+          bucketStart: "2026-05-01",
+          articleCount: 1,
+          publishedArticleLikes: 1,
+        },
       ],
     });
     await expect(
-      getArticleTimeSeries(database(), { ...config, author: "%_admin" }),
+      getArticleTimeSeries(database(), "legacy", {
+        ...config,
+        author: "%_admin",
+      }),
     ).resolves.toMatchObject({
       rows: [
-        { bucketStart: "2026-05-01", articleCount: 1, publishedArticleLikes: 8 },
+        {
+          bucketStart: "2026-05-01",
+          articleCount: 1,
+          publishedArticleLikes: 8,
+        },
       ],
     });
-    await expect(getArticleTimeSeries(database(), config)).resolves.toMatchObject(
-      {
-        rows: [
-          {
-            bucketStart: "2026-05-01",
-            articleCount: 5,
-            publishedArticleLikes: 22,
-          },
-        ],
-      },
-    );
+    await expect(
+      getArticleTimeSeries(database(), "legacy", config),
+    ).resolves.toMatchObject({
+      rows: [
+        {
+          bucketStart: "2026-05-01",
+          articleCount: 5,
+          publishedArticleLikes: 22,
+        },
+      ],
+    });
   });
 
   test("ignores an unparsable offset and treats a zoneless timestamp as UTC", async () => {
     await d1
       .prepare(
-        "INSERT INTO articles (id, title, user_id, user_name, created_at, likes_count, stocks_count) VALUES (?, ?, ?, ?, ?, ?, ?)",
+        "INSERT INTO generation_articles (generation_id, id, title, user_id, user_name, created_at, likes_count, stocks_count) VALUES ('legacy', ?, ?, ?, ?, ?, ?, ?)",
       )
-      .bind("bad-offset", "bad-offset", "u", "n", "2026-04-01T00:00:00+0900", 5, 0)
+      .bind(
+        "bad-offset",
+        "bad-offset",
+        "u",
+        "n",
+        "2026-04-01T00:00:00+0900",
+        5,
+        0,
+      )
       .run();
     await insertArticle({
       id: "utc-midnight",
@@ -354,25 +430,33 @@ describe("getArticleTimeSeries", () => {
       likes: 3,
     });
     await expect(
-      getArticleTimeSeries(database(), {
+      getArticleTimeSeries(database(), "legacy", {
         since: "2026-04-01",
         until: "2026-04-02",
         bucket: "day",
       }),
     ).resolves.toMatchObject({
       rows: [
-        { bucketStart: "2026-04-01", articleCount: 1, publishedArticleLikes: 2 },
-        { bucketStart: "2026-04-02", articleCount: 1, publishedArticleLikes: 3 },
+        {
+          bucketStart: "2026-04-01",
+          articleCount: 1,
+          publishedArticleLikes: 2,
+        },
+        {
+          bucketStart: "2026-04-02",
+          articleCount: 1,
+          publishedArticleLikes: 3,
+        },
       ],
     });
   });
 
   test("accepts the maximum safe like total and rejects an unsafe snapshot sum", async () => {
     await d1.exec(
-      "INSERT INTO articles (id, title, user_id, user_name, created_at, likes_count, stocks_count) VALUES ('max-safe', 'max-safe', 'u', 'n', '2026-08-01T00:00:00Z', 9007199254740991, 0)",
+      "INSERT INTO generation_articles (generation_id, id, title, user_id, user_name, created_at, likes_count, stocks_count) VALUES ('legacy', 'max-safe', 'max-safe', 'u', 'n', '2026-08-01T00:00:00Z', 9007199254740991, 0)",
     );
     await expect(
-      getArticleTimeSeries(database(), {
+      getArticleTimeSeries(database(), "legacy", {
         since: "2026-08-01",
         until: "2026-08-01",
         bucket: "day",
@@ -386,28 +470,32 @@ describe("getArticleTimeSeries", () => {
         },
       ],
     });
-    await d1.exec("DELETE FROM articles");
+    await d1.exec("DELETE FROM generation_articles");
     await d1.exec(
-      "INSERT INTO articles (id, title, user_id, user_name, created_at, likes_count, stocks_count) VALUES ('unsafe', 'unsafe', 'u', 'n', '2026-08-02T00:00:00Z', 9007199254740993, 0)",
+      "INSERT INTO generation_articles (generation_id, id, title, user_id, user_name, created_at, likes_count, stocks_count) VALUES ('legacy', 'unsafe', 'unsafe', 'u', 'n', '2026-08-02T00:00:00Z', 9007199254740993, 0)",
     );
     await expect(
-      getArticleTimeSeries(database(), {
+      getArticleTimeSeries(database(), "legacy", {
         since: "2026-08-02",
         until: "2026-08-02",
         bucket: "day",
       }),
-    ).rejects.toThrow("time series aggregate is not a safe nonnegative integer");
-    await d1.exec("DELETE FROM articles");
+    ).rejects.toThrow(
+      "time series aggregate is not a safe nonnegative integer",
+    );
+    await d1.exec("DELETE FROM generation_articles");
     await d1.exec(
-      "INSERT INTO articles (id, title, user_id, user_name, created_at, likes_count, stocks_count) VALUES ('negative', 'negative', 'u', 'n', '2026-08-03T00:00:00Z', -1, 0)",
+      "INSERT INTO generation_articles (generation_id, id, title, user_id, user_name, created_at, likes_count, stocks_count) VALUES ('legacy', 'negative', 'negative', 'u', 'n', '2026-08-03T00:00:00Z', -1, 0)",
     );
     await expect(
-      getArticleTimeSeries(database(), {
+      getArticleTimeSeries(database(), "legacy", {
         since: "2026-08-03",
         until: "2026-08-03",
         bucket: "day",
       }),
-    ).rejects.toThrow("time series aggregate is not a safe nonnegative integer");
+    ).rejects.toThrow(
+      "time series aggregate is not a safe nonnegative integer",
+    );
   });
 
   test("refuses an oversized window before issuing SQL", async () => {

@@ -100,10 +100,12 @@ describe("getLikesCountGroupByUser", async () => {
       since: new Date(3).toISOString(),
       until: new Date(7).toISOString(),
     });
-    expect(results.length).toBe(2);
+    expect(results.length).toBe(4);
     expect(results).toEqual([
+      { totalLikesCount: "10", userId: "user-0", userName: "user-0" },
       { totalLikesCount: "7", userId: "user-7", userName: "user-7" },
       { totalLikesCount: "5", userId: "user-5", userName: "user-5" },
+      { totalLikesCount: "3", userId: "user-3", userName: "user-3" },
     ]);
   });
 });

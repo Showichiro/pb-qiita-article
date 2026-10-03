@@ -59,13 +59,10 @@ import {
 } from "./ranking";
 import { DataVersionControls } from "./data-version-controls";
 import { useDataVersion } from "./data-version";
-import {
-  rankingLikesQueryOptions,
-  rankingPostsQueryOptions,
-} from "./queries";
+import { rankingLikesQueryOptions, rankingPostsQueryOptions } from "./queries";
 import {
   isDataQuery,
-  protectDataQueries,
+  useProtectedDataQueries,
   useRemovePreviousGeneration,
 } from "./query-client";
 
@@ -92,6 +89,7 @@ export default function RankingApp({
   const versionState = useDataVersion(initialDataVersion);
   const { adoptedVersion } = versionState;
   const queryClient = useQueryClient();
+  const protectQueries = useProtectedDataQueries();
   const dates = dateQuery(query);
   const queryResults = useSuspenseQueries({
     queries: [
@@ -121,19 +119,20 @@ export default function RankingApp({
   } | null>(null);
   const [isPending, startTransition] = useTransition();
   const requestIntent = useRef(0);
-
-  const setCurrentQuery = useCallback(
-    (next: RankingQuery, intent?: number) => {
-      if (intent !== undefined && requestIntent.current !== intent) return;
-      queryRef.current = next;
-      setQuery((current) =>
-        intent === undefined || requestIntent.current === intent
-          ? next
-          : current,
-      );
+  useEffect(
+    () => () => {
+      requestIntent.current++;
     },
     [],
   );
+
+  const setCurrentQuery = useCallback((next: RankingQuery, intent?: number) => {
+    if (intent !== undefined && requestIntent.current !== intent) return;
+    queryRef.current = next;
+    setQuery((current) =>
+      intent === undefined || requestIntent.current === intent ? next : current,
+    );
+  }, []);
 
   const writeSearchUrl = useCallback((next: RankingQuery) => {
     const canonical = rankingQueryParams(next).toString();
@@ -167,21 +166,17 @@ export default function RankingApp({
       const postsOptions = rankingPostsQueryOptions(version, requestQuery);
       const likesOptions = rankingLikesQueryOptions(version, requestQuery);
       setRequestFailure(null);
-      const releaseProtection = protectDataQueries([
+      const releaseProtection = protectQueries([
         postsOptions.queryKey,
         likesOptions.queryKey,
       ]);
       try {
         await Promise.all([
           queryClient.prefetchQuery(
-            options.force
-              ? { ...postsOptions, staleTime: 0 }
-              : postsOptions,
+            options.force ? { ...postsOptions, staleTime: 0 } : postsOptions,
           ),
           queryClient.prefetchQuery(
-            options.force
-              ? { ...likesOptions, staleTime: 0 }
-              : likesOptions,
+            options.force ? { ...likesOptions, staleTime: 0 } : likesOptions,
           ),
         ]);
         for (const queryOptions of [postsOptions, likesOptions]) {
@@ -199,7 +194,12 @@ export default function RankingApp({
         }
         if (options.onSuccess) options.onSuccess(intent);
         else if (options.commit !== false)
-          startTransition(() => setCurrentQuery(withRankingDisplay(dateQuery(next), queryRef.current), intent));
+          startTransition(() =>
+            setCurrentQuery(
+              withRankingDisplay(dateQuery(next), queryRef.current),
+              intent,
+            ),
+          );
         return true;
       } catch (error) {
         releaseProtection();
@@ -216,8 +216,8 @@ export default function RankingApp({
     [
       adoptedVersion,
       queryClient,
+      protectQueries,
       setCurrentQuery,
-      startTransition,
       versionState.reportError,
     ],
   );
@@ -243,7 +243,7 @@ export default function RankingApp({
       setQuery((current) => withRankingDisplay(dateQuery(current), display));
       writeSearchUrl(next);
     },
-    [setCurrentQuery, writeSearchUrl],
+    [writeSearchUrl],
   );
 
   const onPopState = useCallback(() => {
@@ -281,6 +281,7 @@ export default function RankingApp({
   };
 
   const handleDateChange = (field: "since" | "until", value: string) => {
+    requestIntent.current++;
     const nextDraft = { ...latestDraft.current, [field]: value };
     latestDraft.current = nextDraft;
     setDraft(nextDraft);

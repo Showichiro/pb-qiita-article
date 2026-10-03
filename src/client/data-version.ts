@@ -80,7 +80,9 @@ export async function fetchDataVersion(): Promise<DataVersionMetadata> {
     headers: { Accept: "application/json" },
   });
   if (!response.ok)
-    throw new Error(`データ更新情報を取得できませんでした (${response.status})`);
+    throw new Error(
+      `データ更新情報を取得できませんでした (${response.status})`,
+    );
   const value: unknown = await response.json();
   if (
     !value ||

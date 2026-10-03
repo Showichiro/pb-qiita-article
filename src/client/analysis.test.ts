@@ -227,13 +227,15 @@ describe("analysis query and response contract", () => {
           since: query.since,
           until: query.until,
           bucket: query.bucket,
-          rows: analysisBucketStarts(query.since, query.until, query.bucket).map(
-            (bucketStart) => ({
-              bucketStart,
-              articleCount: 1,
-              publishedArticleLikes: 4,
-            }),
-          ),
+          rows: analysisBucketStarts(
+            query.since,
+            query.until,
+            query.bucket,
+          ).map((bucketStart) => ({
+            bucketStart,
+            articleCount: 1,
+            publishedArticleLikes: 4,
+          })),
         }),
         {
           status: 200,

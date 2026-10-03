@@ -1,5 +1,4 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import { eq } from "drizzle-orm";
 import { Miniflare } from "miniflare";
 import { drizzle } from "@/lib";
 import * as schema from "./schema";
@@ -13,15 +12,18 @@ import {
 } from "./dataGenerations";
 
 describe("dataGenerations", () => {
-  const runtime = new Miniflare({
-    modules: true,
-    script: "export default { fetch() { return new Response('ok'); } };",
-    d1Databases: ["DB"],
-  });
+  let runtime: Miniflare;
+  const createRuntime = () =>
+    new Miniflare({
+      modules: true,
+      script: "export default { fetch() { return new Response('ok'); } };",
+      d1Databases: ["DB"],
+    });
   let DB: D1Database;
   let db: import("@/lib").DrizzleD1Database<typeof schema>;
 
   beforeEach(async () => {
+    runtime = createRuntime();
     DB = await runtime.getD1Database("DB");
     db = drizzle(DB, { schema });
     // Apply schema
@@ -137,9 +139,9 @@ describe("dataGenerations", () => {
 
   describe("assertGenerationPublished", () => {
     it("throws for non-existent generation", async () => {
-      await expect(assertGenerationPublished(db, "nonexistent")).rejects.toThrow(
-        GenerationNotPublishedError,
-      );
+      await expect(
+        assertGenerationPublished(db, "nonexistent"),
+      ).rejects.toThrow(GenerationNotPublishedError);
     });
 
     it("throws for staging generation", async () => {
@@ -161,13 +163,15 @@ describe("dataGenerations", () => {
         .bind("gen-1", "published", "2026-10-03T00:00:00Z", 1)
         .run();
 
-      await expect(assertGenerationPublished(db, "gen-1")).resolves.not.toThrow();
+      await expect(
+        assertGenerationPublished(db, "gen-1"),
+      ).resolves.not.toThrow();
     });
   });
 
   describe("listRetainedDataGenerations", () => {
     it("returns empty array when no generations exist", async () => {
-      const result = await listRetainedDataGenerations(DB);
+      const result = await listRetainedDataGenerations(db);
       expect(result).toEqual([]);
     });
 
@@ -183,7 +187,7 @@ describe("dataGenerations", () => {
         .bind("gen-2", "staging", "2026-10-03T00:00:00Z")
         .run();
 
-      const result = await listRetainedDataGenerations(DB);
+      const result = await listRetainedDataGenerations(db);
       expect(result).toHaveLength(1);
       expect(result[0]?.id).toBe("gen-1");
     });
@@ -200,7 +204,7 @@ describe("dataGenerations", () => {
         .bind("gen-2", "published", "2026-10-04T00:00:00Z", 2)
         .run();
 
-      const result = await listRetainedDataGenerations(DB);
+      const result = await listRetainedDataGenerations(db);
       expect(result).toHaveLength(2);
       expect(result[0]?.id).toBe("gen-2");
       expect(result[1]?.id).toBe("gen-1");
@@ -232,7 +236,9 @@ describe("dataGenerations", () => {
 
       await pruneOldGenerations(db, 3);
 
-      const remaining = await DB.prepare("SELECT COUNT(*) as count FROM data_generations").first<{ count: number }>();
+      const remaining = await DB.prepare(
+        "SELECT COUNT(*) as count FROM data_generations",
+      ).first<{ count: number }>();
       expect(remaining?.count).toBe(2);
     });
 
@@ -247,11 +253,15 @@ describe("dataGenerations", () => {
 
       await pruneOldGenerations(db, 3);
 
-      const remaining = await DB.prepare("SELECT COUNT(*) as count FROM data_generations").first<{ count: number }>();
+      const remaining = await DB.prepare(
+        "SELECT COUNT(*) as count FROM data_generations",
+      ).first<{ count: number }>();
       expect(remaining?.count).toBe(3);
 
-      const ids = await DB.prepare("SELECT id FROM data_generations ORDER BY published_sequence DESC").all<{ id: string }>();
-      expect(ids.map((r) => r.id)).toEqual(["gen-5", "gen-4", "gen-3"]);
+      const ids = await DB.prepare(
+        "SELECT id FROM data_generations ORDER BY published_sequence DESC",
+      ).all<{ id: string }>();
+      expect(ids.results.map((r) => r.id)).toEqual(["gen-5", "gen-4", "gen-3"]);
     });
 
     it("does not prune staging generations", async () => {
@@ -268,7 +278,9 @@ describe("dataGenerations", () => {
 
       await pruneOldGenerations(db, 1);
 
-      const remaining = await DB.prepare("SELECT COUNT(*) as count FROM data_generations").first<{ count: number }>();
+      const remaining = await DB.prepare(
+        "SELECT COUNT(*) as count FROM data_generations",
+      ).first<{ count: number }>();
       expect(remaining?.count).toBe(2); // Both published and staging remain
     });
   });

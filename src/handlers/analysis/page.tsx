@@ -25,7 +25,9 @@ export async function loadAnalysisPageData(
   generationId: string,
   source: AnalysisPageDataSource = { getArticleTimeSeries, findArticleTags },
   publishedSequence = 0,
-): Promise<AnalysisBootstrap & { dataVersion: string; publishedSequence: number }> {
+): Promise<
+  AnalysisBootstrap & { dataVersion: string; publishedSequence: number }
+> {
   const parsed = parseAnalysisState(params);
   const state: AnalysisState = {
     ...parsed,

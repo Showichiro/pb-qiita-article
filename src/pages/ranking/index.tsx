@@ -1,3 +1,5 @@
+import { rankingQueryParams } from "@/client/ranking";
+import { NativeDataVersionControls } from "@/components/data-version-controls";
 import {
   Header,
   PageLayout,
@@ -199,6 +201,9 @@ export const RankingPage: FC<{
                   検索する
                 </button>
               </form>
+              <NativeDataVersionControls
+                href={`/ranking?${rankingQueryParams({ since: config.since ?? "", until: config.until ?? "", view: config.view, topN: config.topN })}`}
+              />
               <div role="status" aria-live="polite" />
               <div role="status" aria-live="polite">
                 {postRows.length}件の投稿, {likesRows.length}件のいいね

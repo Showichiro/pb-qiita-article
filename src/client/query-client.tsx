@@ -6,13 +6,19 @@ import {
   useQueryClient,
   type Query,
 } from "@tanstack/react-query";
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
 
 const inactiveDataQueryLimit = 100;
 const dataQueryRoots = new Set(["articles", "ranking", "analysis"]);
 let browserQueryClient: QueryClient | undefined;
 
-export function QueryProvider({ children }: { children: ReactNode }) {
+export function QueryProvider({ children }: { children?: ReactNode }) {
   const [client] = useState(getQueryClient);
   return <QueryClientProvider client={client}>{children}</QueryClientProvider>;
 }
@@ -39,26 +45,79 @@ export function isDataQuery(query: Query): boolean {
   return typeof root === "string" && dataQueryRoots.has(root);
 }
 
+export function useProtectedDataQueries() {
+  const client = useQueryClient();
+  const releases = useRef(new Set<() => void>());
+  useEffect(
+    () => () => {
+      for (const release of releases.current) release();
+      releases.current.clear();
+    },
+    [],
+  );
+  return useCallback(
+    (keys: readonly (readonly unknown[])[]) => {
+      if (
+        keys.every(
+          (queryKey) =>
+            (client
+              .getQueryCache()
+              .find({ queryKey, exact: true })
+              ?.getObserversCount() ?? 0) > 0,
+        )
+      )
+        return () => {};
+      const release = protectDataQueries(keys, client, () =>
+        releases.current.delete(release),
+      );
+      releases.current.add(release);
+      return release;
+    },
+    [client],
+  );
+}
+
 export function protectDataQueries(
   queryKeys: readonly (readonly unknown[])[],
+  client = getQueryClient(),
+  onRelease?: () => void,
 ): () => void {
-  const cache = getQueryClient().getQueryCache();
+  const cache = client.getQueryCache();
   const protectedKeys = protectedKeysFor(cache);
+  const token = Symbol();
   const keys = queryKeys.map((queryKey) => ({
     queryKey,
     hash: JSON.stringify(queryKey),
   }));
-  for (const { queryKey, hash } of keys) {
-    const query = cache.find({ queryKey, exact: true });
-    if (!query || query.getObserversCount() === 0) protectedKeys.add(hash);
+  for (const { hash } of keys) {
+    const leases = protectedKeys.get(hash) ?? new Set<symbol>();
+    leases.add(token);
+    protectedKeys.set(hash, leases);
   }
   let released = false;
-  return () => {
+  const release = () => {
     if (released) return;
     released = true;
-    for (const { hash } of keys) protectedKeys.delete(hash);
+    unsubscribe();
+    for (const { hash } of keys) {
+      const leases = protectedKeys.get(hash);
+      leases?.delete(token);
+      if (leases?.size === 0) protectedKeys.delete(hash);
+    }
+    onRelease?.();
     trimInactiveDataQueries(cache, protectedKeys);
   };
+  const unsubscribe = cache.subscribe((event) => {
+    if (
+      event.type === "observerAdded" &&
+      keys.every(
+        ({ queryKey }) =>
+          (cache.find({ queryKey, exact: true })?.getObserversCount() ?? 0) > 0,
+      )
+    )
+      release();
+  });
+  return release;
 }
 
 export function useRemovePreviousGeneration(adoptedVersion: string): void {
@@ -82,25 +141,20 @@ function getQueryVersion(query: Query): unknown {
     : query.queryKey[1];
 }
 
-const protectedKeysByCache = new WeakMap<QueryCache, Set<string>>();
-
-function protectedKeysFor(cache: QueryCache): Set<string> {
-  const existing = protectedKeysByCache.get(cache);
-  if (existing) return existing;
-  const protectedKeys = new Set<string>();
-  protectedKeysByCache.set(cache, protectedKeys);
-  cache.subscribe((event) => {
-    if (event.type === "observerAdded") {
-      protectedKeys.delete(JSON.stringify(event.query.queryKey));
-      trimInactiveDataQueries(cache, protectedKeys);
-    }
-  });
+type ProtectedKeys = Map<string, Set<symbol>>;
+const protectedKeysByCache = new WeakMap<QueryCache, ProtectedKeys>();
+function protectedKeysFor(cache: QueryCache): ProtectedKeys {
+  let protectedKeys = protectedKeysByCache.get(cache);
+  if (!protectedKeys) {
+    protectedKeys = new Map();
+    protectedKeysByCache.set(cache, protectedKeys);
+  }
   return protectedKeys;
 }
 
 function trimInactiveDataQueries(
   cache: QueryCache,
-  protectedKeys: Set<string>,
+  protectedKeys: ProtectedKeys,
 ): void {
   const inactiveQueries = cache
     .getAll()
@@ -112,7 +166,9 @@ function trimInactiveDataQueries(
         !protectedKeys.has(JSON.stringify(query.queryKey)) &&
         query.state.data !== undefined,
     )
-    .sort((left, right) => left.state.dataUpdatedAt - right.state.dataUpdatedAt);
+    .sort(
+      (left, right) => left.state.dataUpdatedAt - right.state.dataUpdatedAt,
+    );
   const excess = inactiveQueries.length - inactiveDataQueryLimit;
   if (excess <= 0) return;
   for (const query of inactiveQueries.slice(0, excess)) cache.remove(query);
@@ -124,6 +180,10 @@ function createQueryClient(): QueryClient {
       trimInactiveDataQueries(queryCache, protectedKeysFor(queryCache)),
   });
   protectedKeysFor(queryCache);
+  queryCache.subscribe((event) => {
+    if (event.type === "observerRemoved")
+      trimInactiveDataQueries(queryCache, protectedKeysFor(queryCache));
+  });
   return new QueryClient({
     queryCache,
     defaultOptions: {

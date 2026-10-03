@@ -223,9 +223,7 @@ export async function fetchPostCounts(
     );
   const postCounts: unknown = await response.json();
   if (!isPostCountRows(postCounts))
-    throw new Error(
-      "記事数ランキングデータの形式が正しくありません",
-    );
+    throw new Error("記事数ランキングデータの形式が正しくありません");
   return postCounts;
 }
 

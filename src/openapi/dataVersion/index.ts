@@ -28,11 +28,12 @@ export const dataVersionsRoute = createRoute({
   path: "/api/data-versions",
   request: {
     query: z.object({
-      limit: z
+      limit: z.coerce
         .number()
+        .int()
         .min(1)
-        .max(10)
         .default(3)
+        .transform((value) => Math.min(value, 10))
         .describe("Number of versions to return"),
     }),
   },

@@ -25,13 +25,17 @@ export type ArticleTimeSeriesConfig = {
 const toSafeNonnegativeInteger = (value: unknown): number => {
   if (typeof value === "bigint") {
     if (value < 0n || value > BigInt(Number.MAX_SAFE_INTEGER)) {
-      throw new Error("time series aggregate is not a safe nonnegative integer");
+      throw new Error(
+        "time series aggregate is not a safe nonnegative integer",
+      );
     }
     return Number(value);
   }
   if (typeof value === "number") {
     if (!Number.isSafeInteger(value) || value < 0) {
-      throw new Error("time series aggregate is not a safe nonnegative integer");
+      throw new Error(
+        "time series aggregate is not a safe nonnegative integer",
+      );
     }
     return value;
   }
@@ -71,9 +75,9 @@ export const getArticleTimeSeries = async (
   generationId: string,
   config: ArticleTimeSeriesConfig,
 ): Promise<TimeSeriesResponse> => {
-  await assertGenerationPublished(db, generationId);
   const { since, until, bucket } = config;
   assertSupportedWindow(since, until, bucket);
+  await assertGenerationPublished(db, generationId);
   const author = config.author?.trim();
   const tags = [
     ...new Set(config.tags?.map((tag) => tag.trim()).filter(Boolean)),
@@ -115,14 +119,18 @@ export const getArticleTimeSeries = async (
     }
     rowsByStart.set(bucketStart, {
       articleCount: toSafeNonnegativeInteger(row.articleCount),
-      publishedArticleLikes: toSafeNonnegativeInteger(row.publishedArticleLikes),
+      publishedArticleLikes: toSafeNonnegativeInteger(
+        row.publishedArticleLikes,
+      ),
     });
   }
   const expected = timeSeriesBucketStarts(since, until, bucket);
   const expectedStarts = new Set(expected);
   for (const bucketStart of rowsByStart.keys()) {
     if (!expectedStarts.has(bucketStart)) {
-      throw new Error(`time series bucket ${bucketStart} is outside the selected range`);
+      throw new Error(
+        `time series bucket ${bucketStart} is outside the selected range`,
+      );
     }
   }
   return timeSeriesResponseSchema.parse({

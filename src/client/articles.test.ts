@@ -58,9 +58,7 @@ describe("article query", () => {
 // React's server renderer exercises the island's first render without a browser.
 describe("ArticlesApp initial render", () => {
   it("preserves columns, links, tags and the native search contract", async () => {
-    const { createElement } = await import("react");
     const { renderToStaticMarkup } = await import("react-dom/server");
-    const { default: ArticlesApp } = await import("./ArticlesApp");
     const html = renderToStaticMarkup(
       articleTestElement({
         initialDataVersion: "v1",
@@ -102,9 +100,7 @@ describe("ArticlesApp initial render", () => {
       expect(html).toContain(column);
   });
   it("renders the empty result state", async () => {
-    const { createElement } = await import("react");
     const { renderToStaticMarkup } = await import("react-dom/server");
-    const { default: ArticlesApp } = await import("./ArticlesApp");
     expect(
       renderToStaticMarkup(
         articleTestElement({
@@ -120,14 +116,12 @@ describe("article requests", () => {
   afterEach(() => vi.unstubAllGlobals());
   it("passes expected version header and validates response", async () => {
     const { fetchArticles } = await import("./articles");
-    const request = vi
-      .fn()
-      .mockResolvedValue(
-        new Response("[]", {
-          status: 200,
-          headers: new Headers({ "X-Data-Version": "v1" }),
-        }),
-      );
+    const request = vi.fn().mockResolvedValue(
+      new Response("[]", {
+        status: 200,
+        headers: new Headers({ "X-Data-Version": "v1" }),
+      }),
+    );
     vi.stubGlobal("fetch", request);
     await expect(fetchArticles(defaultArticleQuery, "v1")).resolves.toEqual([]);
     expect(request).toHaveBeenCalledWith(
@@ -202,8 +196,7 @@ describe("ArticlesApp browser controls", () => {
     window.history.replaceState(null, "", "/articles");
   });
   const mount = async (props: Partial<ArticlesAppProps> = {}) => {
-    const { act, createElement } = await import("react");
-    const { default: App } = await import("./ArticlesApp");
+    const { act } = await import("react");
     await act(async () =>
       root.render(
         articleTestElement({
@@ -251,7 +244,11 @@ describe("ArticlesApp browser controls", () => {
   it("uses SSR results without a request, respects URL pagination, and handles popstate", async () => {
     const request = vi
       .fn()
-      .mockResolvedValue(new Response(JSON.stringify([sample]), { headers: { "X-Data-Version": "v1" } }));
+      .mockResolvedValue(
+        new Response(JSON.stringify([sample]), {
+          headers: { "X-Data-Version": "v1" },
+        }),
+      );
     vi.stubGlobal("fetch", request);
     await mount();
     expect(request).not.toHaveBeenCalled();
@@ -280,7 +277,9 @@ describe("ArticlesApp browser controls", () => {
             resolve = done;
           }),
       )
-      .mockResolvedValueOnce(new Response("[]", { headers: { "X-Data-Version": "v1" } }));
+      .mockResolvedValueOnce(
+        new Response("[]", { headers: { "X-Data-Version": "v1" } }),
+      );
     vi.stubGlobal("fetch", request);
     await mount();
     await action("form", "submit");
@@ -294,7 +293,14 @@ describe("ArticlesApp browser controls", () => {
       false,
     );
     const { act } = await import("react");
-    await act(async () => resolve(new Response("failure", { headers: { "X-Data-Version": "v1" }, status: 503 })));
+    await act(async () =>
+      resolve(
+        new Response("failure", {
+          headers: { "X-Data-Version": "v1" },
+          status: 503,
+        }),
+      ),
+    );
     expect(host.querySelector('[role="alert"]')?.textContent).toContain("503");
     await action('[role="alert"] button');
     expect(request).toHaveBeenCalledTimes(2);
@@ -310,8 +316,7 @@ describe("ArticlesApp browser controls", () => {
         }),
     );
     vi.stubGlobal("fetch", request);
-    const { act, createElement } = await import("react");
-    const { default: App } = await import("./ArticlesApp");
+    const { act } = await import("react");
     await act(async () =>
       root.render(
         articleTestElement({
@@ -326,7 +331,9 @@ describe("ArticlesApp browser controls", () => {
     expect(host.textContent).toContain("Article A");
     await act(async () =>
       finish(
-        new Response(JSON.stringify([{ ...sample, title: "Page eight" }]), { headers: { "X-Data-Version": "v1" } }),
+        new Response(JSON.stringify([{ ...sample, title: "Page eight" }]), {
+          headers: { "X-Data-Version": "v1" },
+        }),
       ),
     );
     expect(host.querySelector("nav span")?.textContent).toBe("8");
@@ -334,7 +341,11 @@ describe("ArticlesApp browser controls", () => {
     expect(host.textContent).not.toContain("Article A");
   });
   it("allows an empty limit draft and normalizes it only when submitted", async () => {
-    const request = vi.fn().mockResolvedValue(new Response("[]", { headers: { "X-Data-Version": "v1" } }));
+    const request = vi
+      .fn()
+      .mockResolvedValue(
+        new Response("[]", { headers: { "X-Data-Version": "v1" } }),
+      );
     vi.stubGlobal("fetch", request);
     await mount();
     const input = host.querySelector<HTMLInputElement>('[name="limit"]');
@@ -374,15 +385,18 @@ describe("ArticlesApp browser controls", () => {
     expect(request).toHaveBeenCalledTimes(1);
     expect(request.mock.calls[0][0]).toContain("q=event-owned");
     expect(host.textContent).toContain("読み込み中");
-    const { act, createElement } = await import("react");
-    const { default: App } = await import("./ArticlesApp");
+    const { act } = await import("react");
     await act(async () =>
-      root.render(
-        articleTestElement({ initialArticles: [] }),
-      ),
+      root.render(articleTestElement({ initialArticles: [] })),
     );
     expect(request).toHaveBeenCalledTimes(1);
-    await act(async () => resolve(new Response(JSON.stringify([sample]), { headers: { "X-Data-Version": "v1" } })));
+    await act(async () =>
+      resolve(
+        new Response(JSON.stringify([sample]), {
+          headers: { "X-Data-Version": "v1" },
+        }),
+      ),
+    );
     expect(host.textContent).toContain("Article A");
   });
   it("coalesces a pending query through rerenders and ignores its completion after unmount", async () => {
@@ -392,17 +406,16 @@ describe("ArticlesApp browser controls", () => {
     vi.stubGlobal("fetch", request);
     await mount();
     await action("form", "submit");
-    const { act, createElement } = await import("react");
-    const { default: App } = await import("./ArticlesApp");
+    const { act } = await import("react");
     await act(async () =>
-      root.render(
-        articleTestElement({ initialArticles: [sample] }),
-      ),
+      root.render(articleTestElement({ initialArticles: [sample] })),
     );
     expect(request).toHaveBeenCalledTimes(1);
     expect(host.textContent).toContain("Article A");
     await act(async () => root.unmount());
-    expect(request.mock.calls[0][1].headers).toMatchObject({ "X-Expected-Data-Version": "v1" });
+    expect(request.mock.calls[0][1].headers).toMatchObject({
+      "X-Expected-Data-Version": "v1",
+    });
     window.dispatchEvent(new PopStateEvent("popstate"));
     expect(request).toHaveBeenCalledTimes(1);
   });
@@ -424,7 +437,11 @@ describe("ArticlesApp browser controls", () => {
     return target;
   };
   it("rejects inverted ranges before history or requests change", async () => {
-    const request = vi.fn().mockResolvedValue(new Response("[]", { headers: { "X-Data-Version": "v1" } }));
+    const request = vi
+      .fn()
+      .mockResolvedValue(
+        new Response("[]", { headers: { "X-Data-Version": "v1" } }),
+      );
     vi.stubGlobal("fetch", request);
     await mount();
     await input("minLikes", "20");
@@ -479,7 +496,13 @@ describe("ArticlesApp browser controls", () => {
     field.focus();
     expect(field.value).toBe("next draft");
     const { act } = await import("react");
-    await act(async () => finish(new Response(JSON.stringify([sample]), { headers: { "X-Data-Version": "v1" } })));
+    await act(async () =>
+      finish(
+        new Response(JSON.stringify([sample]), {
+          headers: { "X-Data-Version": "v1" },
+        }),
+      ),
+    );
     expect(field.value).toBe("next draft");
     expect(document.activeElement).toBe(field);
     await act(async () => {
@@ -502,7 +525,9 @@ describe("ArticlesApp browser controls", () => {
         window.location.origin,
       ).searchParams.getAll("tags"),
     ).toEqual(["a,b"]);
-    await act(async () => finish(new Response("[]", { headers: { "X-Data-Version": "v1" } })));
+    await act(async () =>
+      finish(new Response("[]", { headers: { "X-Data-Version": "v1" } })),
+    );
   });
   it.each([
     ["1e2", 100],
@@ -512,7 +537,11 @@ describe("ArticlesApp browser controls", () => {
   ] as const)(
     "handles popstate for server-valid numeric syntax %s",
     async (raw, expected) => {
-      const request = vi.fn().mockResolvedValue(new Response("[]", { headers: { "X-Data-Version": "v1" } }));
+      const request = vi
+        .fn()
+        .mockResolvedValue(
+          new Response("[]", { headers: { "X-Data-Version": "v1" } }),
+        );
       vi.stubGlobal("fetch", request);
       await mount();
       const { act } = await import("react");
@@ -547,7 +576,9 @@ describe("ArticlesApp browser controls", () => {
     await change('[name="since"]', "2026-02-03");
     await change('[name="orderField"]', "likesCount");
     expect(request).toHaveBeenCalledTimes(2);
-    expect(request.mock.calls[0][1].headers).toMatchObject({ "X-Expected-Data-Version": "v1" });
+    expect(request.mock.calls[0][1].headers).toMatchObject({
+      "X-Expected-Data-Version": "v1",
+    });
     const url = new URL(request.mock.calls[1][0], window.location.origin);
     expect(url.searchParams.get("since")).toBe("2026-02-03");
     expect(url.searchParams.get("orderField")).toBe("likesCount");
@@ -559,7 +590,11 @@ describe("ArticlesApp browser controls", () => {
   });
   it("waits for 500ms of quiet and uses the latest draft after an urgent rerender", async () => {
     vi.useFakeTimers();
-    const request = vi.fn().mockResolvedValue(new Response("[]", { headers: { "X-Data-Version": "v1" } }));
+    const request = vi
+      .fn()
+      .mockResolvedValue(
+        new Response("[]", { headers: { "X-Data-Version": "v1" } }),
+      );
     vi.stubGlobal("fetch", request);
     await mount();
     await change('[name="limit"]', "2");
@@ -567,12 +602,9 @@ describe("ArticlesApp browser controls", () => {
     await change('[name="limit"]', "3");
     await vi.advanceTimersByTimeAsync(499);
     expect(request).not.toHaveBeenCalled();
-    const { act, createElement } = await import("react");
-    const { default: App } = await import("./ArticlesApp");
+    const { act } = await import("react");
     await act(async () =>
-      root.render(
-        articleTestElement({ initialArticles: [sample] }),
-      ),
+      root.render(articleTestElement({ initialArticles: [sample] })),
     );
     await vi.advanceTimersByTimeAsync(1);
     expect(request).toHaveBeenCalledTimes(1);
@@ -607,7 +639,11 @@ describe("ArticlesApp browser controls", () => {
   });
   it("debounces q, author, and all numeric ranges as one valid M2 query", async () => {
     vi.useFakeTimers();
-    const request = vi.fn().mockResolvedValue(new Response("[]", { headers: { "X-Data-Version": "v1" } }));
+    const request = vi
+      .fn()
+      .mockResolvedValue(
+        new Response("[]", { headers: { "X-Data-Version": "v1" } }),
+      );
     vi.stubGlobal("fetch", request);
     await mount();
     await change('[name="q"]', "react hooks");
@@ -634,7 +670,11 @@ describe("ArticlesApp browser controls", () => {
   });
   it("waits until IME composition ends and then debounces the completed text", async () => {
     vi.useFakeTimers();
-    const request = vi.fn().mockResolvedValue(new Response("[]", { headers: { "X-Data-Version": "v1" } }));
+    const request = vi
+      .fn()
+      .mockResolvedValue(
+        new Response("[]", { headers: { "X-Data-Version": "v1" } }),
+      );
     vi.stubGlobal("fetch", request);
     await mount();
     const field = host.querySelector<HTMLInputElement>('[name="q"]');
@@ -730,7 +770,11 @@ describe("ArticlesApp browser controls", () => {
     expect(request).toHaveBeenCalledTimes(1);
   });
   it("clears tag drafts without fetching or changing history while another draft is invalid", async () => {
-    const request = vi.fn().mockResolvedValue(new Response("[]", { headers: { "X-Data-Version": "v1" } }));
+    const request = vi
+      .fn()
+      .mockResolvedValue(
+        new Response("[]", { headers: { "X-Data-Version": "v1" } }),
+      );
     vi.stubGlobal("fetch", request);
     window.history.replaceState(
       null,
@@ -770,7 +814,11 @@ describe("ArticlesApp browser controls", () => {
     ).toEqual([]);
   });
   it("keeps automatic search text and submits valid drafts on Enter", async () => {
-    const request = vi.fn().mockResolvedValue(new Response("[]", { headers: { "X-Data-Version": "v1" } }));
+    const request = vi
+      .fn()
+      .mockResolvedValue(
+        new Response("[]", { headers: { "X-Data-Version": "v1" } }),
+      );
     vi.stubGlobal("fetch", request);
     await mount();
     expect(host.querySelector("button[type='submit']")).toBeNull();
@@ -791,7 +839,11 @@ describe("ArticlesApp browser controls", () => {
     expect(window.location.search).toContain("q=keyboard");
   });
   it("does not submit Enter while composition is still tracked when the key event flag is false", async () => {
-    const request = vi.fn().mockResolvedValue(new Response("[]", { headers: { "X-Data-Version": "v1" } }));
+    const request = vi
+      .fn()
+      .mockResolvedValue(
+        new Response("[]", { headers: { "X-Data-Version": "v1" } }),
+      );
     vi.stubGlobal("fetch", request);
     await mount();
     await action('[name="author"]', "compositionstart");
@@ -857,7 +909,11 @@ describe("ArticlesApp browser controls", () => {
     vi.useFakeTimers();
     const request = vi
       .fn()
-      .mockResolvedValue(new Response(JSON.stringify([sample]), { headers: { "X-Data-Version": "v1" } }));
+      .mockResolvedValue(
+        new Response(JSON.stringify([sample]), {
+          headers: { "X-Data-Version": "v1" },
+        }),
+      );
     vi.stubGlobal("fetch", request);
     await mount();
     const historyLengthBeforeSearch = window.history.length;
@@ -904,7 +960,11 @@ describe("ArticlesApp browser controls", () => {
   });
   it("cancels a pending debounce on history navigation and restores draft from the URL", async () => {
     vi.useFakeTimers();
-    const request = vi.fn().mockResolvedValue(new Response("[]", { headers: { "X-Data-Version": "v1" } }));
+    const request = vi
+      .fn()
+      .mockResolvedValue(
+        new Response("[]", { headers: { "X-Data-Version": "v1" } }),
+      );
     vi.stubGlobal("fetch", request);
     await mount();
     await change('[name="limit"]', "2");
@@ -941,7 +1001,11 @@ describe("ArticlesApp browser controls", () => {
   });
   it("cancels a pending debounce when unmounted before it can start a request", async () => {
     vi.useFakeTimers();
-    const request = vi.fn().mockResolvedValue(new Response("[]", { headers: { "X-Data-Version": "v1" } }));
+    const request = vi
+      .fn()
+      .mockResolvedValue(
+        new Response("[]", { headers: { "X-Data-Version": "v1" } }),
+      );
     vi.stubGlobal("fetch", request);
     await mount();
     await change('[name="limit"]', "2");
@@ -967,14 +1031,18 @@ describe("ArticlesApp browser controls", () => {
     await change('[name="orderField"]', "likesCount");
     await change('[name="orderDirection"]', "asc");
     expect(request).toHaveBeenCalledTimes(2);
-    expect(request.mock.calls[0][1].headers).toMatchObject({ "X-Expected-Data-Version": "v1" });
+    expect(request.mock.calls[0][1].headers).toMatchObject({
+      "X-Expected-Data-Version": "v1",
+    });
     const { act } = await import("react");
     await act(async () =>
       pending[0].reject(new DOMException("Aborted", "AbortError")),
     );
     await act(async () =>
       pending[1].resolve(
-        new Response(JSON.stringify([{ ...sample, title: "Latest article" }]), { headers: { "X-Data-Version": "v1" } }),
+        new Response(JSON.stringify([{ ...sample, title: "Latest article" }]), {
+          headers: { "X-Data-Version": "v1" },
+        }),
       ),
     );
     expect(host.textContent).toContain("Latest article");
@@ -984,7 +1052,11 @@ describe("ArticlesApp browser controls", () => {
   });
   it("keeps invalid numeric drafts editable and does not search until the full draft is valid", async () => {
     vi.useFakeTimers();
-    const request = vi.fn().mockResolvedValue(new Response("[]", { headers: { "X-Data-Version": "v1" } }));
+    const request = vi
+      .fn()
+      .mockResolvedValue(
+        new Response("[]", { headers: { "X-Data-Version": "v1" } }),
+      );
     vi.stubGlobal("fetch", request);
     await mount();
     await change('[name="limit"]', "101");
@@ -1018,8 +1090,15 @@ describe("ArticlesApp browser controls", () => {
   it("retries a failed same-query submit without adding a duplicate history entry", async () => {
     const request = vi
       .fn()
-      .mockResolvedValueOnce(new Response("failure", { headers: { "X-Data-Version": "v1" }, status: 503 }))
-      .mockResolvedValueOnce(new Response("[]", { headers: { "X-Data-Version": "v1" } }));
+      .mockResolvedValueOnce(
+        new Response("failure", {
+          headers: { "X-Data-Version": "v1" },
+          status: 503,
+        }),
+      )
+      .mockResolvedValueOnce(
+        new Response("[]", { headers: { "X-Data-Version": "v1" } }),
+      );
     vi.stubGlobal("fetch", request);
     await mount();
     await action("form", "submit");

@@ -1,3 +1,7 @@
+import {
+  migrateTestGeneration,
+  refreshTestGeneration,
+} from "@/db/test-generation";
 import { schema } from "@/db";
 import { drizzle } from "@/lib";
 import { renderer } from "@/util";
@@ -46,6 +50,7 @@ describe("ArticlesPage", async () => {
         });
     });
     await Promise.all(promises);
+    await migrateTestGeneration(db);
   });
 
   afterAll(async () => {
@@ -63,8 +68,11 @@ describe("ArticlesPage", async () => {
       .prepare("INSERT INTO tags (article_id, name) VALUES (?, ?)")
       .bind("0", "a,b")
       .run();
+    await refreshTestGeneration(db);
     const { text } = await renderer(
       <ArticlesPage
+        dataVersion="legacy"
+        publishedSequence={1}
         config={{
           since: null,
           until: null,
@@ -110,6 +118,8 @@ describe("ArticlesPage", async () => {
     expect(initial.tagOptions).toContain("C#");
     const missing = await renderer(
       <ArticlesPage
+        dataVersion="legacy"
+        publishedSequence={1}
         config={{
           limit: null,
           offset: null,
@@ -130,6 +140,8 @@ describe("ArticlesPage", async () => {
     const longTag = "x".repeat(100);
     const { text } = await renderer(
       <ArticlesPage
+        dataVersion="legacy"
+        publishedSequence={1}
         config={{
           limit: null,
           offset: null,
@@ -159,6 +171,8 @@ describe("ArticlesPage", async () => {
     await expect(
       renderer(
         <ArticlesPage
+          dataVersion="legacy"
+          publishedSequence={1}
           config={{
             limit: null,
             offset: null,
@@ -173,8 +187,12 @@ describe("ArticlesPage", async () => {
     ).resolves.toMatchObject({ status: 500 });
   });
   it("should render article page", async () => {
+    await db.prepare("DELETE FROM tags WHERE name IN ('C#','a,b')").run();
+    await refreshTestGeneration(db);
     const { text } = await renderer(
       <ArticlesPage
+        dataVersion="legacy"
+        publishedSequence={1}
         config={{ limit: null, offset: null, since: null, until: null }}
         db={instance}
       />,

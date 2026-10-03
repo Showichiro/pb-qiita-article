@@ -11,10 +11,7 @@ import {
   toArticleDraft,
   type ArticleDraft,
 } from "./articles";
-import {
-  articlesQueryKey,
-  normalizeArticleQuery,
-} from "./queries";
+import { articlesQueryKey, normalizeArticleQuery } from "./queries";
 import { QueryProvider, seedQueryData } from "./query-client";
 import { QueryErrorBoundary } from "./query-error-boundary";
 
@@ -106,13 +103,20 @@ export async function mountArticlesApp(
   }
   const query = parseArticleQuery(configQueryParams(props.initialConfig));
   const normalizedQuery = normalizeArticleQuery(query);
-  seedQueryData(
-    articlesQueryKey(props.initialDataVersion, normalizedQuery),
-    { query: normalizedQuery, rows: props.initialArticles },
-  );
+  seedQueryData(articlesQueryKey(props.initialDataVersion, normalizedQuery), {
+    query: normalizedQuery,
+    rows: props.initialArticles,
+  });
   const clientContainer = document.createElement("div");
   const fallback = Array.from(container.childNodes);
   const root = createRoot(clientContainer, {
+    onCaughtError() {
+      if (clientContainer.parentNode !== container) {
+        stopTracking();
+        roots.delete(container);
+        queueMicrotask(() => root.unmount());
+      }
+    },
     onUncaughtError(error) {
       stopTracking();
       console.error("Could not render the articles application", error);

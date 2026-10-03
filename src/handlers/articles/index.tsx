@@ -20,7 +20,7 @@ export const articleApiHandler: Handler<
 > = async (c) => {
   const query = c.req.valid("query");
 
-  return withDataVersion(c, async (db, generationId, publishedSequence) => {
+  return withDataVersion(c, async (db, generationId, _publishedSequence) => {
     const results = await findAllArticles(db, generationId, {
       ...query,
       since: processDateParam(query.since),

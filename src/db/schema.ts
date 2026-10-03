@@ -32,21 +32,25 @@ export const tags = sqliteTable("tags", {
   name: text("name").notNull(),
 });
 
-export const dataGenerations = sqliteTable("data_generations", {
-  id: text("id").primaryKey(),
-  state: text("state").notNull(),
-  ownerId: text("owner_id"),
-  basedOnGenerationId: text("based_on_generation_id"),
-  createdAt: text("created_at").notNull(),
-  manifestDigest: text("manifest_digest"),
-  articleCount: integer("article_count"),
-  tagCount: integer("tag_count"),
-  publishedSequence: integer("published_sequence"),
-}, (table) => [
-  uniqueIndex("data_generations_published_seq_idx").on(
-    table.publishedSequence,
-  ),
-]);
+export const dataGenerations = sqliteTable(
+  "data_generations",
+  {
+    id: text("id").primaryKey(),
+    state: text("state").notNull(),
+    ownerId: text("owner_id"),
+    basedOnGenerationId: text("based_on_generation_id"),
+    createdAt: text("created_at").notNull(),
+    manifestDigest: text("manifest_digest"),
+    articleCount: integer("article_count"),
+    tagCount: integer("tag_count"),
+    publishedSequence: integer("published_sequence"),
+  },
+  (table) => [
+    uniqueIndex("data_generations_published_seq_idx").on(
+      table.publishedSequence,
+    ),
+  ],
+);
 
 export const activeDataGeneration = sqliteTable("active_data_generation", {
   singleton: integer("singleton").primaryKey(),
@@ -118,15 +122,12 @@ export const generationTags = sqliteTable(
   ],
 );
 
-export const generationTagRelation = relations(
-  generationTags,
-  ({ one }) => ({
-    article: one(generationArticles, {
-      fields: [generationTags.generationId, generationTags.articleId],
-      references: [generationArticles.generationId, generationArticles.id],
-    }),
+export const generationTagRelation = relations(generationTags, ({ one }) => ({
+  article: one(generationArticles, {
+    fields: [generationTags.generationId, generationTags.articleId],
+    references: [generationArticles.generationId, generationArticles.id],
   }),
-);
+}));
 
 export const generationRelation = relations(dataGenerations, ({ many }) => ({
   articles: many(generationArticles),

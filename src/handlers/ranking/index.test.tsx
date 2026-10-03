@@ -1,3 +1,7 @@
+import {
+  migrateTestGeneration,
+  refreshTestGeneration,
+} from "@/db/test-generation";
 import { readFile } from "node:fs/promises";
 import { Miniflare } from "miniflare";
 import app from "@/index";
@@ -19,6 +23,7 @@ describe("ranking SSR handler against local D1", () => {
     );
     for (const statement of migration.split("--> statement-breakpoint"))
       await DB.prepare(statement.trim()).run();
+    await migrateTestGeneration(DB);
   });
 
   afterEach(async () => {
@@ -57,6 +62,10 @@ describe("ranking SSR handler against local D1", () => {
       )
       .run();
 
+    await refreshTestGeneration(DB);
+    await DB.prepare(
+      "INSERT OR IGNORE INTO active_data_generation VALUES (1,'legacy',1)",
+    ).run();
     const response = await app.request(
       "/ranking?since=2026-01-01&until=2026-01-04&view=chart&topN=1",
       {},
@@ -115,6 +124,10 @@ describe("ranking SSR handler against local D1", () => {
   });
 
   it("retains the legacy date-only page defaults and nullable likes contract", async () => {
+    await refreshTestGeneration(DB);
+    await DB.prepare(
+      "INSERT OR IGNORE INTO active_data_generation VALUES (1,'legacy',1)",
+    ).run();
     const response = await app.request("/ranking?since=&until=", {}, { DB });
     expect(response.status).toBe(200);
     const html = await response.text();

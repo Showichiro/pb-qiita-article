@@ -29,22 +29,25 @@ describe("analysis page data", () => {
         publishedArticleLikes: 8,
       },
     ];
-    const getRows: typeof getArticleTimeSeries = vi.fn(async (_db, config) => ({
-      since: config.since,
-      until: config.until,
-      bucket: config.bucket,
-      rows,
-    }));
+    const getRows: typeof getArticleTimeSeries = vi.fn(
+      async (_db, _version, config) => ({
+        since: config.since,
+        until: config.until,
+        bucket: config.bucket,
+        rows,
+      }),
+    );
     const getTags: typeof findArticleTags = vi.fn(async () => ["known"]);
     const result = await loadAnalysisPageData(
       db,
       query,
       new URLSearchParams("metric=likes&view=chart&tags=unknown"),
+      "v1",
       { getArticleTimeSeries: getRows, findArticleTags: getTags },
     );
 
     expect(getRows).toHaveBeenCalledTimes(1);
-    expect(getRows).toHaveBeenCalledWith(db, {
+    expect(getRows).toHaveBeenCalledWith(db, "v1", {
       since: query.since,
       until: query.until,
       bucket: query.bucket,
@@ -52,8 +55,10 @@ describe("analysis page data", () => {
       tags: query.tags,
     });
     expect(getTags).toHaveBeenCalledTimes(1);
-    expect(getTags).toHaveBeenCalledWith(db);
+    expect(getTags).toHaveBeenCalledWith(db, "v1");
     expect(result).toEqual({
+      dataVersion: "v1",
+      publishedSequence: 0,
       state: {
         since: query.since,
         until: query.until,
@@ -80,7 +85,7 @@ describe("analysis page data", () => {
     const getRows: typeof getArticleTimeSeries = vi.fn();
     const getTags: typeof findArticleTags = vi.fn();
     await expect(
-      loadAnalysisPageData(db, query, new URLSearchParams(), {
+      loadAnalysisPageData(db, query, new URLSearchParams(), "v1", {
         getArticleTimeSeries: getRows,
         findArticleTags: getTags,
       }),

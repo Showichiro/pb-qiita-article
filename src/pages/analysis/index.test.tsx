@@ -12,6 +12,7 @@ import { analysisStateParams, type AnalysisBootstrap } from "@/client/analysis";
 import { AnalysisPage } from ".";
 
 const data: AnalysisBootstrap = {
+  dataVersion: "v1",
   state: {
     since: "2026-01-01",
     until: "2026-01-03",

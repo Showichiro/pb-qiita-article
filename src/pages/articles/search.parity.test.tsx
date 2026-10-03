@@ -5,7 +5,6 @@ import {
   articlesActionSlotClass,
   articlesTagFieldClass,
 } from "@/client/articles-presentation";
-import type { ArticlesAppProps } from "@/client/ArticlesApp";
 import type { Article } from "@/schemas";
 import { renderer } from "@/util";
 import { ArticlesSearch } from "./search";
@@ -100,12 +99,15 @@ async function reactMarkup(
   next: ArticleQuery,
   articles: Article[],
 ): Promise<string> {
-  const { createElement } = await import("react");
+  const { articleTestElement, resetTestQueries } = await import(
+    "@/client/test-query-client"
+  );
+  resetTestQueries();
   const { renderToStaticMarkup } = await import("react-dom/server");
-  const { default: ArticlesApp } = await import("@/client/ArticlesApp");
   return renderToStaticMarkup(
-    createElement<ArticlesAppProps>(ArticlesApp, {
+    articleTestElement({
       initialConfig: next,
+      initialDataVersion: "v1",
       initialArticles: articles,
       initialTagOptions: tagOptions,
     }),

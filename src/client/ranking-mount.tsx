@@ -50,10 +50,9 @@ export function readInitialData(container: HTMLElement): RankingInitialData {
   if (!isRankingQuery(initialConfig)) {
     throw new Error("Invalid ranking initial configuration");
   }
-  const initialDataVersion: unknown =
-    isRecord(data)
-      ? data.dataVersion
-      : container.dataset.dataVersion;
+  const initialDataVersion: unknown = isRecord(data)
+    ? data.dataVersion
+    : container.dataset.dataVersion;
   if (typeof initialDataVersion !== "string" || initialDataVersion.length === 0)
     throw new Error("Invalid ranking data version");
   const postCountsAttribute = container.dataset.initialPostCounts;
@@ -120,17 +119,24 @@ export async function mountRankingApp(
     return;
   }
   const requestQuery = normalizeRankingQuery(props.initialConfig);
-  seedQueryData(
-    rankingPostsQueryKey(props.initialDataVersion, requestQuery),
-    { query: requestQuery, rows: props.initialPostCounts },
-  );
-  seedQueryData(
-    rankingLikesQueryKey(props.initialDataVersion, requestQuery),
-    { query: requestQuery, rows: props.initialLikesCounts },
-  );
+  seedQueryData(rankingPostsQueryKey(props.initialDataVersion, requestQuery), {
+    query: requestQuery,
+    rows: props.initialPostCounts,
+  });
+  seedQueryData(rankingLikesQueryKey(props.initialDataVersion, requestQuery), {
+    query: requestQuery,
+    rows: props.initialLikesCounts,
+  });
   const clientContainer = document.createElement("div");
   const fallback = Array.from(container.childNodes);
   const root = createRoot(clientContainer, {
+    onCaughtError() {
+      if (clientContainer.parentNode !== container) {
+        stopTracking();
+        roots.delete(container);
+        queueMicrotask(() => root.unmount());
+      }
+    },
     onUncaughtError(error) {
       stopTracking();
       console.error("Could not render the ranking application", error);

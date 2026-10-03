@@ -95,23 +95,14 @@ export const pruneOldGenerations = async (
   db: DrizzleD1Database<typeof schema>,
   retainCount = 3,
 ): Promise<void> => {
-  const allPublished = await db
-    .select({
-      id: schema.dataGenerations.id,
-      publishedSequence: schema.dataGenerations.publishedSequence,
-    })
-    .from(schema.dataGenerations)
-    .where(eq(schema.dataGenerations.state, "published"))
-    .orderBy(desc(schema.dataGenerations.publishedSequence));
-
-  if (allPublished.length <= retainCount) {
-    return;
-  }
-
-  const toPrune = allPublished.slice(retainCount);
-  for (const gen of toPrune) {
-    await db
-      .delete(schema.dataGenerations)
-      .where(eq(schema.dataGenerations.id, gen.id));
-  }
+  if (
+    !Number.isSafeInteger(retainCount) ||
+    retainCount < 1 ||
+    retainCount > 100
+  )
+    throw new Error("Invalid generation retention limit");
+  await db.run(sql`DELETE FROM data_generations WHERE state = 'published'
+    AND id NOT IN (SELECT generation_id FROM active_data_generation)
+    AND id NOT IN (SELECT id FROM data_generations WHERE state = 'published'
+      ORDER BY published_sequence DESC LIMIT ${retainCount})`);
 };

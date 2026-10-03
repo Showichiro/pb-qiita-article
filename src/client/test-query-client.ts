@@ -6,11 +6,20 @@ import { configQueryParams, parseArticleQuery } from "./articles";
 
 export function articleTestElement(props: Partial<ArticlesAppProps>) {
   const fullProps = { initialDataVersion: "v1", initialArticles: [], ...props };
-  const query = normalizeArticleQuery(props.initialConfig === undefined
-    ? parseArticleQuery(new URLSearchParams(window.location.search))
-    : parseArticleQuery(configQueryParams(props.initialConfig)));
-  seedQueryData(articlesQueryKey(fullProps.initialDataVersion, query), { query, rows: fullProps.initialArticles });
-  return createElement(QueryProvider, { children: createElement(ArticlesApp, fullProps) });
+  const query = normalizeArticleQuery(
+    props.initialConfig === undefined
+      ? parseArticleQuery(new URLSearchParams(window.location.search))
+      : parseArticleQuery(configQueryParams(props.initialConfig)),
+  );
+  seedQueryData(articlesQueryKey(fullProps.initialDataVersion, query), {
+    query,
+    rows: fullProps.initialArticles,
+  });
+  return createElement(
+    QueryProvider,
+    null,
+    createElement(ArticlesApp, fullProps),
+  );
 }
 
 export function resetTestQueries() {

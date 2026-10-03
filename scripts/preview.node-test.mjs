@@ -10,6 +10,7 @@ import cloudflareConfig from "../cloudflare.config.ts";
 import {
   ensurePreviewDatabase,
   ensurePreviewFixture,
+  ensurePreviewGeneration,
   PREVIEW_DATABASE_NAME,
   PREVIEW_MARKER_TABLE,
   PREVIEW_SEED_VERSION,
@@ -201,6 +202,10 @@ test("fixture seed is one bounded batch and Miniflare serves meaningful syntheti
       .prepare("SELECT (SELECT count(*) FROM articles) AS articles, (SELECT count(*) FROM tags) AS tags")
       .first();
     assert.deepEqual(counts, { articles: 8, tags: 16 });
+    await ensurePreviewGeneration(PREVIEW_D1_ID, runCf);
+    await ensurePreviewGeneration(PREVIEW_D1_ID, runCf);
+    assert.deepEqual(await db.prepare("SELECT generation_id FROM active_data_generation").first(), {generation_id: "legacy"});
+    assert.deepEqual(await db.prepare("SELECT count(*) AS n FROM generation_articles WHERE generation_id='legacy'").first(), {n: 8});
 
     const filtered = await db
       .prepare(

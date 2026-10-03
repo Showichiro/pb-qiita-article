@@ -77,7 +77,12 @@ export function useDebouncedAction<T>(
   onAction: (value: T, signal: AbortSignal) => Promise<void> | void,
   options: UseDebouncedActionOptions<T>,
 ): DebouncedAction<T> {
-  const { intervalMs, startTransition, isValid = () => true, areEqual } = options;
+  const {
+    intervalMs,
+    startTransition,
+    isValid = () => true,
+    areEqual,
+  } = options;
 
   // Track the latest value and active controller
   const stateRef = useRef<{
@@ -149,10 +154,7 @@ export function useDebouncedAction<T>(
           await onAction(value, controllerToUse.signal);
         } catch (error) {
           // Ignore abort errors (superseded by newer input)
-          if (
-            error instanceof DOMException &&
-            error.name === "AbortError"
-          ) {
+          if (error instanceof DOMException && error.name === "AbortError") {
             return;
           }
           // Re-throw other errors
