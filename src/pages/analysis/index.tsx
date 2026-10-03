@@ -1,3 +1,4 @@
+import { NativeFilterSheet } from "@/pages/filter-sheet";
 import { Header, PageLayout, PageTitle } from "@/components";
 import {
   buttonVariants,
@@ -102,163 +103,176 @@ export const AnalysisPage: FC<AnalysisBootstrap> = (bootstrap) => {
         <div id="analysis-app">
           <section class={analysisIslandClass} aria-label="時系列分析">
             <div data-slot="card" class={cn(cardClass, analysisCardClass)}>
-              <form action="/analysis" method="get" class={analysisFormClass}>
-                <Field id={analysisFieldId("since")} label="開始日（UTC）">
-                  <input
-                    data-slot="input"
-                    class={inputClass}
-                    id={analysisFieldId("since")}
-                    name="since"
-                    type="date"
-                    value={state.since}
-                  />
-                </Field>
-                <Field id={analysisFieldId("until")} label="終了日（UTC）">
-                  <input
-                    data-slot="input"
-                    class={inputClass}
-                    id={analysisFieldId("until")}
-                    name="until"
-                    type="date"
-                    value={state.until}
-                  />
-                </Field>
-                <Field id={analysisFieldId("bucket")} label="集計単位">
-                  <div data-slot="select-wrapper" class={selectWrapperClass}>
-                    <select
-                      data-slot="select"
-                      class={selectClass}
-                      id={analysisFieldId("bucket")}
-                      name="bucket"
-                    >
-                      {(
-                        [
-                          ["day", "日"],
-                          ["week", "週"],
-                          ["month", "月"],
-                        ] as const
-                      ).map(([value, label]) => (
-                        <option
-                          key={value}
-                          value={value}
-                          selected={state.bucket === value}
-                        >
-                          {label}
-                        </option>
-                      ))}
-                    </select>
-                    <SelectChevron />
-                  </div>
-                </Field>
-                <Field
-                  id={analysisFieldId("author")}
-                  label="投稿者（ID・名前）"
+              <NativeFilterSheet id="analysis-filters">
+                <form
+                  id="analysis-filters-form"
+                  action="/analysis"
+                  method="get"
+                  class={analysisFormClass}
                 >
-                  <input
-                    data-slot="input"
-                    class={inputClass}
-                    id={analysisFieldId("author")}
-                    name="author"
-                    value={state.author}
-                  />
-                </Field>
-                <div
-                  class={analysisTagFieldClass}
-                  data-slot="analysis-tags-field"
-                >
-                  <label
-                    class={analysisTagLabelClass}
-                    for={analysisFieldId("tags")}
-                  >
-                    タグ（すべて一致）{" "}
-                    <div
-                      data-slot="select-wrapper"
-                      class={cn(selectWrapperClass, analysisTagsClass)}
-                    >
+                  <Field id={analysisFieldId("since")} label="開始日（UTC）">
+                    <input
+                      data-slot="input"
+                      class={inputClass}
+                      id={analysisFieldId("since")}
+                      name="since"
+                      type="date"
+                      value={state.since}
+                    />
+                  </Field>
+                  <Field id={analysisFieldId("until")} label="終了日（UTC）">
+                    <input
+                      data-slot="input"
+                      class={inputClass}
+                      id={analysisFieldId("until")}
+                      name="until"
+                      type="date"
+                      value={state.until}
+                    />
+                  </Field>
+                  <Field id={analysisFieldId("bucket")} label="集計単位">
+                    <div data-slot="select-wrapper" class={selectWrapperClass}>
                       <select
                         data-slot="select"
-                        class={cn(
-                          selectClass,
-                          selectMultipleClass,
-                          analysisTagsClass,
-                        )}
-                        id={analysisFieldId("tags")}
-                        name="tags"
-                        multiple
-                        size={4}
+                        class={selectClass}
+                        id={analysisFieldId("bucket")}
+                        name="bucket"
                       >
-                        {tagOptions.map((tag) => (
+                        {(
+                          [
+                            ["day", "日"],
+                            ["week", "週"],
+                            ["month", "月"],
+                          ] as const
+                        ).map(([value, label]) => (
                           <option
-                            key={tag}
-                            value={tag}
-                            selected={state.tags.includes(tag)}
+                            key={value}
+                            value={value}
+                            selected={state.bucket === value}
                           >
-                            {tag}
+                            {label}
                           </option>
                         ))}
                       </select>
+                      <SelectChevron />
                     </div>
-                  </label>
-                  <a
-                    href={clearTagsUrl}
-                    class={analysisTagClearClass}
-                    data-focus-id={analysisTagClearFocusId}
+                  </Field>
+                  <Field
+                    id={analysisFieldId("author")}
+                    label="投稿者（ID・名前）"
                   >
-                    タグを解除
-                  </a>
-                </div>
-                <Field id={analysisFieldId("metric")} label="指標">
-                  <div data-slot="select-wrapper" class={selectWrapperClass}>
-                    <select
-                      data-slot="select"
-                      class={selectClass}
-                      id={analysisFieldId("metric")}
-                      name="metric"
-                    >
-                      <option value="posts" selected={state.metric === "posts"}>
-                        記事数
-                      </option>
-                      <option value="likes" selected={state.metric === "likes"}>
-                        いいね数
-                      </option>
-                    </select>
-                    <SelectChevron />
-                  </div>
-                </Field>
-                <Field id={analysisFieldId("view")} label="表示">
-                  <div data-slot="select-wrapper" class={selectWrapperClass}>
-                    <select
-                      data-slot="select"
-                      class={selectClass}
-                      id={analysisFieldId("view")}
-                      name="view"
-                    >
-                      <option value="table" selected={state.view === "table"}>
-                        表
-                      </option>
-                      <option value="chart" selected={state.view === "chart"}>
-                        グラフ
-                      </option>
-                    </select>
-                    <SelectChevron />
-                  </div>
-                </Field>
-                <div
-                  class={analysisActionSlotClass}
-                  data-slot="analysis-search-action"
-                >
-                  <button
-                    type="submit"
-                    data-slot="button"
-                    data-variant="default"
-                    data-size="default"
-                    class={buttonVariants({ className: "h-9 w-28" })}
-                    data-focus-id={analysisActionFocusId}
+                    <input
+                      data-slot="input"
+                      class={inputClass}
+                      id={analysisFieldId("author")}
+                      name="author"
+                      value={state.author}
+                    />
+                  </Field>
+                  <div
+                    class={analysisTagFieldClass}
+                    data-slot="analysis-tags-field"
                   >
-                    適用
-                  </button>
-                </div>
-              </form>
+                    <label
+                      class={analysisTagLabelClass}
+                      for={analysisFieldId("tags")}
+                    >
+                      タグ（すべて一致）{" "}
+                      <div
+                        data-slot="select-wrapper"
+                        class={cn(selectWrapperClass, analysisTagsClass)}
+                      >
+                        <select
+                          data-slot="select"
+                          class={cn(
+                            selectClass,
+                            selectMultipleClass,
+                            analysisTagsClass,
+                          )}
+                          id={analysisFieldId("tags")}
+                          name="tags"
+                          multiple
+                          size={4}
+                        >
+                          {tagOptions.map((tag) => (
+                            <option
+                              key={tag}
+                              value={tag}
+                              selected={state.tags.includes(tag)}
+                            >
+                              {tag}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    </label>
+                    <a
+                      href={clearTagsUrl}
+                      class={analysisTagClearClass}
+                      data-focus-id={analysisTagClearFocusId}
+                    >
+                      タグを解除
+                    </a>
+                  </div>
+                  <Field id={analysisFieldId("metric")} label="指標">
+                    <div data-slot="select-wrapper" class={selectWrapperClass}>
+                      <select
+                        data-slot="select"
+                        class={selectClass}
+                        id={analysisFieldId("metric")}
+                        name="metric"
+                      >
+                        <option
+                          value="posts"
+                          selected={state.metric === "posts"}
+                        >
+                          記事数
+                        </option>
+                        <option
+                          value="likes"
+                          selected={state.metric === "likes"}
+                        >
+                          いいね数
+                        </option>
+                      </select>
+                      <SelectChevron />
+                    </div>
+                  </Field>
+                  <Field id={analysisFieldId("view")} label="表示">
+                    <div data-slot="select-wrapper" class={selectWrapperClass}>
+                      <select
+                        data-slot="select"
+                        class={selectClass}
+                        id={analysisFieldId("view")}
+                        name="view"
+                      >
+                        <option value="table" selected={state.view === "table"}>
+                          表
+                        </option>
+                        <option value="chart" selected={state.view === "chart"}>
+                          グラフ
+                        </option>
+                      </select>
+                      <SelectChevron />
+                    </div>
+                  </Field>
+                  <div
+                    class={analysisActionSlotClass}
+                    data-slot="analysis-search-action"
+                  >
+                    <button
+                      type="submit"
+                      data-slot="button"
+                      data-variant="default"
+                      data-size="default"
+                      class={buttonVariants({ className: "h-9 w-28" })}
+                      data-focus-id={analysisActionFocusId}
+                    >
+                      適用
+                    </button>
+                  </div>
+                </form>
+              </NativeFilterSheet>
               <p class={analysisNoteClass}>
                 いいね数は各期間に公開された記事の現在値であり、その期間中に獲得した数ではありません。
               </p>

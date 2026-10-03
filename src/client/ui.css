@@ -113,7 +113,8 @@
   --tw-ring-color: color-mix(in srgb, var(--ring) 50%, transparent);
 }
 .react-island .focus-visible\:ring-2:focus-visible {
-  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000),
+  box-shadow:
+    var(--tw-ring-offset-shadow, 0 0 #0000),
     0 0 0 2px var(--tw-ring-color, var(--ring)),
     var(--tw-shadow, 0 0 #0000);
 }
@@ -156,4 +157,231 @@
     --muted-foreground,
     color-mix(in srgb, var(--color-base-content, #1f2937) 65%, transparent)
   );
+}
+
+/* Shared by React islands and their native GET fallbacks. */
+.react-island {
+  min-width: 0;
+}
+.react-island [data-slot="card"] {
+  min-width: 0;
+}
+@media (max-width: 639px) {
+  .react-island form {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    align-items: end;
+    gap: 1rem;
+  }
+  .react-island form > label,
+  .react-island form > div,
+  .react-island form > button {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    height: auto;
+  }
+  .react-island form label {
+    display: block;
+  }
+  .react-island [data-slot="input"],
+  .react-island [data-slot="select"] {
+    width: 100%;
+    min-width: 0;
+    min-height: 44px;
+    font-size: 16px;
+  }
+  .react-island [data-slot="button"],
+  .react-island [data-focus-id$="tag-clear"] {
+    min-height: 44px;
+  }
+  .react-island form [data-slot="button"] {
+    width: 100%;
+  }
+  .react-island [data-slot="card"] {
+    padding: 1rem;
+  }
+  .react-island h2 {
+    font-size: 1.5rem;
+    overflow-wrap: anywhere;
+  }
+  .react-island p,
+  .react-island [role="status"],
+  .react-island [role="alert"] {
+    overflow-wrap: anywhere;
+  }
+  .react-island nav {
+    justify-content: space-between;
+  }
+
+  /* Keep one semantic table and one set of links across viewport sizes. */
+  .articles-mobile [data-slot="table-container"] {
+    overflow: visible;
+  }
+  .articles-mobile [data-slot="table"] {
+    display: block;
+  }
+  .articles-mobile [data-slot="table-header"] {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  .articles-mobile [data-slot="table-body"] {
+    display: grid;
+    gap: 1rem;
+  }
+  .articles-mobile [data-slot="table-body"] [data-slot="table-row"] {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    padding: 0.75rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    gap: 0.5rem;
+  }
+  .articles-mobile [data-slot="table-cell"] {
+    display: block;
+    min-width: 0;
+    padding: 0;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+  .articles-mobile [data-slot="table-cell"]:nth-child(-n + 3),
+  .articles-mobile [data-slot="table-cell"]:last-child {
+    grid-column: 1 / -1;
+  }
+  .articles-mobile [data-slot="table-cell"]::before {
+    content: attr(data-label);
+    display: block;
+    color: var(--muted-foreground);
+    font-size: 0.75rem;
+  }
+  .articles-mobile [data-slot="table-cell"]:first-child {
+    font-size: 1rem;
+    font-weight: 600;
+  }
+  .articles-mobile [data-slot="table-cell"] ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+  }
+}
+@media (max-width: 639px) {
+  .articles-mobile [data-slot="table-body"] {
+    gap: 0;
+  }
+  .articles-mobile [data-slot="table-body"] [data-slot="table-row"] {
+    border: 0;
+    border-bottom: 1px solid var(--border);
+    border-radius: 0;
+    padding: 1rem 0;
+  }
+  .articles-mobile [data-slot="table-cell"]:nth-child(-n + 3)::before {
+    display: none;
+  }
+  .mobile-feed {
+    text-align: center;
+  }
+}
+
+/* Desktop uses the same mounted form inline; SP opens it in the top layer. */
+.react-island .filter-trigger,
+.filter-sheet-header {
+  display: none;
+}
+.filter-sheet {
+  display: block;
+  position: static;
+  width: 100%;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+}
+@media (max-width: 639px) {
+  body:has(.filter-sheet:modal) {
+    overflow: hidden;
+  }
+  .react-island .filter-trigger {
+    display: inline-flex;
+    width: 100%;
+    min-height: 44px;
+    border-radius: 999px;
+  }
+  .filter-sheet:not([open]) {
+    display: none;
+  }
+  .filter-sheet[open] {
+    position: fixed;
+    inset: auto 0 0;
+    width: 100%;
+    max-width: none;
+    height: 60dvh;
+    max-height: calc(100dvh - 1rem);
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    border-radius: 1.25rem 1.25rem 0 0;
+    background: var(--background, var(--color-base-100));
+    color: var(--foreground, var(--color-base-content));
+    box-shadow: 0 -8px 32px #0003;
+  }
+  .filter-sheet::backdrop {
+    background: #0007;
+  }
+  .filter-sheet-panel {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 0;
+  }
+  .filter-sheet-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .react-island .filter-sheet-header h2 {
+    font-size: 1rem;
+    font-weight: 600;
+  }
+  .filter-sheet-content {
+    flex: 1;
+    min-height: 0;
+    padding: 1rem;
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scroll-padding-block: 1rem;
+  }
+}
+/* A native fallback sheet can remain modal if the viewport becomes desktop. */
+@media (min-width: 640px) {
+  .filter-sheet:modal {
+    position: fixed;
+    inset: 0;
+    width: min(40rem, calc(100vw - 2rem));
+    max-height: calc(100dvh - 2rem);
+    margin: auto;
+    padding: 1rem;
+    overflow-y: auto;
+    border-radius: 1rem;
+    background: var(--background, var(--color-base-100));
+  }
+  .filter-sheet:modal .filter-sheet-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+  }
 }

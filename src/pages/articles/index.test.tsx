@@ -199,7 +199,7 @@ describe("ArticlesPage", async () => {
     );
     expect(text).toContain('id="articles-app"');
     expect(text).toContain('action="/articles" method="get"');
-    expect(text).toContain('class="react-island"');
+    expect(text).toContain('class="react-island articles-mobile"');
     expect(text).toContain('data-slot="card"');
     expect(text).toContain('data-slot="input"');
     expect(text).toContain("10件");

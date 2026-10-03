@@ -1,4 +1,5 @@
 /** @jsxImportSource react */
+import { FilterSheet } from "./filter-sheet";
 import {
   useCallback,
   useEffect,
@@ -6,9 +7,11 @@ import {
   useState,
   useTransition,
   type FormEvent,
+  useSyncExternalStore,
 } from "react";
 import {
   useIsFetching,
+  useInfiniteQuery,
   useQueryClient,
   useSuspenseQuery,
 } from "@tanstack/react-query";
@@ -49,6 +52,7 @@ import {
 } from "./articles-presentation";
 import {
   articleQueryParams,
+  fetchArticles,
   parseArticleQuery,
   type ArticleQuery,
   type ArticleDraft,
@@ -396,210 +400,220 @@ export default function ArticlesApp({
       aria-label="記事検索"
     >
       <Card className={articlesCardExtraClass}>
-        <form
-          action="/articles"
-          method="get"
-          noValidate
-          onSubmit={submit}
-          onKeyDown={(event) => {
-            if (
-              event.key !== "Enter" ||
-              event.nativeEvent.isComposing ||
-              isComposing.current ||
-              !(event.target instanceof HTMLInputElement)
-            )
-              return;
-            event.preventDefault();
-            event.currentTarget.requestSubmit();
-          }}
-          className={articlesFormClass}
-        >
-          {(["q", "author"] as const).map((name) => (
-            <label key={name} htmlFor={articleFieldId(name)}>
-              {name === "q" ? "キーワード（タイトル）" : "投稿者（ID・名前）"}{" "}
+        <FilterSheet id="articles-filters">
+          <form
+            action="/articles"
+            method="get"
+            noValidate
+            onSubmit={submit}
+            onKeyDown={(event) => {
+              if (
+                event.key !== "Enter" ||
+                event.nativeEvent.isComposing ||
+                isComposing.current ||
+                !(event.target instanceof HTMLInputElement)
+              )
+                return;
+              event.preventDefault();
+              event.currentTarget.requestSubmit();
+            }}
+            className={articlesFormClass}
+          >
+            {(["q", "author"] as const).map((name) => (
+              <label key={name} htmlFor={articleFieldId(name)}>
+                {name === "q" ? "キーワード（タイトル）" : "投稿者（ID・名前）"}{" "}
+                <Input
+                  id={articleFieldId(name)}
+                  name={name}
+                  maxLength={200}
+                  value={draft[name]}
+                  onChange={(e) =>
+                    handleTextChange(
+                      name,
+                      e.target.value,
+                      e.nativeEvent instanceof InputEvent &&
+                        e.nativeEvent.isComposing,
+                    )
+                  }
+                  onCompositionStart={() => {
+                    isComposing.current = true;
+                    debouncedSearch.cancel();
+                  }}
+                  onCompositionEnd={(e) => {
+                    isComposing.current = false;
+                    handleTextChange(name, e.currentTarget.value, false);
+                  }}
+                />
+              </label>
+            ))}
+            <div
+              className={articlesTagFieldClass}
+              data-slot="article-tags-field"
+            >
+              <label
+                className={articlesTagLabelClass}
+                htmlFor={articleFieldId("tags")}
+              >
+                タグ（すべて一致）{" "}
+                <Select
+                  id={articleFieldId("tags")}
+                  name="tags"
+                  multiple
+                  size={4}
+                  className={articlesTagControlClass}
+                  wrapperClassName={articlesTagControlClass}
+                  value={draft.tags}
+                  onChange={(e) =>
+                    handleImmediateChange(
+                      "tags",
+                      Array.from(
+                        e.target.selectedOptions,
+                        (option) => option.value,
+                      ),
+                    )
+                  }
+                >
+                  {tagOptions.map((tag) => (
+                    <option key={tag} value={tag}>
+                      {tag}
+                    </option>
+                  ))}
+                </Select>
+              </label>
+              <a
+                href={clearTagsHref}
+                className={articlesTagClearClass}
+                data-focus-id={articlesTagClearFocusId}
+                onClick={(event) => {
+                  event.preventDefault();
+                  handleImmediateChange("tags", []);
+                }}
+              >
+                タグを解除
+              </a>
+            </div>
+            {rangeFields.map((name) => (
+              <label key={name} htmlFor={articleFieldId(name)}>
+                {
+                  {
+                    minLikes: "いいね数（下限）",
+                    maxLikes: "いいね数（上限）",
+                    minStocks: "ストック数（下限）",
+                    maxStocks: "ストック数（上限）",
+                  }[name]
+                }{" "}
+                <Input
+                  id={articleFieldId(name)}
+                  name={name}
+                  type="number"
+                  min="0"
+                  max={Number.MAX_SAFE_INTEGER}
+                  step="1"
+                  aria-describedby={
+                    validationError ? "articles-validation" : undefined
+                  }
+                  value={draft[name]}
+                  onChange={(e) =>
+                    handleTextChange(name, e.target.value, false)
+                  }
+                />
+              </label>
+            ))}
+            <label htmlFor={articleFieldId("since")}>
+              投稿日（開始）{" "}
               <Input
-                id={articleFieldId(name)}
-                name={name}
-                maxLength={200}
-                value={draft[name]}
-                onChange={(e) =>
-                  handleTextChange(
-                    name,
-                    e.target.value,
-                    e.nativeEvent instanceof InputEvent &&
-                      e.nativeEvent.isComposing,
-                  )
-                }
-                onCompositionStart={() => {
-                  isComposing.current = true;
-                  debouncedSearch.cancel();
-                }}
-                onCompositionEnd={(e) => {
-                  isComposing.current = false;
-                  handleTextChange(name, e.currentTarget.value, false);
-                }}
+                type="date"
+                id={articleFieldId("since")}
+                name="since"
+                value={draft.since.slice(0, 10)}
+                onChange={(e) => handleImmediateChange("since", e.target.value)}
               />
             </label>
-          ))}
-          <div className={articlesTagFieldClass} data-slot="article-tags-field">
-            <label
-              className={articlesTagLabelClass}
-              htmlFor={articleFieldId("tags")}
-            >
-              タグ（すべて一致）{" "}
+            <label htmlFor={articleFieldId("until")}>
+              投稿日（終了）{" "}
+              <Input
+                type="date"
+                id={articleFieldId("until")}
+                name="until"
+                value={draft.until.slice(0, 10)}
+                onChange={(e) => handleImmediateChange("until", e.target.value)}
+              />
+            </label>
+            <label htmlFor={articleFieldId("orderField")}>
+              並び替え{" "}
               <Select
-                id={articleFieldId("tags")}
-                name="tags"
-                multiple
-                size={4}
-                className={articlesTagControlClass}
-                wrapperClassName={articlesTagControlClass}
-                value={draft.tags}
+                id={articleFieldId("orderField")}
+                name="orderField"
+                value={draft.orderField}
                 onChange={(e) =>
                   handleImmediateChange(
-                    "tags",
-                    Array.from(
-                      e.target.selectedOptions,
-                      (option) => option.value,
-                    ),
+                    "orderField",
+                    e.target.value as ArticleQuery["orderField"],
                   )
                 }
               >
-                {tagOptions.map((tag) => (
-                  <option key={tag} value={tag}>
-                    {tag}
+                {articleOrderFields.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
                   </option>
                 ))}
               </Select>
             </label>
-            <a
-              href={clearTagsHref}
-              className={articlesTagClearClass}
-              data-focus-id={articlesTagClearFocusId}
-              onClick={(event) => {
-                event.preventDefault();
-                handleImmediateChange("tags", []);
-              }}
-            >
-              タグを解除
-            </a>
-          </div>
-          {rangeFields.map((name) => (
-            <label key={name} htmlFor={articleFieldId(name)}>
-              {
-                {
-                  minLikes: "いいね数（下限）",
-                  maxLikes: "いいね数（上限）",
-                  minStocks: "ストック数（下限）",
-                  maxStocks: "ストック数（上限）",
-                }[name]
-              }{" "}
-              <Input
-                id={articleFieldId(name)}
-                name={name}
-                type="number"
-                min="0"
-                max={Number.MAX_SAFE_INTEGER}
-                step="1"
-                aria-describedby={
-                  validationError ? "articles-validation" : undefined
+            <label htmlFor={articleFieldId("orderDirection")}>
+              順序{" "}
+              <Select
+                id={articleFieldId("orderDirection")}
+                name="orderDirection"
+                value={draft.orderDirection}
+                onChange={(e) =>
+                  handleImmediateChange(
+                    "orderDirection",
+                    e.target.value as ArticleQuery["orderDirection"],
+                  )
                 }
-                value={draft[name]}
-                onChange={(e) => handleTextChange(name, e.target.value, false)}
+              >
+                {articleOrderDirections.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </Select>
+            </label>
+            <label htmlFor={articleFieldId("limit")}>
+              表示件数{" "}
+              <Input
+                id={articleFieldId("limit")}
+                name="limit"
+                type="number"
+                min="1"
+                max="100"
+                value={draft.limit}
+                onChange={(e) =>
+                  handleTextChange("limit", e.target.value, false)
+                }
               />
             </label>
-          ))}
-          <label htmlFor={articleFieldId("since")}>
-            投稿日（開始）{" "}
-            <Input
-              type="date"
-              id={articleFieldId("since")}
-              name="since"
-              value={draft.since.slice(0, 10)}
-              onChange={(e) => handleImmediateChange("since", e.target.value)}
-            />
-          </label>
-          <label htmlFor={articleFieldId("until")}>
-            投稿日（終了）{" "}
-            <Input
-              type="date"
-              id={articleFieldId("until")}
-              name="until"
-              value={draft.until.slice(0, 10)}
-              onChange={(e) => handleImmediateChange("until", e.target.value)}
-            />
-          </label>
-          <label htmlFor={articleFieldId("orderField")}>
-            並び替え{" "}
-            <Select
-              id={articleFieldId("orderField")}
-              name="orderField"
-              value={draft.orderField}
-              onChange={(e) =>
-                handleImmediateChange(
-                  "orderField",
-                  e.target.value as ArticleQuery["orderField"],
-                )
-              }
+            <Input type="hidden" name="offset" value={draft.offset} />
+            <div
+              className={articlesActionSlotClass}
+              data-slot="article-search-action"
             >
-              {articleOrderFields.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </Select>
-          </label>
-          <label htmlFor={articleFieldId("orderDirection")}>
-            順序{" "}
-            <Select
-              id={articleFieldId("orderDirection")}
-              name="orderDirection"
-              value={draft.orderDirection}
-              onChange={(e) =>
-                handleImmediateChange(
-                  "orderDirection",
-                  e.target.value as ArticleQuery["orderDirection"],
-                )
-              }
-            >
-              {articleOrderDirections.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </Select>
-          </label>
-          <label htmlFor={articleFieldId("limit")}>
-            表示件数{" "}
-            <Input
-              id={articleFieldId("limit")}
-              name="limit"
-              type="number"
-              min="1"
-              max="100"
-              value={draft.limit}
-              onChange={(e) => handleTextChange("limit", e.target.value, false)}
-            />
-          </label>
-          <Input type="hidden" name="offset" value={draft.offset} />
-          <div
-            className={articlesActionSlotClass}
-            data-slot="article-search-action"
-          >
-            <span
-              className={articlesActionHintClass}
-              data-focus-id={articlesActionFocusId}
-              tabIndex={-1}
-            >
-              自動検索
-            </span>
-          </div>
-        </form>
-        {validationError && (
-          <p id="articles-validation" role="alert">
-            {validationError}
-          </p>
-        )}
+              <span
+                className={articlesActionHintClass}
+                data-focus-id={articlesActionFocusId}
+                tabIndex={-1}
+              >
+                自動検索
+              </span>
+            </div>
+          </form>
+
+          {validationError && (
+            <p id="articles-validation" role="alert">
+              {validationError}
+            </p>
+          )}
+        </FilterSheet>
         <DataVersionControls
           availableVersion={versionState.availableVersion}
           error={versionState.error}
@@ -626,6 +640,8 @@ export default function ArticlesApp({
           {isFetching > 0 || isPending ? "読み込み中…" : ""}
         </div>
         <ArticleResults
+          key={`${adoptedVersion}:${articleQueryParams(requestQuery)}`}
+          version={adoptedVersion}
           result={{ query: requestQuery, data: articles }}
           isPending={isPending || isFetching > 0}
           navigate={navigate}
@@ -663,19 +679,75 @@ function areSearchDraftsEqual(a: ArticleDraft, b: ArticleDraft): boolean {
 }
 
 type ResultsProps = {
+  version: string;
   result: { query: ArticleQuery; data: Article[] };
   isPending: boolean;
   navigate: (query: ArticleQuery) => void;
   cancelDebounce: () => void;
 };
 function ArticleResults({
+  version,
   result,
   isPending,
   navigate,
   cancelDebounce,
 }: ResultsProps) {
   const { query, data } = result;
-  const articles = data;
+  const mobile = useSyncExternalStore(
+    subscribeMobile,
+    mobileSnapshot,
+    () => false,
+  );
+  const feed = useInfiniteQuery({
+    queryKey: ["articles", version, query, "feed"],
+    initialPageParam: query.offset,
+    initialData: { pages: [data], pageParams: [query.offset] },
+    queryFn: ({ pageParam, signal }) =>
+      fetchArticles({ ...query, offset: pageParam }, version, signal),
+    getNextPageParam: (last, _pages, offset) =>
+      last.length === query.limit ? offset + query.limit : undefined,
+    enabled: mobile,
+    staleTime: Number.POSITIVE_INFINITY,
+    retry: false,
+  });
+  const articles = mobile
+    ? [
+        ...new Map(
+          feed.data.pages.flat().map((article) => [article.id, article]),
+        ).values(),
+      ]
+    : data;
+  const sentinel = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (
+      !mobile ||
+      isPending ||
+      feed.isFetching ||
+      feed.isError ||
+      !feed.hasNextPage ||
+      !sentinel.current ||
+      typeof IntersectionObserver === "undefined"
+    )
+      return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((entry) => entry.isIntersecting)) {
+          observer.disconnect();
+          void feed.fetchNextPage();
+        }
+      },
+      { rootMargin: "200px" },
+    );
+    observer.observe(sentinel.current);
+    return () => observer.disconnect();
+  }, [
+    mobile,
+    isPending,
+    feed.isFetching,
+    feed.isError,
+    feed.hasNextPage,
+    feed.fetchNextPage,
+  ]);
   return (
     <>
       <div role="status" aria-live="polite">
@@ -696,7 +768,7 @@ function ArticleResults({
           <TableBody>
             {articles.map((article) => (
               <TableRow key={article.id}>
-                <TableCell>
+                <TableCell data-label={articleColumnLabels[0]}>
                   <a
                     className={articlesLinkClass}
                     target="_blank"
@@ -706,7 +778,7 @@ function ArticleResults({
                     {article.title}
                   </a>
                 </TableCell>
-                <TableCell>
+                <TableCell data-label={articleColumnLabels[1]}>
                   <a
                     className={articlesLinkClass}
                     target="_blank"
@@ -717,7 +789,7 @@ function ArticleResults({
                     {article.userName && `(${article.userName})`}
                   </a>
                 </TableCell>
-                <TableCell>
+                <TableCell data-label={articleColumnLabels[2]}>
                   <ul>
                     {article.tags.map((tag) => (
                       <li className={articlesTagClass} key={tag.name}>
@@ -732,15 +804,47 @@ function ArticleResults({
                     ))}
                   </ul>
                 </TableCell>
-                <TableCell>{article.likesCount}</TableCell>
-                <TableCell>{article.stocksCount}</TableCell>
-                <TableCell>{article.createdAt.slice(0, 10)}</TableCell>
+                <TableCell data-label={articleColumnLabels[3]}>
+                  {article.likesCount}
+                </TableCell>
+                <TableCell data-label={articleColumnLabels[4]}>
+                  {article.stocksCount}
+                </TableCell>
+                <TableCell data-label={articleColumnLabels[5]}>
+                  {article.createdAt.slice(0, 10)}
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>
         </Table>
       </div>
-      <nav className={articlesNavClass} aria-label="記事のページ">
+      {mobile && (
+        <div className="mobile-feed" ref={sentinel}>
+          <p role="status" aria-live="polite">
+            {feed.isFetching
+              ? "読み込み中…"
+              : !feed.hasNextPage
+                ? "すべての記事を表示しました"
+                : ""}
+          </p>
+          {feed.isError && (
+            <p role="alert">続きの記事を取得できませんでした。</p>
+          )}
+          {feed.hasNextPage && (
+            <Button
+              variant="outline"
+              disabled={isPending || feed.isFetching}
+              onClick={() => void feed.fetchNextPage()}
+            >
+              {feed.isError ? "再試行" : "もっと見る"}
+            </Button>
+          )}
+        </div>
+      )}
+      <nav
+        className={mobile ? "hidden" : articlesNavClass}
+        aria-label="記事のページ"
+      >
         <Button
           type="button"
           variant="outline"
@@ -770,4 +874,13 @@ function ArticleResults({
       </nav>
     </>
   );
+}
+
+function mobileSnapshot() {
+  return window.matchMedia?.("(max-width: 639px)").matches ?? false;
+}
+function subscribeMobile(callback: () => void) {
+  const media = window.matchMedia?.("(max-width: 639px)");
+  media?.addEventListener("change", callback);
+  return () => media?.removeEventListener("change", callback);
 }

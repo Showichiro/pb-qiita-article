@@ -325,3 +325,45 @@ it("cancels debounce work when the island unmounts", async () => {
   });
   expect(resultCalls()).toHaveLength(0);
 });
+it("appends mobile pages without changing the URL and retries a failed page", async () => {
+  vi.stubGlobal("matchMedia", vi.fn(() => ({ matches: true, addEventListener: vi.fn(), removeEventListener: vi.fn() })));
+  // The component uses window.matchMedia in browsers.
+  window.matchMedia = globalThis.matchMedia;
+  let fail = true;
+  resultRequest = async (url) => {
+    const offset = new URL(url, "http://localhost").searchParams.get("offset");
+    if (offset === "1" && fail) throw new Error("offline");
+    return resultResponse(offset === "1" ? [{ ...rows[0], id: "b", title: "Next article" }] : []);
+  };
+  await mount({ ...defaultArticleQuery, limit: 1 });
+  const originalUrl = window.location.href;
+  await click(".mobile-feed button");
+  expect(host.textContent).toContain("続きの記事を取得できませんでした");
+  expect(host.textContent).toContain("Original article");
+  fail = false;
+  await click(".mobile-feed button");
+  expect(host.textContent).toContain("Next article");
+  expect(host.textContent).toContain("Original article");
+  expect(window.location.href).toBe(originalUrl);
+  await click(".mobile-feed button");
+  expect(host.textContent).toContain("すべての記事を表示しました");
+  expect(host.querySelector(".mobile-feed button")).toBeNull();
+  delete (window as Partial<Window>).matchMedia;
+});
+
+it("starts a fresh mobile feed when search conditions change", async () => {
+  vi.stubGlobal("matchMedia", vi.fn(() => ({ matches: true, addEventListener: vi.fn(), removeEventListener: vi.fn() })));
+  window.matchMedia = globalThis.matchMedia;
+  resultRequest = async (url) => {
+    const params = new URL(url, "http://localhost").searchParams;
+    return resultResponse(params.get("q") ? [{ ...rows[0], id: "c", title: "Filtered article" }] : [{ ...rows[0], id: "b", title: "Next article" }]);
+  };
+  await mount({ ...defaultArticleQuery, limit: 1 });
+  await click(".mobile-feed button");
+  await search("Filtered");
+  await act(async () => host.querySelector("form")?.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true })));
+  await settle();
+  expect(host.textContent).toContain("Filtered article");
+  expect(host.textContent).not.toContain("Next article");
+  delete (window as Partial<Window>).matchMedia;
+});

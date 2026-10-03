@@ -195,7 +195,12 @@ export async function mountRankingApp(
         return;
       }
       container.replaceChildren(clientContainer);
-      if (target instanceof HTMLElement) target.focus({ preventScroll: true });
+      if (target instanceof HTMLElement) {
+        const sheet = target.closest("dialog");
+        if (sheet && window.matchMedia?.("(max-width: 639px)").matches)
+          sheet.showModal();
+        target.focus({ preventScroll: true });
+      }
       if (selection && target instanceof HTMLInputElement)
         target.setSelectionRange(
           selection.start,

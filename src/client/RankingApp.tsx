@@ -1,4 +1,5 @@
 /** @jsxImportSource react */
+import { FilterSheet } from "./filter-sheet";
 import {
   useEffect,
   useCallback,
@@ -333,85 +334,88 @@ export default function RankingApp({
     <section className={rankingIslandClass} aria-label="ランキング検索">
       <HistorySubscription onPopState={onPopState} />
       <Card className={rankingCardExtraClass}>
-        <form
-          action="/ranking"
-          method="get"
-          onSubmit={handleSubmit}
-          className={rankingFormClass}
-        >
-          <label htmlFor={rankingFieldId("since")}>
-            開始日{" "}
-            <Input
-              type="date"
-              id={rankingFieldId("since")}
-              name="since"
-              value={draft.since.slice(0, 10)}
-              onChange={(event) =>
-                handleDateChange("since", event.currentTarget.value)
-              }
-            />
-          </label>
-          <label htmlFor={rankingFieldId("until")}>
-            終了日{" "}
-            <Input
-              type="date"
-              id={rankingFieldId("until")}
-              name="until"
-              value={draft.until.slice(0, 10)}
-              onChange={(event) =>
-                handleDateChange("until", event.currentTarget.value)
-              }
-            />
-          </label>
-          <label htmlFor={rankingFieldId("view")}>
-            表示形式{" "}
-            <Select
-              id={rankingFieldId("view")}
-              name="view"
-              value={query.view}
-              onChange={(event) =>
-                changeDisplay({
-                  view:
-                    event.currentTarget.value === "chart" ? "chart" : "table",
-                  topN: queryRef.current.topN,
-                })
-              }
-            >
-              <option value="table">表</option>
-              <option value="chart">グラフ</option>
-            </Select>
-          </label>
-          <label htmlFor={rankingFieldId("topN")}>
-            表示件数{" "}
-            <Select
-              id={rankingFieldId("topN")}
-              name="topN"
-              value={String(query.topN)}
-              onChange={(event) =>
-                changeDisplay({
-                  view: queryRef.current.view,
-                  topN: parseTopNControl(event.currentTarget.value),
-                })
-              }
-            >
-              {Array.from({ length: 100 }, (_, index) => index + 1).map(
-                (count) => (
-                  <option key={count} value={count}>
-                    {count}件
-                  </option>
-                ),
-              )}
-            </Select>
-          </label>
-          <span
-            data-ranking-action=""
-            tabIndex={-1}
-            className={`${rankingActionClass} text-muted-foreground`}
+        <FilterSheet id="ranking-filters">
+          <form
+            action="/ranking"
+            method="get"
+            onSubmit={handleSubmit}
+            className={rankingFormClass}
           >
-            自動検索
-          </span>
-        </form>
-        {validationError && <p role="alert">{validationError}</p>}
+            <label htmlFor={rankingFieldId("since")}>
+              開始日{" "}
+              <Input
+                type="date"
+                id={rankingFieldId("since")}
+                name="since"
+                value={draft.since.slice(0, 10)}
+                onChange={(event) =>
+                  handleDateChange("since", event.currentTarget.value)
+                }
+              />
+            </label>
+            <label htmlFor={rankingFieldId("until")}>
+              終了日{" "}
+              <Input
+                type="date"
+                id={rankingFieldId("until")}
+                name="until"
+                value={draft.until.slice(0, 10)}
+                onChange={(event) =>
+                  handleDateChange("until", event.currentTarget.value)
+                }
+              />
+            </label>
+            <label htmlFor={rankingFieldId("view")}>
+              表示形式{" "}
+              <Select
+                id={rankingFieldId("view")}
+                name="view"
+                value={query.view}
+                onChange={(event) =>
+                  changeDisplay({
+                    view:
+                      event.currentTarget.value === "chart" ? "chart" : "table",
+                    topN: queryRef.current.topN,
+                  })
+                }
+              >
+                <option value="table">表</option>
+                <option value="chart">グラフ</option>
+              </Select>
+            </label>
+            <label htmlFor={rankingFieldId("topN")}>
+              表示件数{" "}
+              <Select
+                id={rankingFieldId("topN")}
+                name="topN"
+                value={String(query.topN)}
+                onChange={(event) =>
+                  changeDisplay({
+                    view: queryRef.current.view,
+                    topN: parseTopNControl(event.currentTarget.value),
+                  })
+                }
+              >
+                {Array.from({ length: 100 }, (_, index) => index + 1).map(
+                  (count) => (
+                    <option key={count} value={count}>
+                      {count}件
+                    </option>
+                  ),
+                )}
+              </Select>
+            </label>
+            <span
+              data-ranking-action=""
+              tabIndex={-1}
+              className={`${rankingActionClass} text-muted-foreground`}
+            >
+              自動検索
+            </span>
+          </form>
+
+          {validationError && <p role="alert">{validationError}</p>}
+        </FilterSheet>
         <DataVersionControls
           availableVersion={versionState.availableVersion}
           error={versionState.error}
