@@ -22,15 +22,17 @@ export function DataVersionControls({
     <div data-slot="data-version-controls" aria-live="polite">
       {availableVersion && <p role="status">新しいデータがあります。</p>}
       {error && <p role="alert">{error.message}</p>}
-      <Button
-        type="button"
-        variant="outline"
-        disabled={isBusy || isChecking}
-        data-version-action="refresh"
-        onClick={onRefresh}
-      >
-        {availableVersion ? "新しいデータに更新" : "表示中のデータを更新"}
-      </Button>
+      {availableVersion && (
+        <Button
+          type="button"
+          variant="outline"
+          disabled={isBusy || isChecking}
+          data-version-action="refresh"
+          onClick={onRefresh}
+        >
+          新しいデータに更新
+        </Button>
+      )}
       {error && (
         <Button
           type="button"

@@ -1,4 +1,3 @@
-import { NativeDataVersionControls } from "@/components/data-version-controls";
 import { Header, PageLayout, PageTitle } from "@/components";
 import {
   buttonVariants,
@@ -260,9 +259,6 @@ export const AnalysisPage: FC<AnalysisBootstrap> = (bootstrap) => {
                   </button>
                 </div>
               </form>
-              <NativeDataVersionControls
-                href={`/analysis?${analysisStateParams(state)}`}
-              />
               <p class={analysisNoteClass}>
                 いいね数は各期間に公開された記事の現在値であり、その期間中に獲得した数ではありません。
               </p>

@@ -1,4 +1,3 @@
-import { NativeDataVersionControls } from "@/components/data-version-controls";
 import {
   articleQueryParams,
   normalizeTags,
@@ -297,9 +296,6 @@ export const ArticlesSearch: FC<{
             </button>
           </div>
         </form>
-        <NativeDataVersionControls
-          href={`/articles?${articleQueryParams({ ...query, offset: 0 })}`}
-        />
         <div role="status" aria-live="polite" />
         <div role="status" aria-live="polite">
           {articles.length}件

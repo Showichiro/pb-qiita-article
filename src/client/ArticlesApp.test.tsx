@@ -195,15 +195,14 @@ it("does not store a mismatched-generation response under an old key and keeps v
     ),
   ).toBeUndefined();
 });
-it("explicitly refetches even when the generation is unchanged", async () => {
-  resultRequest = async () =>
-    resultResponse([{ ...rows[0], title: "Refetched result" }]);
+it("hides the refresh action when the generation is unchanged and keeps cached rows", async () => {
   await mount();
-  await click('[data-version-action="refresh"]');
-  expect(resultCalls()).toHaveLength(1);
-  expect(host.textContent).toContain("Refetched result");
+  expect(host.querySelector('[data-version-action="refresh"]')).toBeNull();
+  expect(resultCalls()).toHaveLength(0);
+  expect(host.textContent).toContain("Original article");
 });
 it("does not adopt an obsolete refresh after the user starts another search", async () => {
+  latestVersion = "v2";
   await mount();
   let resolveMetadata: (response: Response) => void = () => {
     throw new Error("Metadata request has not started");
@@ -228,6 +227,7 @@ it("does not adopt an obsolete refresh after the user starts another search", as
   });
 });
 it("retains the adopted results when an explicit refetch fails", async () => {
+  latestVersion = "v2";
   await mount();
   resultRequest = async () => new Response("unavailable", { status: 503 });
   await click('[data-version-action="refresh"]');
