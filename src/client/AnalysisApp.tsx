@@ -1,4 +1,5 @@
 /** @jsxImportSource react */
+import { FilterSheet } from "./filter-sheet";
 import {
   Component,
   Suspense,
@@ -422,8 +423,7 @@ export default function AnalysisApp({
       aria-label="時系列分析"
     >
       <Card className={analysisCardClass}>
-        <details className="mobile-filters">
-          <summary>絞り込み・表示設定</summary>
+        <FilterSheet id="analysis-filters">
           <form
             action="/analysis"
             method="get"
@@ -620,12 +620,13 @@ export default function AnalysisApp({
               </span>
             </div>
           </form>
-        </details>
-        {validationError && (
-          <p id="analysis-validation" role="alert">
-            {validationError}
-          </p>
-        )}
+
+          {validationError && (
+            <p id="analysis-validation" role="alert">
+              {validationError}
+            </p>
+          )}
+        </FilterSheet>
         <p className={analysisNoteClass}>
           いいね数は各期間に公開された記事の現在値であり、その期間中に獲得した数ではありません。
         </p>

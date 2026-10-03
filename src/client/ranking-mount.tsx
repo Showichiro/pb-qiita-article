@@ -196,8 +196,9 @@ export async function mountRankingApp(
       }
       container.replaceChildren(clientContainer);
       if (target instanceof HTMLElement) {
-        const disclosure = target.closest("details");
-        if (disclosure) disclosure.open = true;
+        const sheet = target.closest("dialog");
+        if (sheet && window.matchMedia?.("(max-width: 639px)").matches)
+          sheet.showModal();
         target.focus({ preventScroll: true });
       }
       if (selection && target instanceof HTMLInputElement)

@@ -270,26 +270,6 @@
     gap: 0.25rem;
   }
 }
-/* Filter disclosure stays expanded on desktop and starts compact on SP. */
-.mobile-filters > summary {
-  cursor: pointer;
-  min-height: 44px;
-  padding: 0.75rem 1rem;
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  font-weight: 500;
-}
-.mobile-filters[open] > summary {
-  margin-bottom: 1rem;
-}
-@media (min-width: 640px) {
-  .mobile-filters > summary {
-    display: none;
-  }
-  .mobile-filters > form {
-    display: flex;
-  }
-}
 @media (max-width: 639px) {
   .articles-mobile [data-slot="table-body"] {
     gap: 0;
@@ -307,6 +287,117 @@
     text-align: center;
   }
 }
+
+/* Desktop uses the same mounted form inline; SP opens it in the top layer. */
+.react-island .filter-trigger,
+.filter-sheet-header,
+.filter-sheet-footer {
+  display: none;
+}
+.filter-sheet {
+  display: block;
+  position: static;
+  width: 100%;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+}
+@media (max-width: 639px) {
+  body:has(.filter-sheet:modal) {
+    overflow: hidden;
+  }
+  .react-island .filter-trigger {
+    display: inline-flex;
+    width: 100%;
+    min-height: 44px;
+    border-radius: 999px;
+  }
+  .filter-sheet:not([open]) {
+    display: none;
+  }
+  .filter-sheet[open] {
+    position: fixed;
+    inset: auto 0 0;
+    width: 100%;
+    max-width: none;
+    height: 60dvh;
+    max-height: calc(100dvh - 1rem);
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    border-radius: 1.25rem 1.25rem 0 0;
+    background: var(--background, var(--color-base-100));
+    color: var(--foreground, var(--color-base-content));
+    box-shadow: 0 -8px 32px #0003;
+  }
+  .filter-sheet::backdrop {
+    background: #0007;
+  }
+  .filter-sheet-panel {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 0;
+  }
+  .filter-sheet-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .react-island .filter-sheet-header h2 {
+    font-size: 1rem;
+    font-weight: 600;
+  }
+  .filter-sheet-content {
+    flex: 1;
+    min-height: 0;
+    padding: 1rem;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scroll-padding-block: 1rem;
+  }
+  .filter-sheet-footer {
+    display: block;
+    flex-shrink: 0;
+    padding: 0.75rem 1rem;
+    padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
+    border-top: 1px solid var(--border);
+  }
+  .filter-sheet-footer [data-slot="button"],
+  .filter-sheet-footer button {
+    width: 100%;
+    min-height: 44px;
+  }
+}
+/* A native fallback sheet can remain modal if the viewport becomes desktop. */
 @media (min-width: 640px) {
-  .mobile-filters::details-content { content-visibility: visible; }
+  .filter-sheet:modal {
+    position: fixed;
+    inset: 0;
+    width: min(40rem, calc(100vw - 2rem));
+    max-height: calc(100dvh - 2rem);
+    margin: auto;
+    padding: 1rem;
+    overflow-y: auto;
+    border-radius: 1rem;
+    background: var(--background, var(--color-base-100));
+  }
+  .filter-sheet:modal .filter-sheet-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+  }
+  .filter-sheet:modal .filter-sheet-footer {
+    display: block;
+    margin-top: 1rem;
+  }
 }

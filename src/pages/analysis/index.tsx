@@ -1,3 +1,4 @@
+import { NativeFilterSheet } from "@/pages/filter-sheet";
 import { Header, PageLayout, PageTitle } from "@/components";
 import {
   buttonVariants,
@@ -102,9 +103,13 @@ export const AnalysisPage: FC<AnalysisBootstrap> = (bootstrap) => {
         <div id="analysis-app">
           <section class={analysisIslandClass} aria-label="時系列分析">
             <div data-slot="card" class={cn(cardClass, analysisCardClass)}>
-              <details class="mobile-filters">
-                <summary>絞り込み・表示設定</summary>
-                <form action="/analysis" method="get" class={analysisFormClass}>
+              <NativeFilterSheet id="analysis-filters">
+                <form
+                  id="analysis-filters-form"
+                  action="/analysis"
+                  method="get"
+                  class={analysisFormClass}
+                >
                   <Field id={analysisFieldId("since")} label="開始日（UTC）">
                     <input
                       data-slot="input"
@@ -267,7 +272,7 @@ export const AnalysisPage: FC<AnalysisBootstrap> = (bootstrap) => {
                     </button>
                   </div>
                 </form>
-              </details>
+              </NativeFilterSheet>
               <p class={analysisNoteClass}>
                 いいね数は各期間に公開された記事の現在値であり、その期間中に獲得した数ではありません。
               </p>

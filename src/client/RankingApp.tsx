@@ -1,4 +1,5 @@
 /** @jsxImportSource react */
+import { FilterSheet } from "./filter-sheet";
 import {
   useEffect,
   useCallback,
@@ -333,8 +334,7 @@ export default function RankingApp({
     <section className={rankingIslandClass} aria-label="ランキング検索">
       <HistorySubscription onPopState={onPopState} />
       <Card className={rankingCardExtraClass}>
-        <details className="mobile-filters">
-          <summary>絞り込み・表示設定</summary>
+        <FilterSheet id="ranking-filters">
           <form
             action="/ranking"
             method="get"
@@ -413,8 +413,9 @@ export default function RankingApp({
               自動検索
             </span>
           </form>
-        </details>
-        {validationError && <p role="alert">{validationError}</p>}
+
+          {validationError && <p role="alert">{validationError}</p>}
+        </FilterSheet>
         <DataVersionControls
           availableVersion={versionState.availableVersion}
           error={versionState.error}

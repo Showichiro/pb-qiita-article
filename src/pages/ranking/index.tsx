@@ -1,3 +1,4 @@
+import { NativeFilterSheet } from "@/pages/filter-sheet";
 import {
   Header,
   PageLayout,
@@ -64,9 +65,13 @@ export const RankingPage: FC<{
           </script>
           <section aria-label="ランキング検索">
             <div data-slot="card" class={cn(cardClass, rankingCardExtraClass)}>
-              <details class="mobile-filters">
-                <summary>絞り込み・表示設定</summary>
-                <form action="/ranking" method="get" class={rankingFormClass}>
+              <NativeFilterSheet id="ranking-filters">
+                <form
+                  id="ranking-filters-form"
+                  action="/ranking"
+                  method="get"
+                  class={rankingFormClass}
+                >
                   <label for={rankingFieldId("since")}>
                     開始日{" "}
                     <input
@@ -202,7 +207,7 @@ export const RankingPage: FC<{
                     検索する
                   </button>
                 </form>
-              </details>
+              </NativeFilterSheet>
               <div role="status" aria-live="polite" />
               <div role="status" aria-live="polite">
                 {postRows.length}件の投稿, {likesRows.length}件のいいね

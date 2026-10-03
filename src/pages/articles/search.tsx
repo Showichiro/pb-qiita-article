@@ -1,3 +1,4 @@
+import { NativeFilterSheet } from "@/pages/filter-sheet";
 import {
   articleQueryParams,
   normalizeTags,
@@ -122,9 +123,13 @@ export const ArticlesSearch: FC<{
   return (
     <section class={articlesIslandClass} aria-label="記事検索">
       <div data-slot="card" class={cn(cardClass, articlesCardExtraClass)}>
-        <details class="mobile-filters">
-          <summary>絞り込み・表示設定</summary>
-          <form action="/articles" method="get" class={articlesFormClass}>
+        <NativeFilterSheet id="articles-filters">
+          <form
+            id="articles-filters-form"
+            action="/articles"
+            method="get"
+            class={articlesFormClass}
+          >
             {(["q", "author"] as const).map((name) => (
               <SearchField
                 key={name}
@@ -298,7 +303,7 @@ export const ArticlesSearch: FC<{
               </button>
             </div>
           </form>
-        </details>
+        </NativeFilterSheet>
         <div role="status" aria-live="polite" />
         <div role="status" aria-live="polite">
           {articles.length}件

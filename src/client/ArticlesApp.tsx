@@ -1,4 +1,5 @@
 /** @jsxImportSource react */
+import { FilterSheet } from "./filter-sheet";
 import {
   useCallback,
   useEffect,
@@ -399,8 +400,7 @@ export default function ArticlesApp({
       aria-label="記事検索"
     >
       <Card className={articlesCardExtraClass}>
-        <details className="mobile-filters">
-          <summary>絞り込み・表示設定</summary>
+        <FilterSheet id="articles-filters">
           <form
             action="/articles"
             method="get"
@@ -607,12 +607,13 @@ export default function ArticlesApp({
               </span>
             </div>
           </form>
-        </details>
-        {validationError && (
-          <p id="articles-validation" role="alert">
-            {validationError}
-          </p>
-        )}
+
+          {validationError && (
+            <p id="articles-validation" role="alert">
+              {validationError}
+            </p>
+          )}
+        </FilterSheet>
         <DataVersionControls
           availableVersion={versionState.availableVersion}
           error={versionState.error}
