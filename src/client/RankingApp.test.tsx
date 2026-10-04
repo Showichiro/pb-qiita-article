@@ -437,6 +437,38 @@ test("period shortcuts retain ranking presentation and request both rankings onc
   ).toBe("true");
 });
 
+test("date validation describes both inputs only while the error is displayed", async () => {
+  fetchMock.mockImplementation(async (url: string) =>
+    String(url).includes("post-counts")
+      ? response(postCounts)
+      : response(likesCounts),
+  );
+  mount({ draft: { since: "2026-12-31", until: "2026-01-01" } });
+  for (const field of [date("since"), date("until")]) {
+    expect(field.hasAttribute("aria-describedby")).toBe(false);
+  }
+
+  act(() => {
+    container
+      .querySelector("form")
+      ?.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
+  });
+  const error = container.querySelector('[role="alert"]');
+  expect(error?.textContent).toBe("開始日は終了日より前にしてください");
+  expect(error?.id).toBe("ranking-date-validation-error");
+  for (const field of [date("since"), date("until")]) {
+    expect(field.getAttribute("aria-describedby")).toBe(error?.id);
+    expect(container.querySelector(`label[for="${field.id}"]`)).not.toBeNull();
+  }
+  expect(fetchMock).not.toHaveBeenCalled();
+
+  await changeDate("since", "");
+  expect(container.querySelector('[role="alert"]')).toBeNull();
+  for (const field of [date("since"), date("until")]) {
+    expect(field.hasAttribute("aria-describedby")).toBe(false);
+  }
+});
+
 test("history search failure retains both adopted rankings and retries the requested dates", async () => {
   fetchMock.mockImplementation(async (url: string) =>
     String(url).includes("post-counts")
