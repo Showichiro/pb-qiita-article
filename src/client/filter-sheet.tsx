@@ -62,9 +62,9 @@ export function FilterSheet({
         >
           絞り込み{count > 0 && <span className="filter-count">{count}</span>}
         </Button>
-        <div className="query-display-controls" aria-label="表示設定">
+        <fieldset className="query-display-controls" aria-label="表示設定">
           {controls}
-        </div>
+        </fieldset>
       </div>
       <dialog
         ref={attachDialog}

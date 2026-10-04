@@ -184,7 +184,7 @@ export const ArticlesSearch: FC<{
                         key={option.value}
                         value={option.value}
                         selected={
-                          query.orderField + ":" + query.orderDirection ===
+                          `${query.orderField}:${query.orderDirection}` ===
                           option.value
                         }
                       >

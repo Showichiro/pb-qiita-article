@@ -12,7 +12,7 @@ export function ActiveFilters({
 }) {
   if (!filters.length) return null;
   return (
-    <div className="active-filters" aria-label="適用中の絞り込み">
+    <fieldset className="active-filters" aria-label="適用中の絞り込み">
       {filters.map((filter) => (
         <button
           type="button"
@@ -28,6 +28,6 @@ export function ActiveFilters({
       <button type="button" className="filter-clear" onClick={onClear}>
         条件をクリア
       </button>
-    </div>
+    </fieldset>
   );
 }

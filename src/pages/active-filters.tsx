@@ -6,7 +6,7 @@ export const NativeActiveFilters: FC<{
   href: (filter: ActiveFilter | null) => string;
 }> = ({ filters, href }) =>
   filters.length ? (
-    <div class="active-filters" aria-label="適用中の絞り込み">
+    <fieldset class="active-filters" aria-label="適用中の絞り込み">
       {filters.map((filter) => (
         <a
           key={filter.key}
@@ -21,5 +21,5 @@ export const NativeActiveFilters: FC<{
       <a class="filter-clear" href={href(null)}>
         条件をクリア
       </a>
-    </div>
+    </fieldset>
   ) : null;

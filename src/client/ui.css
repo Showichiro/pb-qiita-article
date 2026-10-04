@@ -413,6 +413,8 @@
   min-width: 12rem;
 }
 .query-display-controls {
+  padding: 0;
+  border: 0;
   display: flex;
   align-items: end;
   flex-wrap: wrap;
@@ -493,6 +495,9 @@
   max-width: 100%;
 }
 .active-filters {
+  min-width: 0;
+  padding: 0;
+  border: 0;
   display: flex;
   flex-wrap: wrap;
   align-items: center;

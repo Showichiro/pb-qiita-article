@@ -482,7 +482,7 @@ export default function ArticlesApp({
                 <Select
                   id={articleFieldId("sort")}
                   name="sort"
-                  value={draft.orderField + ":" + draft.orderDirection}
+                  value={`${draft.orderField}:${draft.orderDirection}`}
                   onChange={(event) => {
                     const sort = parseArticleSort(event.currentTarget.value);
                     if (!sort) return;

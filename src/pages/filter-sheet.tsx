@@ -26,9 +26,9 @@ export const NativeFilterSheet: FC<{
       >
         絞り込み{count > 0 && <span class="filter-count">{count}</span>}
       </button>
-      <div class="query-display-controls" aria-label="表示設定">
+      <fieldset class="query-display-controls" aria-label="表示設定">
         {controls}
-      </div>
+      </fieldset>
     </div>
     <dialog
       id={id}
