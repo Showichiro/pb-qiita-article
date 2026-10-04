@@ -1,4 +1,5 @@
 /** @jsxImportSource react */
+import { japanDate } from "@/util/japanTime";
 import { PeriodShortcuts } from "./PeriodShortcuts";
 import { FilterSheet } from "./filter-sheet";
 import {
@@ -536,7 +537,7 @@ export default function ArticlesApp({
                 type="date"
                 id={articleFieldId("since")}
                 name="since"
-                value={draft.since.slice(0, 10)}
+                value={draft.since ? japanDate(draft.since) : ""}
                 onChange={(e) => handleImmediateChange("since", e.target.value)}
               />
             </label>
@@ -546,7 +547,7 @@ export default function ArticlesApp({
                 type="date"
                 id={articleFieldId("until")}
                 name="until"
-                value={draft.until.slice(0, 10)}
+                value={draft.until ? japanDate(draft.until) : ""}
                 onChange={(e) => handleImmediateChange("until", e.target.value)}
               />
             </label>
@@ -822,7 +823,7 @@ function ArticleResults({
                   {article.stocksCount}
                 </TableCell>
                 <TableCell data-label={articleColumnLabels[5]}>
-                  {article.createdAt.slice(0, 10)}
+                  {article.createdAt ? japanDate(article.createdAt) : ""}
                 </TableCell>
               </TableRow>
             ))}

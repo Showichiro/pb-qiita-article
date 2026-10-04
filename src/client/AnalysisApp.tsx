@@ -457,7 +457,7 @@ export default function AnalysisApp({
               className={analysisFieldClass}
               htmlFor={analysisFieldId("since")}
             >
-              開始日（UTC）{" "}
+              開始日{" "}
               <Input
                 id={analysisFieldId("since")}
                 name="since"
@@ -475,7 +475,7 @@ export default function AnalysisApp({
               className={analysisFieldClass}
               htmlFor={analysisFieldId("until")}
             >
-              終了日（UTC）{" "}
+              終了日{" "}
               <Input
                 id={analysisFieldId("until")}
                 name="until"
@@ -742,7 +742,7 @@ function ResolvedAnalysis({
           <caption className="sr-only">{valueLabel}の時系列データ</caption>
           <TableHeader>
             <TableRow>
-              <TableHead scope="col">期間開始日（UTC）</TableHead>
+              <TableHead scope="col">期間開始日</TableHead>
               <TableHead scope="col">記事数</TableHead>
               <TableHead scope="col">公開記事の現在のいいね数</TableHead>
             </TableRow>
@@ -793,7 +793,7 @@ function AnalysisChartFallback({ metric }: { metric: AnalysisMetric }) {
   return (
     <figure aria-label={label}>
       <figcaption className="sr-only">{label}</figcaption>
-      <p className="mb-2 text-sm">{description}</p>
+      {description && <p className="mb-2 text-sm">{description}</p>}
       <div className={analysisChartClass} aria-hidden="true" />
     </figure>
   );

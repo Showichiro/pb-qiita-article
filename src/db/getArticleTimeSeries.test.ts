@@ -94,7 +94,7 @@ describe("getArticleTimeSeries", () => {
     });
   });
 
-  test("counts the contract day sample on UTC dates, not raw ISO prefixes", async () => {
+  test("counts Japanese dates across explicit timezone offsets", async () => {
     await insertArticle({
       id: "day-offset",
       createdAt: "2025-12-31T23:30:00-05:00",
@@ -107,12 +107,12 @@ describe("getArticleTimeSeries", () => {
     });
     await insertArticle({
       id: "day-end",
-      createdAt: "2026-01-03T23:59:59Z",
+      createdAt: "2026-01-03T23:59:59+09:00",
       likes: 5,
     });
     await insertArticle({
       id: "day-next",
-      createdAt: "2026-01-04T00:00:00Z",
+      createdAt: "2026-01-04T00:00:00+09:00",
       likes: 7,
     });
     await expect(
@@ -128,8 +128,8 @@ describe("getArticleTimeSeries", () => {
       rows: [
         {
           bucketStart: "2026-01-01",
-          articleCount: 1,
-          publishedArticleLikes: 2,
+          articleCount: 2,
+          publishedArticleLikes: 11,
         },
         {
           bucketStart: "2026-01-02",
@@ -145,7 +145,7 @@ describe("getArticleTimeSeries", () => {
     });
   });
 
-  test("places a stored +09:00 timestamp on its UTC date", async () => {
+  test("places a stored +09:00 timestamp on its Japan calendar date", async () => {
     await insertArticle({
       id: "qiita",
       createdAt: "2025-05-07T08:36:24+09:00",
@@ -162,10 +162,10 @@ describe("getArticleTimeSeries", () => {
       bucket: "day",
     });
     expect(onPreviousDay.rows).toEqual([
-      { bucketStart: "2025-05-06", articleCount: 1, publishedArticleLikes: 11 },
+      { bucketStart: "2025-05-06", articleCount: 0, publishedArticleLikes: 0 },
     ]);
     expect(onPrefixDay.rows).toEqual([
-      { bucketStart: "2025-05-07", articleCount: 0, publishedArticleLikes: 0 },
+      { bucketStart: "2025-05-07", articleCount: 1, publishedArticleLikes: 11 },
     ]);
   });
 
@@ -197,7 +197,7 @@ describe("getArticleTimeSeries", () => {
     });
     await insertArticle({
       id: "until-end",
-      createdAt: "2026-01-10T23:59:59Z",
+      createdAt: "2026-01-10T23:59:59+09:00",
       likes: 8,
     });
     await insertArticle({
@@ -233,7 +233,7 @@ describe("getArticleTimeSeries", () => {
   test("aggregates leap February and a shifted March timestamp", async () => {
     await insertArticle({
       id: "before-month",
-      createdAt: "2024-02-14T23:59:59Z",
+      createdAt: "2024-02-14T23:59:59+09:00",
       likes: 20,
     });
     await insertArticle({
@@ -242,7 +242,7 @@ describe("getArticleTimeSeries", () => {
       likes: 6,
     });
     await insertArticle({
-      id: "march-prefix-still-february",
+      id: "march-start-in-japan",
       createdAt: "2024-03-01T00:30:00+09:00",
       likes: 1,
     });
@@ -269,13 +269,13 @@ describe("getArticleTimeSeries", () => {
       rows: [
         {
           bucketStart: "2024-02-01",
-          articleCount: 2,
-          publishedArticleLikes: 7,
+          articleCount: 1,
+          publishedArticleLikes: 6,
         },
         {
           bucketStart: "2024-03-01",
-          articleCount: 1,
-          publishedArticleLikes: 4,
+          articleCount: 2,
+          publishedArticleLikes: 5,
         },
       ],
     });
@@ -444,8 +444,8 @@ describe("getArticleTimeSeries", () => {
         },
         {
           bucketStart: "2026-04-02",
-          articleCount: 1,
-          publishedArticleLikes: 3,
+          articleCount: 0,
+          publishedArticleLikes: 0,
         },
       ],
     });

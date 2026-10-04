@@ -10,7 +10,7 @@ import {
 } from "./index";
 
 describe("time series calendar", () => {
-  test("accepts real UTC dates and rejects impossible ones", () => {
+  test("accepts real Japan calendar dates and rejects impossible ones", () => {
     for (const value of [
       "0001-01-01",
       "0004-02-29",
@@ -84,8 +84,8 @@ describe("time series calendar", () => {
       ),
     ).toEqual({
       ok: true,
-      since: "2026-07-06",
-      until: "2026-10-03",
+      since: "2026-07-07",
+      until: "2026-10-04",
       bucket: "day",
       dayCount: 90,
       bucketCount: 90,
@@ -297,7 +297,7 @@ describe("time series query validation", () => {
     if (!invalid.success) {
       expect(z.formatError(invalid.error)).toEqual({
         _errors: [],
-        since: { _errors: ["since must be a real UTC date (YYYY-MM-DD)"] },
+        since: { _errors: ["since must be a real Japan calendar date (YYYY-MM-DD)"] },
       });
     }
     const inverted = timeSeriesQuery.safeParse({

@@ -1,4 +1,5 @@
 /** @jsxImportSource react */
+import { japanDate } from "@/util/japanTime";
 import { PeriodShortcuts } from "./PeriodShortcuts";
 import { FilterSheet } from "./filter-sheet";
 import {
@@ -359,7 +360,7 @@ export default function RankingApp({
                 type="date"
                 id={rankingFieldId("since")}
                 name="since"
-                value={draft.since.slice(0, 10)}
+                value={draft.since ? japanDate(draft.since) : ""}
                 onChange={(event) =>
                   handleDateChange("since", event.currentTarget.value)
                 }
@@ -371,7 +372,7 @@ export default function RankingApp({
                 type="date"
                 id={rankingFieldId("until")}
                 name="until"
-                value={draft.until.slice(0, 10)}
+                value={draft.until ? japanDate(draft.until) : ""}
                 onChange={(event) =>
                   handleDateChange("until", event.currentTarget.value)
                 }

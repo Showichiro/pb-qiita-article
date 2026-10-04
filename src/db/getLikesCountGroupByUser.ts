@@ -1,14 +1,5 @@
-import {
-  asc,
-  and,
-  between,
-  desc,
-  type DrizzleD1Database,
-  eq,
-  gte,
-  lte,
-  sum,
-} from "@/lib";
+import { sql } from "drizzle-orm";
+import { asc, and, desc, type DrizzleD1Database, eq, sum } from "@/lib";
 import { assertGenerationPublished } from "./dataGenerations";
 import type { LikesCountSchema } from "@/schemas";
 import { type RankingConfig, schema } from "@/db";
@@ -42,11 +33,11 @@ export const getLikesCountGroupByUser = async (
       and(
         eq(schema.generationArticles.generationId, generationId),
         since && until
-          ? between(schema.generationArticles.createdAt, since, until)
+          ? sql`julianday(${schema.generationArticles.createdAt}) between julianday(${since}) and julianday(${until})`
           : since
-            ? gte(schema.generationArticles.createdAt, since)
+            ? sql`julianday(${schema.generationArticles.createdAt}) >= julianday(${since})`
             : until
-              ? lte(schema.generationArticles.createdAt, until)
+              ? sql`julianday(${schema.generationArticles.createdAt}) <= julianday(${until})`
               : undefined,
       ),
     )

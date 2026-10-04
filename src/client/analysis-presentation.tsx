@@ -30,6 +30,6 @@ export function analysisChartText(metric: "posts" | "likes") {
       }
     : {
         label: "記事数（投稿日別）",
-        description: "記事の公開日をUTCで集計しています。",
+        description: "",
       };
 }

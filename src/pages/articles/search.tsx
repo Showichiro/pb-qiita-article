@@ -1,3 +1,4 @@
+import { japanDate } from "@/util/japanTime";
 import { NativePeriodShortcuts } from "@/pages/period-shortcuts";
 import { NativeFilterSheet } from "@/pages/filter-sheet";
 import {
@@ -220,7 +221,7 @@ export const ArticlesSearch: FC<{
                 type="date"
                 id={articleFieldId("since")}
                 name="since"
-                value={query.since.slice(0, 10)}
+                value={(query.since ? japanDate(query.since) : "")}
               />
             </SearchField>
             <SearchField id={articleFieldId("until")} label="投稿日（終了）">
@@ -230,7 +231,7 @@ export const ArticlesSearch: FC<{
                 type="date"
                 id={articleFieldId("until")}
                 name="until"
-                value={query.until.slice(0, 10)}
+                value={(query.until ? japanDate(query.until) : "")}
               />
             </SearchField>
             <SearchField id={articleFieldId("orderField")} label="並び替え">
@@ -407,7 +408,7 @@ export const ArticlesSearch: FC<{
                       data-label={articleColumnLabels[5]}
                       class={tableCellClass}
                     >
-                      {article.createdAt.slice(0, 10)}
+                      {(article.createdAt ? japanDate(article.createdAt) : "")}
                     </td>
                   </tr>
                 ))}

@@ -1,3 +1,4 @@
+import { japanDate } from "@/util/japanTime";
 /**
  * @description Convert a Date object to a string in ISO 8601 format.
  * @param {Date} date The Date object to convert.
@@ -19,5 +20,5 @@ export const dateToDatetimeString = (date: Date): string => {
  * const dateString = dateTimetoDateString(datetime);
  */
 export const dateTimetoDateString = (datetime: string): string => {
-  return new Date(datetime).toISOString().split("T")[0];
+  return japanDate(datetime);
 };

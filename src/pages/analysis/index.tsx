@@ -118,7 +118,7 @@ export const AnalysisPage: FC<AnalysisBootstrap> = (bootstrap) => {
                   method="get"
                   class={analysisFormClass}
                 >
-                  <Field id={analysisFieldId("since")} label="開始日（UTC）">
+                  <Field id={analysisFieldId("since")} label="開始日">
                     <input
                       data-slot="input"
                       class={inputClass}
@@ -128,7 +128,7 @@ export const AnalysisPage: FC<AnalysisBootstrap> = (bootstrap) => {
                       value={state.since}
                     />
                   </Field>
-                  <Field id={analysisFieldId("until")} label="終了日（UTC）">
+                  <Field id={analysisFieldId("until")} label="終了日">
                     <input
                       data-slot="input"
                       class={inputClass}
@@ -289,9 +289,11 @@ export const AnalysisPage: FC<AnalysisBootstrap> = (bootstrap) => {
                   <figcaption class="sr-only">
                     {analysisChartText(state.metric).label}
                   </figcaption>
-                  <p class="mb-2 text-sm">
-                    {analysisChartText(state.metric).description}
-                  </p>
+                  {analysisChartText(state.metric).description && (
+                    <p class="mb-2 text-sm">
+                      {analysisChartText(state.metric).description}
+                    </p>
+                  )}
                   <div class={analysisChartClass} aria-hidden="true" />
                 </figure>
               )}
@@ -315,7 +317,7 @@ export const AnalysisPage: FC<AnalysisBootstrap> = (bootstrap) => {
                           data-slot="table-head"
                           class={tableHeadClass}
                         >
-                          期間開始日（UTC）
+                          期間開始日
                         </th>
                         <th
                           scope="col"

@@ -24,7 +24,7 @@ export function AnalysisChart({
   return (
     <figure aria-label={label}>
       <figcaption className="sr-only">{label}</figcaption>
-      <p className="mb-2 text-sm">{description}</p>
+      {description && <p className="mb-2 text-sm">{description}</p>}
       <div className={analysisChartClass}>
         <ResponsiveContainer width="100%" height="100%">
           <LineChart

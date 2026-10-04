@@ -90,8 +90,12 @@ export const findAllArticles = async (
       ];
       return and(
         eq(fields.generationId, generationId),
-        since ? gte(fields.createdAt, since) : undefined,
-        until ? lte(fields.createdAt, until) : undefined,
+        since
+          ? sql`julianday(${fields.createdAt}) >= julianday(${since})`
+          : undefined,
+        until
+          ? sql`julianday(${fields.createdAt}) <= julianday(${until})`
+          : undefined,
         q ? sql`instr(lower(${fields.title}), lower(${q})) > 0` : undefined,
         author
           ? or(

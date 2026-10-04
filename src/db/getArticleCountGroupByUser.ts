@@ -1,14 +1,5 @@
-import {
-  type DrizzleD1Database,
-  asc,
-  and,
-  count,
-  desc,
-  between,
-  eq,
-  gte,
-  lte,
-} from "@/lib";
+import { sql } from "drizzle-orm";
+import { type DrizzleD1Database, asc, and, count, desc, eq } from "@/lib";
 import { assertGenerationPublished } from "./dataGenerations";
 import { schema } from "@/db";
 import type { ArticleCountGroupByUser } from "@/schemas";
@@ -73,11 +64,11 @@ export const getArticleCountGroupByUser = async (
       and(
         eq(schema.generationArticles.generationId, generationId),
         since && until
-          ? between(schema.generationArticles.createdAt, since, until)
+          ? sql`julianday(${schema.generationArticles.createdAt}) between julianday(${since}) and julianday(${until})`
           : since
-            ? gte(schema.generationArticles.createdAt, since)
+            ? sql`julianday(${schema.generationArticles.createdAt}) >= julianday(${since})`
             : until
-              ? lte(schema.generationArticles.createdAt, until)
+              ? sql`julianday(${schema.generationArticles.createdAt}) <= julianday(${until})`
               : undefined,
       ),
     )

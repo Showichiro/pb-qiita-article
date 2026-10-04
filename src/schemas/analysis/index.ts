@@ -2,7 +2,7 @@ import { z } from "@hono/zod-openapi";
 import { isRealUtcDate, resolveTimeSeriesWindow } from "./calendar";
 
 const dateMessage = (name: "since" | "until") =>
-  `${name} must be a real UTC date (YYYY-MM-DD)`;
+  `${name} must be a real Japan calendar date (YYYY-MM-DD)`;
 
 const utcDate = (name: "since" | "until") =>
   z
@@ -26,14 +26,14 @@ export const timeSeriesQuery = z
     since: utcDate("since")
       .openapi({
         description:
-          "Inclusive UTC calendar date, YYYY-MM-DD. Defaults to 89 days before until.",
+          "Inclusive Japan calendar date, YYYY-MM-DD. Defaults to 89 days before until.",
         example: "2026-07-06",
       })
       .optional(),
     until: utcDate("until")
       .openapi({
         description:
-          "Inclusive UTC calendar date, YYYY-MM-DD. Defaults to the current UTC date.",
+          "Inclusive Japan calendar date, YYYY-MM-DD. Defaults to the current Japan calendar date.",
         example: "2026-10-03",
       })
       .optional(),
@@ -44,7 +44,7 @@ export const timeSeriesQuery = z
       .default("day")
       .openapi({
         description:
-          "day, week starting Monday UTC, or month starting on the first. Default day.",
+          "day, week starting Monday in Japan, or month starting on the first. Default day.",
         example: "day",
       }),
     author: searchText,
@@ -96,7 +96,7 @@ export const timeSeriesRowSchema = z.object({
   bucketStart: utcDateString.openapi({ example: "2026-01-01" }),
   articleCount: safeCount.openapi({
     description:
-      "Articles whose UTC publication date falls in this bucket and inside since/until.",
+      "Articles whose Japan publication date falls in this bucket and inside since/until.",
     example: 1,
   }),
   publishedArticleLikes: safeCount.openapi({

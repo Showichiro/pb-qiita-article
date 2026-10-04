@@ -341,6 +341,7 @@
     flex-direction: column;
     height: 100%;
     min-height: 0;
+    min-width: 0;
   }
   .filter-sheet-header {
     display: flex;
@@ -358,11 +359,22 @@
   .filter-sheet-content {
     flex: 1;
     min-height: 0;
+    min-width: 0;
     padding: 1rem;
     padding-bottom: max(1rem, env(safe-area-inset-bottom));
     overflow-y: auto;
+    overflow-x: hidden;
     overscroll-behavior: contain;
     scroll-padding-block: 1rem;
+  }
+  .filter-sheet-content form {
+    min-width: 0;
+    max-width: 100%;
+  }
+  .filter-sheet-content [data-slot="input"],
+  .filter-sheet-content [data-slot="select"] {
+    box-sizing: border-box;
+    max-width: 100%;
   }
 }
 /* A native fallback sheet can remain modal if the viewport becomes desktop. */

@@ -419,7 +419,7 @@ describe("Workers application", () => {
       status: 400,
       detail: {
         _errors: [],
-        since: { _errors: ["since must be a real UTC date (YYYY-MM-DD)"] },
+        since: { _errors: ["since must be a real Japan calendar date (YYYY-MM-DD)"] },
       },
     });
   });
@@ -494,14 +494,14 @@ describe("Workers application", () => {
         "ts-day-end",
         "WriterID",
         "Writer",
-        "2026-01-03T23:59:59Z",
+        "2026-01-03T23:59:59+09:00",
         5,
         0,
         "ts-day-next",
         "ts-day-next",
         "WriterID",
         "Writer",
-        "2026-01-04T00:00:00Z",
+        "2026-01-04T00:00:00+09:00",
         7,
         0,
       )
@@ -520,8 +520,8 @@ describe("Workers application", () => {
         rows: [
           {
             bucketStart: "2026-01-01",
-            articleCount: 1,
-            publishedArticleLikes: 2,
+            articleCount: 2,
+            publishedArticleLikes: 11,
           },
           {
             bucketStart: "2026-01-02",

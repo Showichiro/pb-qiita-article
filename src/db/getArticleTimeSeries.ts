@@ -47,7 +47,7 @@ const toSafeNonnegativeInteger = (value: unknown): number => {
 };
 
 const bucketStartSql = (bucket: TimeSeriesBucket) => {
-  const utcDate = sql`date(${schema.generationArticles.createdAt})`;
+  const utcDate = sql`date(${schema.generationArticles.createdAt}, '+9 hours')`;
   if (bucket === "day") return utcDate;
   // weekday 1 advances to Monday, so six days earlier selects Monday on or before.
   if (bucket === "week") return sql`date(${utcDate}, '-6 days', 'weekday 1')`;
@@ -84,8 +84,8 @@ export const getArticleTimeSeries = async (
   ];
   const filters: SQL[] = [
     sql`${schema.generationArticles.generationId} = ${generationId}`,
-    // Half-open UTC instant range: since 00:00 through the end of until.
-    sql`julianday(${schema.generationArticles.createdAt}) >= julianday(${since}) and julianday(${schema.generationArticles.createdAt}) < (julianday(${until}) + 1)`,
+    // Half-open Japan calendar range: since 00:00 through the end of until.
+    sql`julianday(${schema.generationArticles.createdAt}) >= julianday(${since}, '-9 hours') and julianday(${schema.generationArticles.createdAt}) < (julianday(${until}, '-9 hours') + 1)`,
   ];
   if (author) {
     filters.push(

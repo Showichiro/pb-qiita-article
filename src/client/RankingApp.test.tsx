@@ -403,7 +403,7 @@ test("period shortcuts retain ranking presentation and request both rankings onc
   const params = new URLSearchParams(window.location.search);
   expect(params.get("view")).toBe("chart");
   expect(params.get("topN")).toBe("5");
-  expect(params.get("until")).toMatch(/T23:59:59.999Z$/);
+  expect(params.get("until")).toMatch(/T14:59:59.999Z$/);
   expect(fetchMock).toHaveBeenCalledTimes(2);
   expect(
     container

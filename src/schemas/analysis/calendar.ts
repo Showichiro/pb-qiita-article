@@ -1,3 +1,4 @@
+import { japanDate } from "@/util/japanTime";
 export const TIME_SERIES_DEFAULT_DAYS = 90;
 export const TIME_SERIES_MAX_DAYS = 3660;
 export const TIME_SERIES_MAX_BUCKETS = 400;
@@ -48,7 +49,7 @@ const formatUtcDate = (date: Date): string => {
 };
 
 export const utcToday = (now = new Date()): string =>
-  now.toISOString().slice(0, 10);
+  japanDate(now);
 
 export const addUtcDays = (isoDate: string, days: number): string => {
   const date = parseUtcDate(isoDate);
@@ -146,7 +147,7 @@ export const resolveTimeSeriesWindow = (
       issues: [
         {
           path: "until",
-          message: "until must be a real UTC date (YYYY-MM-DD)",
+          message: "until must be a real Japan calendar date (YYYY-MM-DD)",
         },
       ],
     };

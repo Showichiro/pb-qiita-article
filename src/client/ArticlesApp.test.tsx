@@ -382,7 +382,7 @@ test("period shortcuts preserve filters, reset pagination, and restore selection
   expect(params.get("author")).toBe("writer");
   expect(params.getAll("tags")).toEqual(["test"]);
   expect(params.get("offset") ?? "0").toBe("0");
-  expect(params.get("until")).toMatch(/T23:59:59.999Z$/);
+  expect(params.get("until")).toMatch(/T14:59:59.999Z$/);
   expect(resultCalls()).toHaveLength(1);
   expect(
     host

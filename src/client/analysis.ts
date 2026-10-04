@@ -1,3 +1,4 @@
+import { japanDate } from "@/util/japanTime";
 import { assertResponseVersion } from "./data-version";
 
 export type AnalysisBucket = "day" | "week" | "month";
@@ -52,7 +53,7 @@ export const analysisBuckets: readonly AnalysisBucket[] = [
 ];
 
 export function defaultAnalysisQuery(now = new Date()): AnalysisQuery {
-  const until = now.toISOString().slice(0, 10);
+  const until = japanDate(now);
   return {
     since: shiftUtcDay(until, -89),
     until,
