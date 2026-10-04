@@ -5,7 +5,6 @@ import { ActiveFilters } from "./active-filters";
 import { commonFilters } from "@/client/filter-state";
 import { FilterSheet } from "./filter-sheet";
 import {
-  useEffect,
   useCallback,
   useRef,
   useState,
@@ -62,7 +61,8 @@ import {
   useRequestIntent,
   useVersionedQuery,
 } from "./hooks/useVersionedQuery";
-import { pushSearchUrl, subscribePopState } from "./search-history";
+import { rankingSearchParsers } from "./search-params";
+import { useSearchParams } from "./hooks/useSearchParams";
 import { rankingLikesQueryOptions, rankingPostsQueryOptions } from "./queries";
 import { isDataQuery, useRemovePreviousGeneration } from "./query-client";
 
@@ -145,15 +145,46 @@ export default function RankingApp({
   const latestDraft = useRef(draft);
   const [validationError, setValidationError] = useState<string | null>(null);
 
-  const writeSearchUrl = useCallback((next: RankingQuery) => {
-    pushSearchUrl(
-      rankingQueryParams(next),
-      rankingQueryParams(
-        parseRankingQuery(new URLSearchParams(window.location.search)),
-      ),
-      ["since", "until", "view", "topN"],
-    );
-  }, []);
+  const { write } = useSearchParams(rankingSearchParsers, (params, initial) => {
+    let next: RankingQuery;
+    try {
+      next = parseRankingQuery(params);
+    } catch (error) {
+      requestIntent.current++;
+      setValidationError(
+        error instanceof Error ? error.message : "検索条件を確認してください",
+      );
+      return;
+    }
+    if (
+      initial &&
+      rankingQueryParams(next).toString() ===
+        rankingQueryParams(initialConfig).toString()
+    )
+      return;
+    const sameDates = rankingRequestKey(next) === rankingRequestKey(query);
+    queryRef.current = next;
+    const nextDraft = toRankingDraft(next);
+    latestDraft.current = nextDraft;
+    setDraft(nextDraft);
+    setValidationError(null);
+    if (sameDates) setCurrentQuery(next, ++requestIntent.current);
+    else {
+      setQuery((current) =>
+        withRankingDisplay(dateQuery(current), {
+          view: next.view,
+          topN: next.topN,
+        }),
+      );
+      void load(next);
+    }
+  });
+  const writeSearchUrl = useCallback(
+    (next: RankingQuery) => {
+      void write(rankingQueryParams(next));
+    },
+    [write],
+  );
 
   const navigateDates = useCallback(
     (nextDates: RankingRequestQuery) => {
@@ -178,29 +209,6 @@ export default function RankingApp({
     },
     [writeSearchUrl],
   );
-
-  const onPopState = useCallback(() => {
-    let next: RankingQuery;
-    try {
-      next = parseRankingQuery(new URLSearchParams(window.location.search));
-    } catch (error) {
-      setValidationError(
-        error instanceof Error ? error.message : "検索条件を確認してください",
-      );
-      return;
-    }
-    queryRef.current = next;
-    const nextDraft = toRankingDraft(next);
-    latestDraft.current = nextDraft;
-    setDraft(nextDraft);
-    setValidationError(null);
-    if (rankingRequestKey(next) === rankingRequestKey(queryRef.current)) {
-      const intent = ++requestIntent.current;
-      setCurrentQuery(next, intent);
-    } else {
-      void load(next);
-    }
-  }, [load, setCurrentQuery, requestIntent]);
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -253,7 +261,6 @@ export default function RankingApp({
 
   return (
     <section className={rankingIslandClass} aria-label="ランキング検索">
-      <HistorySubscription onPopState={onPopState} />
       <Card className={rankingCardExtraClass}>
         <PeriodShortcuts
           range={draft}
@@ -394,13 +401,6 @@ export default function RankingApp({
       </Card>
     </section>
   );
-}
-
-function HistorySubscription({ onPopState }: { onPopState: () => void }) {
-  useEffect(() => {
-    return subscribePopState(onPopState);
-  }, [onPopState]);
-  return null;
 }
 
 type ResultsProps = {

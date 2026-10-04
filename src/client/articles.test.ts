@@ -1,4 +1,5 @@
 // @vitest-environment jsdom
+import { flushSearchParams } from "./test-query-client";
 import type { ArticlesAppProps } from "./ArticlesApp";
 import { articleTestElement, resetTestQueries } from "./test-query-client";
 beforeEach(resetTestQueries);
@@ -192,6 +193,8 @@ describe("ArticlesApp browser controls", () => {
     await act(async () => root.unmount());
     host.remove();
     vi.unstubAllGlobals();
+    if (vi.isFakeTimers()) await vi.advanceTimersByTimeAsync(60);
+    else await new Promise((resolve) => setTimeout(resolve, 60));
     vi.useRealTimers();
     window.history.replaceState(null, "", "/articles");
   });
@@ -242,13 +245,11 @@ describe("ArticlesApp browser controls", () => {
     });
   };
   it("uses SSR results without a request, respects URL pagination, and handles popstate", async () => {
-    const request = vi
-      .fn()
-      .mockResolvedValue(
-        new Response(JSON.stringify([sample]), {
-          headers: { "X-Data-Version": "v1" },
-        }),
-      );
+    const request = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify([sample]), {
+        headers: { "X-Data-Version": "v1" },
+      }),
+    );
     vi.stubGlobal("fetch", request);
     await mount();
     expect(request).not.toHaveBeenCalled();
@@ -478,6 +479,7 @@ describe("ArticlesApp browser controls", () => {
     vi.stubGlobal("fetch", request);
     await mount();
     await action("nav button:last-child");
+    await flushSearchParams();
     const params = new URL(window.location.href).searchParams;
     expect(params.getAll("tags")).toEqual(["C#", "a,b"]);
     expect(params.get("offset")).toBe("8");
@@ -584,12 +586,23 @@ describe("ArticlesApp browser controls", () => {
     expect(url.searchParams.get("orderField")).toBe("likesCount");
     expect(url.searchParams.get("limit")).toBe("1");
     expect(url.searchParams.get("offset")).toBe("0");
+    await flushSearchParams();
     expect(window.location.search).toContain("since=2026-02-03");
+    await flushSearchParams();
     expect(window.location.search).toContain("orderField=likesCount");
+    await flushSearchParams();
     expect(window.location.search).toContain("offset=0");
   });
   it("waits for 500ms of quiet and uses the latest draft after an urgent rerender", async () => {
-    vi.useFakeTimers();
+    vi.useFakeTimers({
+      toFake: [
+        "Date",
+        "setTimeout",
+        "clearTimeout",
+        "setInterval",
+        "clearInterval",
+      ],
+    });
     const request = vi
       .fn()
       .mockResolvedValue(
@@ -611,13 +624,22 @@ describe("ArticlesApp browser controls", () => {
     const url = new URL(request.mock.calls[0][0], window.location.origin);
     expect(url.searchParams.get("limit")).toBe("3");
     expect(url.searchParams.get("offset")).toBe("0");
+    await flushSearchParams();
     expect(window.location.search).toContain("limit=3");
     expect(host.querySelector<HTMLInputElement>('[name="limit"]')?.value).toBe(
       "3",
     );
   });
   it("replaces a pending limit search with a newer value and keeps current rows visible", async () => {
-    vi.useFakeTimers();
+    vi.useFakeTimers({
+      toFake: [
+        "Date",
+        "setTimeout",
+        "clearTimeout",
+        "setInterval",
+        "clearInterval",
+      ],
+    });
     const request = vi.fn(
       (_url: string, _options: RequestInit) => new Promise<Response>(() => {}),
     );
@@ -638,7 +660,15 @@ describe("ArticlesApp browser controls", () => {
     expect(host.textContent).toContain("Article A");
   });
   it("debounces q, author, and all numeric ranges as one valid M2 query", async () => {
-    vi.useFakeTimers();
+    vi.useFakeTimers({
+      toFake: [
+        "Date",
+        "setTimeout",
+        "clearTimeout",
+        "setInterval",
+        "clearInterval",
+      ],
+    });
     const request = vi
       .fn()
       .mockResolvedValue(
@@ -666,10 +696,19 @@ describe("ArticlesApp browser controls", () => {
     expect(url.searchParams.get("minStocks")).toBe("3");
     expect(url.searchParams.get("maxStocks")).toBe("15");
     expect(url.searchParams.get("offset")).toBe("0");
+    await flushSearchParams();
     expect(window.location.search).toContain("q=react");
   });
   it("waits until IME composition ends and then debounces the completed text", async () => {
-    vi.useFakeTimers();
+    vi.useFakeTimers({
+      toFake: [
+        "Date",
+        "setTimeout",
+        "clearTimeout",
+        "setInterval",
+        "clearInterval",
+      ],
+    });
     const request = vi
       .fn()
       .mockResolvedValue(
@@ -704,7 +743,15 @@ describe("ArticlesApp browser controls", () => {
     ).toBe("日本語");
   });
   it("applies a tag selection immediately with a queued keyword draft", async () => {
-    vi.useFakeTimers();
+    vi.useFakeTimers({
+      toFake: [
+        "Date",
+        "setTimeout",
+        "clearTimeout",
+        "setInterval",
+        "clearInterval",
+      ],
+    });
     const request = vi.fn(
       (_url: string, _options: RequestInit) => new Promise<Response>(() => {}),
     );
@@ -724,12 +771,21 @@ describe("ArticlesApp browser controls", () => {
     const url = new URL(request.mock.calls[0][0], window.location.origin);
     expect(url.searchParams.get("q")).toBe("hooks");
     expect(url.searchParams.getAll("tags")).toEqual(["react", "typescript"]);
+    await flushSearchParams();
     expect(window.location.search).toContain("tags=react");
     await vi.advanceTimersByTimeAsync(500);
     expect(request).toHaveBeenCalledTimes(1);
   });
   it("clears selected tags immediately with the latest full valid draft", async () => {
-    vi.useFakeTimers();
+    vi.useFakeTimers({
+      toFake: [
+        "Date",
+        "setTimeout",
+        "clearTimeout",
+        "setInterval",
+        "clearInterval",
+      ],
+    });
     const request = vi.fn(
       (_url: string, _options: RequestInit) => new Promise<Response>(() => {}),
     );
@@ -762,7 +818,9 @@ describe("ArticlesApp browser controls", () => {
     expect(requested.searchParams.get("offset")).toBe("0");
     expect(
       Array.from(
-        Array.from(host.querySelectorAll("select")).find((select) => select.name === "tags")?.selectedOptions ?? [],
+        Array.from(host.querySelectorAll("select")).find(
+          (select) => select.name === "tags",
+        )?.selectedOptions ?? [],
         (option) => option.value,
       ),
     ).toEqual([]);
@@ -808,7 +866,9 @@ describe("ArticlesApp browser controls", () => {
     ).toBe("-1");
     expect(
       Array.from(
-        Array.from(host.querySelectorAll("select")).find((select) => select.name === "tags")?.selectedOptions ?? [],
+        Array.from(host.querySelectorAll("select")).find(
+          (select) => select.name === "tags",
+        )?.selectedOptions ?? [],
         (option) => option.value,
       ),
     ).toEqual([]);
@@ -836,6 +896,7 @@ describe("ArticlesApp browser controls", () => {
     });
     expect(request).toHaveBeenCalledTimes(1);
     expect(request.mock.calls[0][0]).toContain("q=keyboard");
+    await flushSearchParams();
     expect(window.location.search).toContain("q=keyboard");
   });
   it("does not submit Enter while composition is still tracked when the key event flag is false", async () => {
@@ -864,7 +925,15 @@ describe("ArticlesApp browser controls", () => {
     expect(window.location.href).toBe(previousUrl);
   });
   it("does not abort an active request on composition start and replaces it after composition", async () => {
-    vi.useFakeTimers();
+    vi.useFakeTimers({
+      toFake: [
+        "Date",
+        "setTimeout",
+        "clearTimeout",
+        "setInterval",
+        "clearInterval",
+      ],
+    });
     const request = vi.fn(
       (_url: string, _options: RequestInit) => new Promise<Response>(() => {}),
     );
@@ -889,7 +958,15 @@ describe("ArticlesApp browser controls", () => {
     ).toBe("new");
   });
   it("includes a pending numeric draft in an immediate select search", async () => {
-    vi.useFakeTimers();
+    vi.useFakeTimers({
+      toFake: [
+        "Date",
+        "setTimeout",
+        "clearTimeout",
+        "setInterval",
+        "clearInterval",
+      ],
+    });
     const request = vi.fn(
       (_url: string, _options: RequestInit) => new Promise<Response>(() => {}),
     );
@@ -906,14 +983,20 @@ describe("ArticlesApp browser controls", () => {
     expect(request).toHaveBeenCalledTimes(1);
   });
   it("submits a pending limit once and deduplicates the same canonical query", async () => {
-    vi.useFakeTimers();
-    const request = vi
-      .fn()
-      .mockResolvedValue(
-        new Response(JSON.stringify([sample]), {
-          headers: { "X-Data-Version": "v1" },
-        }),
-      );
+    vi.useFakeTimers({
+      toFake: [
+        "Date",
+        "setTimeout",
+        "clearTimeout",
+        "setInterval",
+        "clearInterval",
+      ],
+    });
+    const request = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify([sample]), {
+        headers: { "X-Data-Version": "v1" },
+      }),
+    );
     vi.stubGlobal("fetch", request);
     await mount();
     const historyLengthBeforeSearch = window.history.length;
@@ -922,12 +1005,15 @@ describe("ArticlesApp browser controls", () => {
     expect(request).toHaveBeenCalledTimes(1);
     expect(request.mock.calls[0][0]).toContain("limit=3");
     expect(request.mock.calls[0][0]).toContain("offset=0");
+    await flushSearchParams();
     expect(window.history.length).toBe(historyLengthBeforeSearch + 1);
+    await flushSearchParams();
     expect(window.location.search).toContain("campaign=keep");
     const historyLengthAfterSearch = window.history.length;
     await action("form", "submit");
     await vi.advanceTimersByTimeAsync(500);
     expect(request).toHaveBeenCalledTimes(1);
+    await flushSearchParams();
     expect(window.history.length).toBe(historyLengthAfterSearch);
     vi.useRealTimers();
     const { act } = await import("react");
@@ -938,11 +1024,21 @@ describe("ArticlesApp browser controls", () => {
       window.history.back();
       await popstate;
     });
+    await flushSearchParams();
     expect(window.location.search).toContain("limit=1");
+    await flushSearchParams();
     expect(window.location.search).toContain("offset=7");
   });
   it("submitting an in-flight identical search does not abort or duplicate it", async () => {
-    vi.useFakeTimers();
+    vi.useFakeTimers({
+      toFake: [
+        "Date",
+        "setTimeout",
+        "clearTimeout",
+        "setInterval",
+        "clearInterval",
+      ],
+    });
     const request = vi.fn(
       (_url: string, _options: RequestInit) => new Promise<Response>(() => {}),
     );
@@ -956,10 +1052,19 @@ describe("ArticlesApp browser controls", () => {
     await action("form", "submit");
     expect(request).toHaveBeenCalledTimes(1);
     expect(request.mock.calls[0][0]).toBe(requestUrl);
+    await flushSearchParams();
     expect(window.history.length).toBe(historyLength);
   });
   it("cancels a pending debounce on history navigation and restores draft from the URL", async () => {
-    vi.useFakeTimers();
+    vi.useFakeTimers({
+      toFake: [
+        "Date",
+        "setTimeout",
+        "clearTimeout",
+        "setInterval",
+        "clearInterval",
+      ],
+    });
     const request = vi
       .fn()
       .mockResolvedValue(
@@ -983,6 +1088,7 @@ describe("ArticlesApp browser controls", () => {
     expect(requested.searchParams.get("orderField")).toBe("stocksCount");
     expect(requested.searchParams.get("limit")).toBe("4");
     expect(requested.searchParams.get("offset")).toBe("13");
+    await flushSearchParams();
     expect(window.location.search).toContain("campaign=history");
     expect(host.querySelector<HTMLInputElement>('[name="since"]')?.value).toBe(
       "2026-03-04",
@@ -1000,7 +1106,15 @@ describe("ArticlesApp browser controls", () => {
     expect(request).toHaveBeenCalledTimes(1);
   });
   it("cancels a pending debounce when unmounted before it can start a request", async () => {
-    vi.useFakeTimers();
+    vi.useFakeTimers({
+      toFake: [
+        "Date",
+        "setTimeout",
+        "clearTimeout",
+        "setInterval",
+        "clearInterval",
+      ],
+    });
     const request = vi
       .fn()
       .mockResolvedValue(
@@ -1051,7 +1165,15 @@ describe("ArticlesApp browser controls", () => {
     expect(host.textContent).not.toContain("読み込み中");
   });
   it("keeps invalid numeric drafts editable and does not search until the full draft is valid", async () => {
-    vi.useFakeTimers();
+    vi.useFakeTimers({
+      toFake: [
+        "Date",
+        "setTimeout",
+        "clearTimeout",
+        "setInterval",
+        "clearInterval",
+      ],
+    });
     const request = vi
       .fn()
       .mockResolvedValue(
@@ -1064,8 +1186,11 @@ describe("ArticlesApp browser controls", () => {
     await change('[name="sort"]', "stocksCount:desc");
     await vi.advanceTimersByTimeAsync(1000);
     expect(request).not.toHaveBeenCalled();
+    await flushSearchParams();
     expect(window.location.search).toContain("limit=1");
+    await flushSearchParams();
     expect(window.location.search).not.toContain("since=2026-04-05");
+    await flushSearchParams();
     expect(window.location.search).not.toContain("orderField=stocksCount");
     expect(host.querySelector<HTMLInputElement>('[name="limit"]')?.value).toBe(
       "101",
@@ -1085,6 +1210,7 @@ describe("ArticlesApp browser controls", () => {
     expect(url.searchParams.get("since")).toBe("2026-04-05");
     expect(url.searchParams.get("orderField")).toBe("stocksCount");
     expect(url.searchParams.get("limit")).toBe("2");
+    await flushSearchParams();
     expect(window.location.search).toContain("campaign=keep");
   });
   it("retries a failed same-query submit without adding a duplicate history entry", async () => {
@@ -1103,9 +1229,11 @@ describe("ArticlesApp browser controls", () => {
     await mount();
     await action("form", "submit");
     expect(host.querySelector('[role="alert"]')?.textContent).toContain("503");
+    await flushSearchParams();
     const historyLengthAfterFailure = window.history.length;
     await action("form", "submit");
     expect(request).toHaveBeenCalledTimes(2);
+    await flushSearchParams();
     expect(window.history.length).toBe(historyLengthAfterFailure);
     expect(host.textContent).toContain("該当する記事はありません。");
   });

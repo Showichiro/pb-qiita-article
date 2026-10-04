@@ -54,8 +54,20 @@ Ranking commits only after both datasets succeed. Screen-specific callbacks
 commit results inside transitions and keep editable drafts and display choices
 independent of requests. Superseded results cannot replace a newer intent.
 
-`search-history.ts` shares URL writes and history-listener cleanup. Each screen
-owns URL parsing, draft validation, and its debounce or presentation behavior.
+nuqs 2.10.1 owns URL state for all three islands through the React SPA adapter
+in `QueryProvider`. `src/client/search-params.ts` defines the typed parameter
+parsers; `useSearchParams` shares updates and navigation handling. Repeated tag
+keys, timestamp dates, the article sort alias, and native GET links remain
+compatible. Existing parsers and validators enforce cross-field constraints and
+resolve analysis defaults with the SSR bootstrap clock. Editable drafts and
+successfully loaded results remain separate from optimistic URL state.
+
+Local search events load results once; their nuqs notifications do not repeat
+requests or overwrite drafts. Changed history parameters restore controls and
+load through the shared retrieval hook. A small listener preserves explicit
+retry intents when a history event has identical parameter values. URL writes
+use push history and nuqs' browser-safe throttling; they can merge updates made
+in quick succession. Native forms continue to work without JavaScript.
 Old-generation cache cleanup runs after the result subscription hooks so that
 previous observers have detached before inactive results are removed.
 
