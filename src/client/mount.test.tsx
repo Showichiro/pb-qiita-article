@@ -26,6 +26,7 @@ function island() {
 
 beforeAll(() => {
   Object.assign(globalThis, { IS_REACT_ACT_ENVIRONMENT: true });
+  HTMLDialogElement.prototype.show = function () { this.open = true; };
 });
 
 test("reads the JSON bootstrap into initial application props", () => {
@@ -186,10 +187,10 @@ test("hands off edits made during download and restores the focused control", as
   expect(
     (
       container.querySelector(
-        'select[name="orderField"]',
+        'select[name="sort"]',
       ) as HTMLSelectElement | null
     )?.value,
-  ).toBe("likesCount");
+  ).toBe("likesCount:desc");
   expect(document.activeElement).toBe(
     container.querySelector('[name="since"]'),
   );
@@ -297,7 +298,7 @@ test("transfers focus from the native multiple tag selector", async () => {
   await act(async () =>
     mountArticlesApp(container, async () => ({ default: App })),
   );
-  const target = container.querySelector("select");
+  const target = Array.from(container.querySelectorAll("select")).find((select) => select.name === "tags");
   if (!target) throw new Error("Missing client tags");
   expect(document.activeElement).toBe(target);
   expect(target.multiple).toBe(true);

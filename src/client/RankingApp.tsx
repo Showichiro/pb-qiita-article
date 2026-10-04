@@ -1,6 +1,8 @@
 /** @jsxImportSource react */
 import { japanDate } from "@/util/japanTime";
 import { PeriodShortcuts } from "./PeriodShortcuts";
+import { ActiveFilters } from "./active-filters";
+import { commonFilters } from "@/client/filter-state";
 import { FilterSheet } from "./filter-sheet";
 import {
   useEffect,
@@ -43,7 +45,6 @@ import {
   rankingFieldId,
   rankingIslandClass,
   rankingCardExtraClass,
-  rankingFormClass,
   rankingLinkClass,
   rankingResultsClass,
 } from "./ranking-presentation";
@@ -330,6 +331,14 @@ export default function RankingApp({
       },
     });
   };
+  const changePeriod = (patch: Record<string, string | string[]>) => {
+    const next = { ...latestDraft.current, ...patch };
+    latestDraft.current = next;
+    setDraft(next);
+    const error = validateRankingDraft(next);
+    setValidationError(error);
+    if (!error) navigateDates(commitRankingDraft(next));
+  };
   const result = { query: resultQuery, data };
 
   return (
@@ -347,88 +356,106 @@ export default function RankingApp({
             if (!error) navigateDates(commitRankingDraft(next));
           }}
         />
-        <FilterSheet id="ranking-filters">
-          <form
-            action="/ranking"
-            method="get"
-            onSubmit={handleSubmit}
-            className={rankingFormClass}
+        <form
+          id="ranking-filters-form"
+          action="/ranking"
+          method="get"
+          onSubmit={handleSubmit}
+          className="query-form"
+        >
+          <FilterSheet
+            id="ranking-filters"
+            count={commonFilters(query).length}
+            controls={
+              <>
+                <label htmlFor={rankingFieldId("view")}>
+                  表示形式{" "}
+                  <Select
+                    id={rankingFieldId("view")}
+                    name="view"
+                    value={query.view}
+                    onChange={(event) =>
+                      changeDisplay({
+                        view:
+                          event.currentTarget.value === "chart"
+                            ? "chart"
+                            : "table",
+                        topN: queryRef.current.topN,
+                      })
+                    }
+                  >
+                    <option value="table">表</option>
+                    <option value="chart">グラフ</option>
+                  </Select>
+                </label>
+                <label htmlFor={rankingFieldId("topN")}>
+                  表示件数{" "}
+                  <Select
+                    id={rankingFieldId("topN")}
+                    name="topN"
+                    value={String(query.topN)}
+                    onChange={(event) =>
+                      changeDisplay({
+                        view: queryRef.current.view,
+                        topN: parseTopNControl(event.currentTarget.value),
+                      })
+                    }
+                  >
+                    {Array.from({ length: 100 }, (_, index) => index + 1).map(
+                      (count) => (
+                        <option key={count} value={count}>
+                          {count}件
+                        </option>
+                      ),
+                    )}
+                  </Select>
+                </label>
+              </>
+            }
           >
-            <label htmlFor={rankingFieldId("since")}>
-              開始日{" "}
-              <Input
-                type="date"
-                id={rankingFieldId("since")}
-                name="since"
-                value={draft.since ? japanDate(draft.since) : ""}
-                onChange={(event) =>
-                  handleDateChange("since", event.currentTarget.value)
-                }
-              />
-            </label>
-            <label htmlFor={rankingFieldId("until")}>
-              終了日{" "}
-              <Input
-                type="date"
-                id={rankingFieldId("until")}
-                name="until"
-                value={draft.until ? japanDate(draft.until) : ""}
-                onChange={(event) =>
-                  handleDateChange("until", event.currentTarget.value)
-                }
-              />
-            </label>
-            <label htmlFor={rankingFieldId("view")}>
-              表示形式{" "}
-              <Select
-                id={rankingFieldId("view")}
-                name="view"
-                value={query.view}
-                onChange={(event) =>
-                  changeDisplay({
-                    view:
-                      event.currentTarget.value === "chart" ? "chart" : "table",
-                    topN: queryRef.current.topN,
-                  })
-                }
-              >
-                <option value="table">表</option>
-                <option value="chart">グラフ</option>
-              </Select>
-            </label>
-            <label htmlFor={rankingFieldId("topN")}>
-              表示件数{" "}
-              <Select
-                id={rankingFieldId("topN")}
-                name="topN"
-                value={String(query.topN)}
-                onChange={(event) =>
-                  changeDisplay({
-                    view: queryRef.current.view,
-                    topN: parseTopNControl(event.currentTarget.value),
-                  })
-                }
-              >
-                {Array.from({ length: 100 }, (_, index) => index + 1).map(
-                  (count) => (
-                    <option key={count} value={count}>
-                      {count}件
-                    </option>
-                  ),
-                )}
-              </Select>
-            </label>
-            <span
-              data-ranking-action=""
-              tabIndex={-1}
-              className={`${rankingActionClass} text-muted-foreground`}
-            >
-              自動検索
-            </span>
-          </form>
+            <fieldset className="filter-field-group">
+              <legend>投稿期間</legend>
+              <label htmlFor={rankingFieldId("since")}>
+                開始日{" "}
+                <Input
+                  type="date"
+                  id={rankingFieldId("since")}
+                  name="since"
+                  value={draft.since ? japanDate(draft.since) : ""}
+                  onChange={(event) =>
+                    handleDateChange("since", event.currentTarget.value)
+                  }
+                />
+              </label>
+              <label htmlFor={rankingFieldId("until")}>
+                終了日{" "}
+                <Input
+                  type="date"
+                  id={rankingFieldId("until")}
+                  name="until"
+                  value={draft.until ? japanDate(draft.until) : ""}
+                  onChange={(event) =>
+                    handleDateChange("until", event.currentTarget.value)
+                  }
+                />
+              </label>
+            </fieldset>
 
-          {validationError && <p role="alert">{validationError}</p>}
-        </FilterSheet>
+            {validationError && <p role="alert">{validationError}</p>}
+          </FilterSheet>
+          <ActiveFilters
+            filters={commonFilters(query)}
+            onRemove={(filter) => changePeriod(filter.clear)}
+            onClear={() => changePeriod({ since: "", until: "" })}
+          />{" "}
+          <span
+            data-ranking-action=""
+            tabIndex={-1}
+            className={`${rankingActionClass} text-muted-foreground`}
+          >
+            自動検索
+          </span>
+        </form>
         <DataVersionControls
           availableVersion={versionState.availableVersion}
           error={versionState.error}

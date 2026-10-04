@@ -6,9 +6,15 @@ import { Button } from "./ui";
 export function FilterSheet({
   id,
   children,
+  search,
+  controls,
+  count = 0,
 }: {
   id: string;
   children: ReactNode;
+  search?: ReactNode;
+  controls?: ReactNode;
+  count?: number;
 }) {
   const dialog = useRef<HTMLDialogElement | null>(null);
   const [open, setOpen] = useState(false);
@@ -17,9 +23,12 @@ export function FilterSheet({
     dialog.current = node;
     if (!node) return;
     const media = window.matchMedia?.("(max-width: 639px)");
+    let mobile = media?.matches ?? false;
     const updateViewport = () => {
-      if (!media?.matches && node.open) node.close();
-      node.setAttribute("role", media?.matches ? "dialog" : "group");
+      const nextMobile = media?.matches ?? false;
+      if (nextMobile !== mobile && node.open) node.close();
+      mobile = nextMobile;
+      node.setAttribute("role", mobile ? "dialog" : "group");
     };
     updateViewport();
     media?.addEventListener("change", updateViewport);
@@ -30,20 +39,33 @@ export function FilterSheet({
     };
   }, []);
   const close = () => dialog.current?.close();
+  const toggle = () => {
+    const node = dialog.current;
+    if (!node) return;
+    if (node.open) node.close();
+    else if (window.matchMedia?.("(max-width: 639px)").matches)
+      node.showModal();
+    else node.show();
+  };
   return (
-    <>
-      <Button
-        type="button"
-        variant="outline"
-        className="filter-trigger"
-        aria-haspopup="dialog"
-        aria-controls={id}
-        aria-expanded={open}
-        data-focus-id={`${id}-trigger`}
-        onClick={() => dialog.current?.showModal()}
-      >
-        絞り込み・表示設定
-      </Button>
+    <div className="query-controls">
+      <div className="query-toolbar">
+        {search}
+        <Button
+          type="button"
+          variant="outline"
+          className="filter-trigger"
+          aria-controls={id}
+          aria-expanded={open}
+          data-focus-id={`${id}-trigger`}
+          onClick={toggle}
+        >
+          絞り込み{count > 0 && <span className="filter-count">{count}</span>}
+        </Button>
+        <div className="query-display-controls" aria-label="表示設定">
+          {controls}
+        </div>
+      </div>
       <dialog
         ref={attachDialog}
         id={id}
@@ -88,7 +110,7 @@ export function FilterSheet({
       >
         <div className="filter-sheet-panel">
           <header className="filter-sheet-header">
-            <h2 id={`${id}-title`}>絞り込み・表示設定</h2>
+            <h2 id={`${id}-title`}>絞り込み</h2>
             <Button
               type="button"
               variant="ghost"
@@ -102,6 +124,6 @@ export function FilterSheet({
           <div className="filter-sheet-content">{children}</div>
         </div>
       </dialog>
-    </>
+    </div>
   );
 }

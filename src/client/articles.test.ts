@@ -574,7 +574,7 @@ describe("ArticlesApp browser controls", () => {
     vi.stubGlobal("fetch", request);
     await mount();
     await change('[name="since"]', "2026-02-03");
-    await change('[name="orderField"]', "likesCount");
+    await change('[name="sort"]', "likesCount:desc");
     expect(request).toHaveBeenCalledTimes(2);
     expect(request.mock.calls[0][1].headers).toMatchObject({
       "X-Expected-Data-Version": "v1",
@@ -762,7 +762,7 @@ describe("ArticlesApp browser controls", () => {
     expect(requested.searchParams.get("offset")).toBe("0");
     expect(
       Array.from(
-        host.querySelector("select")?.selectedOptions ?? [],
+        Array.from(host.querySelectorAll("select")).find((select) => select.name === "tags")?.selectedOptions ?? [],
         (option) => option.value,
       ),
     ).toEqual([]);
@@ -808,7 +808,7 @@ describe("ArticlesApp browser controls", () => {
     ).toBe("-1");
     expect(
       Array.from(
-        host.querySelector("select")?.selectedOptions ?? [],
+        Array.from(host.querySelectorAll("select")).find((select) => select.name === "tags")?.selectedOptions ?? [],
         (option) => option.value,
       ),
     ).toEqual([]);
@@ -896,7 +896,7 @@ describe("ArticlesApp browser controls", () => {
     vi.stubGlobal("fetch", request);
     await mount();
     await change('[name="limit"]', "2");
-    await change('[name="orderField"]', "stocksCount");
+    await change('[name="sort"]', "stocksCount:desc");
     expect(request).toHaveBeenCalledTimes(1);
     const url = new URL(request.mock.calls[0][0], window.location.origin);
     expect(url.searchParams.get("limit")).toBe("2");
@@ -987,10 +987,10 @@ describe("ArticlesApp browser controls", () => {
     expect(host.querySelector<HTMLInputElement>('[name="since"]')?.value).toBe(
       "2026-03-04",
     );
-    const orderField = host.querySelector('[name="orderField"]');
+    const orderField = host.querySelector('[name="sort"]');
     if (!(orderField instanceof HTMLSelectElement))
       throw new Error("Missing order field select");
-    expect(orderField.value).toBe("stocksCount");
+    expect(orderField.value).toBe("stocksCount:desc");
     expect(host.querySelector<HTMLInputElement>('[name="limit"]')?.value).toBe(
       "4",
     );
@@ -1028,8 +1028,8 @@ describe("ArticlesApp browser controls", () => {
     );
     vi.stubGlobal("fetch", request);
     await mount();
-    await change('[name="orderField"]', "likesCount");
-    await change('[name="orderDirection"]', "asc");
+    await change('[name="sort"]', "likesCount:desc");
+    await change('[name="sort"]', "likesCount:asc");
     expect(request).toHaveBeenCalledTimes(2);
     expect(request.mock.calls[0][1].headers).toMatchObject({
       "X-Expected-Data-Version": "v1",
@@ -1061,7 +1061,7 @@ describe("ArticlesApp browser controls", () => {
     await mount();
     await change('[name="limit"]', "101");
     await change('[name="since"]', "2026-04-05");
-    await change('[name="orderField"]', "stocksCount");
+    await change('[name="sort"]', "stocksCount:desc");
     await vi.advanceTimersByTimeAsync(1000);
     expect(request).not.toHaveBeenCalled();
     expect(window.location.search).toContain("limit=1");
@@ -1073,10 +1073,10 @@ describe("ArticlesApp browser controls", () => {
     expect(host.querySelector<HTMLInputElement>('[name="since"]')?.value).toBe(
       "2026-04-05",
     );
-    const orderField = host.querySelector('[name="orderField"]');
+    const orderField = host.querySelector('[name="sort"]');
     if (!(orderField instanceof HTMLSelectElement))
       throw new Error("Missing order field select");
-    expect(orderField.value).toBe("stocksCount");
+    expect(orderField.value).toBe("stocksCount:desc");
 
     await change('[name="limit"]', "2");
     await vi.advanceTimersByTimeAsync(500);

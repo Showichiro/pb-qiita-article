@@ -6,7 +6,7 @@
 
 export const rankingIslandClass = "react-island";
 export const rankingCardExtraClass = "gap-4 p-4";
-export const rankingFormClass = "flex flex-wrap items-end gap-3";
+export const rankingFormClass = "query-form";
 export const rankingActionClass =
   "flex h-9 w-28 items-center justify-center whitespace-nowrap";
 export const rankingResultsClass = "overflow-x-auto";

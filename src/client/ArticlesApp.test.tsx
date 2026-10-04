@@ -117,6 +117,28 @@ async function search(value: string) {
   await settle();
 }
 
+it("clears conditions while preserving presentation and resetting pagination", async () => {
+  await mount({ ...defaultArticleQuery, q: "React", author: "writer", tags: ["test"], minLikes: 2, orderField: "stocksCount", orderDirection: "asc", limit: 25, offset: 25 });
+  expect(host.querySelector('[name="sort"]')?.closest("dialog")).toBeNull();
+  expect(host.querySelector('[name="author"]')?.closest("dialog")).not.toBeNull();
+  await click(".filter-clear");
+  const params = new URLSearchParams(window.location.search);
+  for (const name of ["q", "author", "tags", "minLikes"]) expect(params.has(name)).toBe(false);
+  expect(params.get("orderField")).toBe("stocksCount");
+  expect(params.get("orderDirection")).toBe("asc");
+  expect(params.get("limit")).toBe("25");
+  expect(params.get("offset") ?? "0").toBe("0");
+});
+
+it("removes a single condition without dropping the others", async () => {
+  await mount({ ...defaultArticleQuery, q: "React", author: "writer", tags: ["test"] });
+  await click('.filter-chip[aria-label="投稿者: writerを解除"]');
+  const params = new URLSearchParams(window.location.search);
+  expect(params.has("author")).toBe(false);
+  expect(params.get("q")).toBe("React");
+  expect(params.getAll("tags")).toEqual(["test"]);
+});
+
 it("checks metadata at startup without repeating the SSR result request", async () => {
   await mount();
   expect(fetchMock).toHaveBeenCalledTimes(1);

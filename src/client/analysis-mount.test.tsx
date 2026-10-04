@@ -61,6 +61,7 @@ function island(data = bootstrap) {
 
 beforeAll(() => {
   Object.assign(globalThis, { IS_REACT_ACT_ENVIRONMENT: true });
+  HTMLDialogElement.prototype.show = function () { this.open = true; };
 });
 
 test("reads and validates the SSR bootstrap", () => {

@@ -141,7 +141,7 @@ describe("articles SSR presentation parity", () => {
     const enhanced = host(react);
     expect(ssr.querySelector("form")?.getAttribute("action")).toBe("/articles");
     expect(ssr.querySelector("form")?.getAttribute("method")).toBe("get");
-    expect(ssr.querySelector("button[type='submit']")?.textContent).toBe(
+    expect(ssr.querySelector("[data-slot='article-search-action'] button[type='submit']")?.textContent).toBe(
       "検索する",
     );
     expect(enhanced.querySelector("button[type='submit']")).toBeNull();
@@ -203,12 +203,12 @@ describe("articles SSR presentation parity", () => {
     ).toBe("1件");
     expect(
       ssr
-        .querySelector("[name='orderField'] option[selected]")
+        .querySelector("[name='orderField']")
         ?.getAttribute("value"),
     ).toBe("stocksCount");
     expect(
       ssr
-        .querySelector("[name='orderDirection'] option[selected]")
+        .querySelector("[name='orderDirection']")
         ?.getAttribute("value"),
     ).toBe("asc");
     expect(ssr.querySelector("[name='since']")?.getAttribute("value")).toBe(
