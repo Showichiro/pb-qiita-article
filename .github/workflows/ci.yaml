@@ -21,9 +21,15 @@ jobs:
         with:
           bun-version-file: .bun-version
       - run: bun install --frozen-lockfile
-      - run: bun run typecheck
-      - run: bunx biome lint src/
-      - run: bun run test:ci
-      - run: bun run deploy:check
+      - if: runner.os == 'Linux'
+        run: bun run typecheck
+      - if: runner.os == 'Linux'
+        run: bunx biome lint src/
+      - if: runner.os == 'Linux'
+        run: bun run test:ci
+      - if: runner.os == 'Linux'
+        run: bun run deploy:check
+      - if: runner.os == 'Windows'
+        run: bun run build
       - if: runner.os == 'Windows'
         run: bun run schema:apply
