@@ -1,0 +1,28 @@
+{
+  "description": "Remind agents to self-review React changes before creating a PR.",
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup|resume|clear|compact",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node .codex/hooks/react-review.mjs",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node .codex/hooks/react-review.mjs",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}
