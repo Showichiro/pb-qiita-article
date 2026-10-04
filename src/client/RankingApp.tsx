@@ -340,6 +340,11 @@ export default function RankingApp({
                   type="date"
                   id={rankingFieldId("since")}
                   name="since"
+                  aria-describedby={
+                    validationError
+                      ? "ranking-date-validation-error"
+                      : undefined
+                  }
                   value={draft.since ? japanDate(draft.since) : ""}
                   onChange={(event) =>
                     handleDateChange("since", event.currentTarget.value)
@@ -352,6 +357,11 @@ export default function RankingApp({
                   type="date"
                   id={rankingFieldId("until")}
                   name="until"
+                  aria-describedby={
+                    validationError
+                      ? "ranking-date-validation-error"
+                      : undefined
+                  }
                   value={draft.until ? japanDate(draft.until) : ""}
                   onChange={(event) =>
                     handleDateChange("until", event.currentTarget.value)
@@ -360,7 +370,11 @@ export default function RankingApp({
               </label>
             </fieldset>
 
-            {validationError && <p role="alert">{validationError}</p>}
+            {validationError && (
+              <p id="ranking-date-validation-error" role="alert">
+                {validationError}
+              </p>
+            )}
           </FilterSheet>
           <ActiveFilters
             filters={commonFilters(query)}
