@@ -1,5 +1,7 @@
 import { NativePeriodShortcuts } from "@/pages/period-shortcuts";
 import { configQueryParams } from "@/client/articles";
+import { NativeActiveFilters } from "@/pages/active-filters";
+import { commonFilters } from "@/client/filter-state";
 import { NativeFilterSheet } from "@/pages/filter-sheet";
 import {
   Header,
@@ -16,7 +18,6 @@ import {
   rankingIslandClass,
   rankingActionClass,
   rankingCardExtraClass,
-  rankingFormClass,
   rankingFieldId,
   rankingResultsClass,
   rankingLinkClass,
@@ -73,149 +74,183 @@ export const RankingPage: FC<{
                   `/ranking?${configQueryParams({ ...config, ...range })}`
                 }
               />
-              <NativeFilterSheet id="ranking-filters">
-                <form
-                  id="ranking-filters-form"
-                  action="/ranking"
-                  method="get"
-                  class={rankingFormClass}
-                >
-                  <label for={rankingFieldId("since")}>
-                    開始日{" "}
-                    <input
-                      data-slot="input"
-                      class={inputClass}
-                      type="date"
-                      id={rankingFieldId("since")}
-                      name="since"
-                      value={
-                        config.since
-                          ? dateTimetoDateString(config.since)
-                          : undefined
-                      }
-                    />
-                  </label>
-                  <label for={rankingFieldId("until")}>
-                    終了日{" "}
-                    <input
-                      data-slot="input"
-                      class={inputClass}
-                      type="date"
-                      id={rankingFieldId("until")}
-                      name="until"
-                      value={
-                        config.until
-                          ? dateTimetoDateString(config.until)
-                          : undefined
-                      }
-                    />
-                  </label>
-                  <label for={rankingFieldId("view")}>
-                    表示形式{" "}
-                    <div data-slot="select-wrapper" class={selectWrapperClass}>
-                      <select
-                        data-slot="select"
-                        class={selectClass}
-                        id={rankingFieldId("view")}
-                        name="view"
-                      >
-                        <option
-                          data-slot="select-option"
-                          class={selectOptionClass}
-                          value="table"
-                          selected={config.view === "table"}
+              <form
+                id="ranking-filters-form"
+                action="/ranking"
+                method="get"
+                class="query-form"
+              >
+                <NativeFilterSheet
+                  id="ranking-filters"
+                  count={
+                    commonFilters({
+                      since: config.since ?? "",
+                      until: config.until ?? "",
+                    }).length
+                  }
+                  controls={
+                    <>
+                      <label for={rankingFieldId("view")}>
+                        表示形式{" "}
+                        <div
+                          data-slot="select-wrapper"
+                          class={selectWrapperClass}
                         >
-                          表
-                        </option>
-                        <option
-                          data-slot="select-option"
-                          class={selectOptionClass}
-                          value="chart"
-                          selected={config.view === "chart"}
-                        >
-                          グラフ
-                        </option>
-                      </select>
-                      <span
-                        data-slot="select-icon"
-                        aria-hidden="true"
-                        class={selectIconClass}
-                      >
-                        <svg
-                          class={selectChevronClass}
-                          xmlns="http://www.w3.org/2000/svg"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          stroke-width="2"
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                          aria-hidden="true"
-                        >
-                          <title>Chevron</title>
-                          <path d="m6 9 6 6 6-6" />
-                        </svg>
-                      </span>
-                    </div>
-                  </label>
-                  <label for={rankingFieldId("topN")}>
-                    表示件数{" "}
-                    <div data-slot="select-wrapper" class={selectWrapperClass}>
-                      <select
-                        data-slot="select"
-                        class={selectClass}
-                        id={rankingFieldId("topN")}
-                        name="topN"
-                      >
-                        {Array.from(
-                          { length: 100 },
-                          (_, index) => index + 1,
-                        ).map((count) => (
-                          <option
-                            data-slot="select-option"
-                            class={selectOptionClass}
-                            value={String(count)}
-                            selected={config.topN === count}
-                            key={count}
+                          <select
+                            data-slot="select"
+                            class={selectClass}
+                            id={rankingFieldId("view")}
+                            name="view"
                           >
-                            {count}件
-                          </option>
-                        ))}
-                      </select>
-                      <span
-                        data-slot="select-icon"
-                        aria-hidden="true"
-                        class={selectIconClass}
-                      >
-                        <svg
-                          class={selectChevronClass}
-                          xmlns="http://www.w3.org/2000/svg"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          stroke-width="2"
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                          aria-hidden="true"
+                            <option
+                              data-slot="select-option"
+                              class={selectOptionClass}
+                              value="table"
+                              selected={config.view === "table"}
+                            >
+                              表
+                            </option>
+                            <option
+                              data-slot="select-option"
+                              class={selectOptionClass}
+                              value="chart"
+                              selected={config.view === "chart"}
+                            >
+                              グラフ
+                            </option>
+                          </select>
+                          <span
+                            data-slot="select-icon"
+                            aria-hidden="true"
+                            class={selectIconClass}
+                          >
+                            <svg
+                              class={selectChevronClass}
+                              xmlns="http://www.w3.org/2000/svg"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              stroke-width="2"
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              aria-hidden="true"
+                            >
+                              <title>Chevron</title>
+                              <path d="m6 9 6 6 6-6" />
+                            </svg>
+                          </span>
+                        </div>
+                      </label>
+                      <label for={rankingFieldId("topN")}>
+                        表示件数{" "}
+                        <div
+                          data-slot="select-wrapper"
+                          class={selectWrapperClass}
                         >
-                          <title>Chevron</title>
-                          <path d="m6 9 6 6 6-6" />
-                        </svg>
-                      </span>
-                    </div>
-                  </label>
-                  <button
-                    type="submit"
-                    data-slot="button"
-                    data-variant="default"
-                    data-size="default"
-                    data-ranking-action=""
-                    class={cn(buttonClass, rankingActionClass)}
-                  >
-                    検索する
-                  </button>
-                </form>
-              </NativeFilterSheet>
+                          <select
+                            data-slot="select"
+                            class={selectClass}
+                            id={rankingFieldId("topN")}
+                            name="topN"
+                          >
+                            {Array.from(
+                              { length: 100 },
+                              (_, index) => index + 1,
+                            ).map((count) => (
+                              <option
+                                data-slot="select-option"
+                                class={selectOptionClass}
+                                value={String(count)}
+                                selected={config.topN === count}
+                                key={count}
+                              >
+                                {count}件
+                              </option>
+                            ))}
+                          </select>
+                          <span
+                            data-slot="select-icon"
+                            aria-hidden="true"
+                            class={selectIconClass}
+                          >
+                            <svg
+                              class={selectChevronClass}
+                              xmlns="http://www.w3.org/2000/svg"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              stroke-width="2"
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              aria-hidden="true"
+                            >
+                              <title>Chevron</title>
+                              <path d="m6 9 6 6 6-6" />
+                            </svg>
+                          </span>
+                        </div>
+                      </label>
+                    </>
+                  }
+                >
+                  <fieldset class="filter-field-group">
+                    <legend>投稿期間</legend>
+                    <label for={rankingFieldId("since")}>
+                      開始日{" "}
+                      <input
+                        data-slot="input"
+                        class={inputClass}
+                        type="date"
+                        id={rankingFieldId("since")}
+                        name="since"
+                        value={
+                          config.since
+                            ? dateTimetoDateString(config.since)
+                            : undefined
+                        }
+                      />
+                    </label>
+                    <label for={rankingFieldId("until")}>
+                      終了日{" "}
+                      <input
+                        data-slot="input"
+                        class={inputClass}
+                        type="date"
+                        id={rankingFieldId("until")}
+                        name="until"
+                        value={
+                          config.until
+                            ? dateTimetoDateString(config.until)
+                            : undefined
+                        }
+                      />
+                    </label>
+                  </fieldset>
+                </NativeFilterSheet>
+                <NativeActiveFilters
+                  filters={commonFilters({
+                    since: config.since ?? "",
+                    until: config.until ?? "",
+                  })}
+                  href={(filter) =>
+                    "/ranking?" +
+                    configQueryParams({
+                      ...config,
+                      ...(filter?.clear ?? { since: "", until: "" }),
+                    })
+                  }
+                />{" "}
+                <button
+                  type="submit"
+                  data-slot="button"
+                  data-variant="default"
+                  data-size="default"
+                  data-ranking-action=""
+                  class={cn(buttonClass, rankingActionClass)}
+                >
+                  検索する
+                </button>
+              </form>
               <div role="status" aria-live="polite" />
               <div role="status" aria-live="polite">
                 {postRows.length}件の投稿, {likesRows.length}件のいいね

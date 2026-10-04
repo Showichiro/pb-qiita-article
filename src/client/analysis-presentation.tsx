@@ -4,7 +4,7 @@
  */
 export const analysisIslandClass = "react-island";
 export const analysisCardClass = "gap-4 p-4";
-export const analysisFormClass = "flex flex-wrap items-end gap-3";
+export const analysisFormClass = "query-form";
 export const analysisFieldClass = "block min-w-0 max-w-full sm:w-64";
 export const analysisFilterClass = "block min-w-0 max-w-full sm:w-64";
 export const analysisTagFieldClass = "block w-full min-w-0 max-w-full sm:w-64";

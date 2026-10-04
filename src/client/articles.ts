@@ -1,3 +1,4 @@
+import { parseArticleSort } from "./filter-state";
 import type { Article } from "@/schemas";
 import { assertResponseVersion } from "./data-version";
 
@@ -133,6 +134,7 @@ export function parseArticleQuery(params: URLSearchParams): ArticleQuery {
     orderField:
       field === "likesCount" || field === "stocksCount" ? field : "createdAt",
     orderDirection: params.get("orderDirection") === "asc" ? "asc" : "desc",
+    ...(parseArticleSort(params.get("sort") ?? "") ?? {}),
     limit: integer("limit", 10, 1, 100),
     offset: integer("offset", 0, 0, Number.MAX_SAFE_INTEGER),
   };

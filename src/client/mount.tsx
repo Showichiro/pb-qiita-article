@@ -1,4 +1,5 @@
 /** @jsxImportSource react */
+import { parseArticleSort } from "./filter-state";
 import type { FindAllArticlesConfig } from "@/db/findAllArticles";
 import type { Article } from "@/schemas";
 import { Suspense, useLayoutEffect, type ComponentType } from "react";
@@ -183,8 +184,10 @@ export async function mountArticlesApp(
       container.replaceChildren(clientContainer);
       if (target instanceof HTMLElement) {
         const sheet = target.closest("dialog");
-        if (sheet && window.matchMedia?.("(max-width: 639px)").matches)
-          sheet.showModal();
+        if (sheet && !sheet.open) {
+          if (window.matchMedia?.("(max-width: 639px)").matches) sheet.showModal();
+          else sheet.show();
+        }
         target.focus({ preventScroll: true });
       }
       if (selection && target instanceof HTMLInputElement)
@@ -247,5 +250,7 @@ function readDraft(
   const direction = fields.get("orderDirection");
   if (direction === "asc" || direction === "desc")
     draft.orderDirection = direction;
+  const sort = fields.get("sort");
+  if (typeof sort === "string") Object.assign(draft, parseArticleSort(sort));
   return draft;
 }

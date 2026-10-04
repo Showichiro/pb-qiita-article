@@ -1,3 +1,4 @@
+import { articleSortOptions, parseArticleSort } from "@/client/filter-state";
 import { japanDateBoundary } from "@/util/japanTime";
 import { z } from "@hono/zod-openapi";
 import { tagSchema } from "../tags";
@@ -18,6 +19,7 @@ const countBound = z.preprocess(
 
 export const articlesQuery = z
   .object({
+    sort: z.enum(articleSortOptions.map((option) => option.value)).optional(),
     q: searchText,
     author: searchText,
     tags: z
@@ -96,6 +98,10 @@ export const articlesQuery = z
       })
       .nullish(),
   })
+  .transform(({ sort, ...query }) => ({
+    ...query,
+    ...(sort ? parseArticleSort(sort) : {}),
+  }))
   .superRefine((query, ctx) => {
     for (const [min, max] of [
       ["minLikes", "maxLikes"],

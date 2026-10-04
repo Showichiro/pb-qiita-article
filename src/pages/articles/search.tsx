@@ -1,3 +1,5 @@
+import { NativeActiveFilters } from "@/pages/active-filters";
+import { articleFilters, articleSortOptions } from "@/client/filter-state";
 import { japanDate } from "@/util/japanTime";
 import { NativePeriodShortcuts } from "@/pages/period-shortcuts";
 import { NativeFilterSheet } from "@/pages/filter-sheet";
@@ -10,10 +12,7 @@ import {
 import {
   articleColumnLabels,
   articleFieldId,
-  articleOrderDirections,
-  articleOrderFields,
   articlesCardExtraClass,
-  articlesFormClass,
   articlesActionFocusId,
   articlesActionSlotClass,
   articlesIslandClass,
@@ -122,6 +121,22 @@ export const ArticlesSearch: FC<{
     tags: [],
     offset: 0,
   })}`;
+  const renderTextField = (name: "q" | "author") => (
+    <SearchField
+      key={name}
+      id={articleFieldId(name)}
+      label={name === "q" ? "キーワード（タイトル）" : "投稿者（ID・名前）"}
+    >
+      <input
+        data-slot="input"
+        class={inputClass}
+        id={articleFieldId(name)}
+        name={name}
+        maxLength={200}
+        value={query[name]}
+      />
+    </SearchField>
+  );
   return (
     <section class={articlesIslandClass} aria-label="記事検索">
       <div data-slot="card" class={cn(cardClass, articlesCardExtraClass)}>
@@ -131,187 +146,207 @@ export const ArticlesSearch: FC<{
             `/articles?${articleQueryParams({ ...query, ...range, offset: 0 })}`
           }
         />
-        <NativeFilterSheet id="articles-filters">
-          <form
-            id="articles-filters-form"
-            action="/articles"
-            method="get"
-            class={articlesFormClass}
-          >
-            {(["q", "author"] as const).map((name) => (
-              <SearchField
-                key={name}
-                id={articleFieldId(name)}
-                label={
-                  name === "q" ? "キーワード（タイトル）" : "投稿者（ID・名前）"
-                }
-              >
-                <input
-                  data-slot="input"
-                  class={inputClass}
-                  id={articleFieldId(name)}
-                  name={name}
-                  maxLength={200}
-                  value={query[name]}
-                />
-              </SearchField>
-            ))}
-            <div class={articlesTagFieldClass} data-slot="article-tags-field">
-              <label class={articlesTagLabelClass} for={articleFieldId("tags")}>
-                タグ（すべて一致）{" "}
-                <div
-                  data-slot="select-wrapper"
-                  class={cn(selectWrapperClass, articlesTagControlClass)}
-                >
+        <form
+          id="articles-filters-form"
+          action="/articles"
+          method="get"
+          class="query-form"
+        >
+          <input
+            data-slot="input"
+            class={inputClass}
+            type="hidden"
+            name="orderField"
+            value={query.orderField}
+          />
+          <input
+            data-slot="input"
+            class={inputClass}
+            type="hidden"
+            name="orderDirection"
+            value={query.orderDirection}
+          />
+          <NativeFilterSheet
+            id="articles-filters"
+            search={renderTextField("q")}
+            controls={
+              <label class="sort-control" for={articleFieldId("sort")}>
+                <span class="control-label">並び順</span>
+                <div data-slot="select-wrapper" class={selectWrapperClass}>
                   <select
                     data-slot="select"
-                    class={cn(
-                      selectClass,
-                      selectMultipleClass,
-                      articlesTagControlClass,
-                    )}
-                    id={articleFieldId("tags")}
-                    name="tags"
-                    multiple
-                    size={4}
+                    class={selectClass}
+                    id={articleFieldId("sort")}
+                    name="sort"
                   >
-                    {options.map((tag) => (
+                    {articleSortOptions.map((option) => (
                       <option
-                        key={tag}
-                        value={tag}
-                        selected={query.tags.includes(tag)}
+                        key={option.value}
+                        value={option.value}
+                        selected={
+                          `${query.orderField}:${query.orderDirection}` ===
+                          option.value
+                        }
                       >
-                        {tag}
+                        {option.label}
                       </option>
                     ))}
                   </select>
+                  <SelectChevron />
                 </div>
               </label>
-              <a
-                href={clearTagsUrl}
-                class={articlesTagClearClass}
-                data-focus-id={articlesTagClearFocusId}
-              >
-                タグを解除
-              </a>
-            </div>
-            {rangeFields.map((name) => (
-              <SearchField
-                key={name}
-                id={articleFieldId(name)}
-                label={rangeLabels[name]}
-              >
+            }
+            count={
+              articleFilters(query).filter((filter) => filter.key !== "q")
+                .length
+            }
+          >
+            <fieldset class="filter-field-group">
+              <legend>投稿者・タグ</legend>
+              {renderTextField("author")}{" "}
+              <div class={articlesTagFieldClass} data-slot="article-tags-field">
+                <label
+                  class={articlesTagLabelClass}
+                  for={articleFieldId("tags")}
+                >
+                  タグ（すべて一致）{" "}
+                  <div
+                    data-slot="select-wrapper"
+                    class={cn(selectWrapperClass, articlesTagControlClass)}
+                  >
+                    <select
+                      data-slot="select"
+                      class={cn(
+                        selectClass,
+                        selectMultipleClass,
+                        articlesTagControlClass,
+                      )}
+                      id={articleFieldId("tags")}
+                      name="tags"
+                      multiple
+                      size={4}
+                    >
+                      {options.map((tag) => (
+                        <option
+                          key={tag}
+                          value={tag}
+                          selected={query.tags.includes(tag)}
+                        >
+                          {tag}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </label>
+                <a
+                  href={clearTagsUrl}
+                  class={articlesTagClearClass}
+                  data-focus-id={articlesTagClearFocusId}
+                >
+                  タグを解除
+                </a>
+              </div>
+            </fieldset>
+            <fieldset class="filter-field-group">
+              <legend>いいね・ストック数</legend>{" "}
+              {rangeFields.map((name) => (
+                <SearchField
+                  key={name}
+                  id={articleFieldId(name)}
+                  label={rangeLabels[name]}
+                >
+                  <input
+                    data-slot="input"
+                    class={inputClass}
+                    id={articleFieldId(name)}
+                    name={name}
+                    type="number"
+                    min="0"
+                    max={Number.MAX_SAFE_INTEGER}
+                    step="1"
+                    value={query[name] ?? ""}
+                  />
+                </SearchField>
+              ))}
+            </fieldset>
+            <fieldset class="filter-field-group">
+              <legend>投稿期間</legend>{" "}
+              <SearchField id={articleFieldId("since")} label="投稿日（開始）">
                 <input
                   data-slot="input"
                   class={inputClass}
-                  id={articleFieldId(name)}
-                  name={name}
-                  type="number"
-                  min="0"
-                  max={Number.MAX_SAFE_INTEGER}
-                  step="1"
-                  value={query[name] ?? ""}
+                  type="date"
+                  id={articleFieldId("since")}
+                  name="since"
+                  value={query.since ? japanDate(query.since) : ""}
                 />
               </SearchField>
-            ))}
-            <SearchField id={articleFieldId("since")} label="投稿日（開始）">
-              <input
-                data-slot="input"
-                class={inputClass}
-                type="date"
-                id={articleFieldId("since")}
-                name="since"
-                value={(query.since ? japanDate(query.since) : "")}
-              />
-            </SearchField>
-            <SearchField id={articleFieldId("until")} label="投稿日（終了）">
-              <input
-                data-slot="input"
-                class={inputClass}
-                type="date"
-                id={articleFieldId("until")}
-                name="until"
-                value={(query.until ? japanDate(query.until) : "")}
-              />
-            </SearchField>
-            <SearchField id={articleFieldId("orderField")} label="並び替え">
-              <div data-slot="select-wrapper" class={selectWrapperClass}>
-                <select
-                  data-slot="select"
-                  class={selectClass}
-                  id={articleFieldId("orderField")}
-                  name="orderField"
-                >
-                  {articleOrderFields.map((option) => (
-                    <option
-                      key={option.value}
-                      value={option.value}
-                      selected={query.orderField === option.value}
-                    >
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
-                <SelectChevron />
-              </div>
-            </SearchField>
-            <SearchField id={articleFieldId("orderDirection")} label="順序">
-              <div data-slot="select-wrapper" class={selectWrapperClass}>
-                <select
-                  data-slot="select"
-                  class={selectClass}
-                  id={articleFieldId("orderDirection")}
-                  name="orderDirection"
-                >
-                  {articleOrderDirections.map((option) => (
-                    <option
-                      key={option.value}
-                      value={option.value}
-                      selected={query.orderDirection === option.value}
-                    >
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
-                <SelectChevron />
-              </div>
-            </SearchField>
-            <SearchField id={articleFieldId("limit")} label="表示件数">
-              <input
-                data-slot="input"
-                class={inputClass}
-                id={articleFieldId("limit")}
-                name="limit"
-                type="number"
-                min="1"
-                max="100"
-                value={query.limit}
-              />
-            </SearchField>
-            <input
-              data-slot="input"
-              class={inputClass}
-              type="hidden"
-              name="offset"
-              value="0"
-            />
-            <div
-              class={articlesActionSlotClass}
-              data-slot="article-search-action"
+              <SearchField id={articleFieldId("until")} label="投稿日（終了）">
+                <input
+                  data-slot="input"
+                  class={inputClass}
+                  type="date"
+                  id={articleFieldId("until")}
+                  name="until"
+                  value={query.until ? japanDate(query.until) : ""}
+                />
+              </SearchField>
+            </fieldset>
+          </NativeFilterSheet>
+          <NativeActiveFilters
+            filters={articleFilters(query)}
+            href={(filter) => {
+              const cleared = filter
+                ? filter.clear
+                : {
+                    q: "",
+                    author: "",
+                    tags: [],
+                    minLikes: "",
+                    maxLikes: "",
+                    minStocks: "",
+                    maxStocks: "",
+                    since: "",
+                    until: "",
+                  };
+              return (
+                "/articles?" +
+                articleQueryParams({
+                  ...query,
+                  ...cleared,
+                  ...Object.fromEntries(
+                    ["minLikes", "maxLikes", "minStocks", "maxStocks"]
+                      .filter((key) => key in cleared)
+                      .map((key) => [key, null]),
+                  ),
+                  offset: 0,
+                })
+              );
+            }}
+          />{" "}
+          <input
+            data-slot="input"
+            class={inputClass}
+            type="hidden"
+            name="offset"
+            value="0"
+          />
+          <div
+            class={articlesActionSlotClass}
+            data-slot="article-search-action"
+          >
+            <button
+              type="submit"
+              data-slot="button"
+              data-variant="default"
+              data-size="default"
+              data-focus-id={articlesActionFocusId}
+              class={buttonVariants({ className: "h-9 w-28" })}
             >
-              <button
-                type="submit"
-                data-slot="button"
-                data-variant="default"
-                data-size="default"
-                data-focus-id={articlesActionFocusId}
-                class={buttonVariants({ className: "h-9 w-28" })}
-              >
-                検索する
-              </button>
-            </div>
-          </form>
-        </NativeFilterSheet>
+              検索する
+            </button>
+          </div>
+        </form>
         <div role="status" aria-live="polite" />
         <div role="status" aria-live="polite">
           {articles.length}件
@@ -408,7 +443,7 @@ export const ArticlesSearch: FC<{
                       data-label={articleColumnLabels[5]}
                       class={tableCellClass}
                     >
-                      {(article.createdAt ? japanDate(article.createdAt) : "")}
+                      {article.createdAt ? japanDate(article.createdAt) : ""}
                     </td>
                   </tr>
                 ))}
@@ -416,6 +451,21 @@ export const ArticlesSearch: FC<{
             </table>
           </div>
         </div>
+        <div class="page-size-control">
+          <SearchField id={articleFieldId("limit")} label="1ページの件数">
+            <input
+              data-slot="input"
+              class={inputClass}
+              id={articleFieldId("limit")}
+              name="limit"
+              form="articles-filters-form"
+              type="number"
+              min="1"
+              max="100"
+              value={query.limit}
+            />
+          </SearchField>
+        </div>{" "}
         <nav class={articlesNavClass} aria-label="記事のページ">
           <PagerControl
             label="前へ"

@@ -31,6 +31,7 @@ function island() {
 
 beforeAll(() => {
   Object.assign(globalThis, { IS_REACT_ACT_ENVIRONMENT: true });
+  HTMLDialogElement.prototype.show = function () { this.open = true; };
 });
 
 describe("ranking mount", () => {

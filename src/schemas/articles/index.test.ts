@@ -1,6 +1,10 @@
 import { articlesQuery } from "./index";
 
 describe("article search query validation", () => {
+  test("native combined sort takes precedence over legacy hidden fields", () => {
+    expect(articlesQuery.parse({ sort: "likesCount:asc", orderField: "createdAt", orderDirection: "desc" })).toMatchObject({ orderField: "likesCount", orderDirection: "asc" });
+    expect(articlesQuery.safeParse({ sort: "unknown:asc" }).success).toBe(false);
+  });
   test("normalizes text and single/repeated tags without CSV splitting", () => {
     expect(
       articlesQuery.parse({
