@@ -472,9 +472,8 @@ test("clears tags immediately using the latest valid draft and keeps the enhance
   await render(data);
   expect(container.querySelector("button[type='submit']")).toBeNull();
   expect(
-    container.querySelector("[data-slot='analysis-search-action']")
-      ?.textContent,
-  ).toContain("自動検索");
+    container.querySelector("[data-slot='analysis-search-action']"),
+  ).toBeNull();
 
   const author = field<HTMLInputElement>("author");
   setValue(author, "Writer");

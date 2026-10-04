@@ -117,7 +117,7 @@ test("hands off a focused native search button to the automatic-search hint", as
   const hint = container.querySelector<HTMLElement>(
     "[data-focus-id='articles-auto-search']",
   );
-  expect(hint?.textContent?.trim()).toBe("自動検索");
+  expect(hint?.tagName).toBe("FORM");
   expect(hint?.getAttribute("tabindex")).toBe("-1");
   expect(document.activeElement).toBe(hint);
   expect(container.querySelector("button[type='submit']")).toBeNull();

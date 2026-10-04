@@ -43,7 +43,6 @@ const presentationSelectors = [
   "form",
   "[name='q']",
   "[name='author']",
-  "[data-slot='article-search-action']",
   "[data-focus-id='articles-tag-clear']",
   "[data-slot='article-tags-field']",
   "label[for='articles-tags']",
@@ -146,10 +145,8 @@ describe("articles SSR presentation parity", () => {
     );
     expect(enhanced.querySelector("button[type='submit']")).toBeNull();
     expect(
-      enhanced
-        .querySelector("[data-slot='article-search-action']")
-        ?.textContent?.trim(),
-    ).toBe("自動検索");
+      enhanced.querySelector("[data-slot='article-search-action']"),
+    ).toBeNull();
     for (const name of ["q", "author"] as const) {
       expect(ssr.querySelector(`[name='${name}']`)?.getAttribute("value")).toBe(
         query[name],

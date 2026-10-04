@@ -823,8 +823,8 @@ describe("ArticlesApp browser controls", () => {
     await mount();
     expect(host.querySelector("button[type='submit']")).toBeNull();
     expect(
-      host.querySelector("[data-slot='article-search-action']")?.textContent,
-    ).toContain("自動検索");
+      host.querySelector("[data-slot='article-search-action']"),
+    ).toBeNull();
     const field = host.querySelector<HTMLInputElement>('[name="q"]');
     if (!field) throw new Error("Missing search field");
     await change('[name="q"]', "keyboard");

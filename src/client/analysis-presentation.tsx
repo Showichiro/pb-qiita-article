@@ -14,7 +14,6 @@ export const analysisTagClearClass =
   "inline-flex min-h-9 items-center underline underline-offset-4";
 export const analysisTagClearFocusId = "analysis-tag-clear";
 export const analysisActionSlotClass = "flex h-9 w-28 items-center";
-export const analysisActionHintClass = "text-sm text-muted-foreground";
 export const analysisActionFocusId = "analysis-auto-search";
 export const analysisResultsClass = "overflow-x-auto";
 export const analysisChartClass = "h-[320px] w-full min-w-0 overflow-hidden";

@@ -42,8 +42,6 @@ import {
   articleFieldId,
   articlesCardExtraClass,
   articlesActionFocusId,
-  articlesActionHintClass,
-  articlesActionSlotClass,
   articlesIslandClass,
   articlesLinkClass,
   articlesNavClass,
@@ -449,6 +447,8 @@ export default function ArticlesApp({
           }}
         />
         <form
+          data-focus-id={articlesActionFocusId}
+          tabIndex={-1}
           id="articles-filters-form"
           action="/articles"
           method="get"
@@ -637,18 +637,6 @@ export default function ArticlesApp({
             }
           />{" "}
           <Input type="hidden" name="offset" value={draft.offset} />
-          <div
-            className={articlesActionSlotClass}
-            data-slot="article-search-action"
-          >
-            <span
-              className={articlesActionHintClass}
-              data-focus-id={articlesActionFocusId}
-              tabIndex={-1}
-            >
-              自動検索
-            </span>
-          </div>
         </form>
         <DataVersionControls
           availableVersion={versionState.availableVersion}

@@ -20,7 +20,6 @@ export const articlesTagClearClass =
   "inline-flex min-h-9 items-center underline underline-offset-4";
 export const articlesTagClearFocusId = "articles-tag-clear";
 export const articlesActionSlotClass = "flex h-9 w-28 items-center";
-export const articlesActionHintClass = "text-sm text-muted-foreground";
 export const articlesActionFocusId = "articles-auto-search";
 export const articlesResultsClass = "overflow-x-auto";
 export const articlesNavClass = "my-4 flex items-center gap-3";

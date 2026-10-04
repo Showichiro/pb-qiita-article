@@ -155,9 +155,8 @@ describe("RankingApp", () => {
     expect(select("topN").value).toBe("10");
     expect(container.querySelector("button[type=submit]")).toBeNull();
     const actionHint = container.querySelector("[data-ranking-action]");
-    expect(actionHint?.textContent).toBe("自動検索");
+    expect(container.textContent).not.toContain("自動検索");
     expect(actionHint?.getAttribute("tabindex")).toBe("-1");
-    expect(actionHint?.className).toContain("h-9 w-28");
     expect(container.querySelectorAll("table")).toHaveLength(2);
     expect(container.querySelectorAll("tbody tr")).toHaveLength(6);
     expect(container.textContent).toContain("900");

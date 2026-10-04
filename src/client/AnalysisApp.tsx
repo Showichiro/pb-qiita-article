@@ -58,8 +58,6 @@ import {
 import {
   analysisCardClass,
   analysisActionFocusId,
-  analysisActionHintClass,
-  analysisActionSlotClass,
   analysisChartClass,
   analysisChartText,
   analysisFieldClass,
@@ -443,6 +441,8 @@ export default function AnalysisApp({
           }}
         />
         <form
+          data-focus-id={analysisActionFocusId}
+          tabIndex={-1}
           id="analysis-filters-form"
           action="/analysis"
           method="get"
@@ -665,18 +665,6 @@ export default function AnalysisApp({
           <p className="query-period-summary">
             期間: {query.since} 〜 {query.until}
           </p>{" "}
-          <div
-            className={analysisActionSlotClass}
-            data-slot="analysis-search-action"
-          >
-            <span
-              className={analysisActionHintClass}
-              data-focus-id={analysisActionFocusId}
-              tabIndex={-1}
-            >
-              自動検索
-            </span>
-          </div>
         </form>
         <p className={analysisNoteClass}>
           いいね数は各期間に公開された記事の現在値であり、その期間中に獲得した数ではありません。

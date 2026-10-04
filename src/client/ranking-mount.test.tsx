@@ -116,10 +116,8 @@ describe("ranking mount", () => {
     });
 
     const hint = element<HTMLElement>("[data-ranking-action]");
-    expect(hint.tagName).toBe("SPAN");
-    expect(hint.textContent).toBe("自動検索");
+    expect(hint.tagName).toBe("FORM");
     expect(hint.getAttribute("tabindex")).toBe("-1");
-    expect(hint.className).toContain("h-9 w-28");
     expect(document.activeElement).toBe(hint);
     expect(container.querySelector("button[type=submit]")).toBeNull();
   });

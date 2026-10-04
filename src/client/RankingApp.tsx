@@ -41,7 +41,6 @@ import {
 } from "./ui";
 import {
   rankingChartFrameClass,
-  rankingActionClass,
   rankingFieldId,
   rankingIslandClass,
   rankingCardExtraClass,
@@ -357,6 +356,8 @@ export default function RankingApp({
           }}
         />
         <form
+          data-ranking-action=""
+          tabIndex={-1}
           id="ranking-filters-form"
           action="/ranking"
           method="get"
@@ -448,13 +449,6 @@ export default function RankingApp({
             onRemove={(filter) => changePeriod(filter.clear)}
             onClear={() => changePeriod({ since: "", until: "" })}
           />{" "}
-          <span
-            data-ranking-action=""
-            tabIndex={-1}
-            className={`${rankingActionClass} text-muted-foreground`}
-          >
-            自動検索
-          </span>
         </form>
         <DataVersionControls
           availableVersion={versionState.availableVersion}
