@@ -7,6 +7,25 @@ import { drizzle } from "@/lib";
 import { renderer } from "@/util";
 import { Miniflare } from "miniflare";
 import { ArticlesPage } from "@/pages";
+import { loadArticlesPageData } from "@/services/articleQueries";
+import type { FindAllArticlesConfig } from "@/db";
+import type { FC } from "hono/jsx";
+
+const LoadedArticlesPage: FC<{
+  db: Parameters<typeof loadArticlesPageData>[0];
+  config: FindAllArticlesConfig;
+  dataVersion: string;
+  publishedSequence: number;
+}> = async ({ db, config, dataVersion, publishedSequence }) => (
+  <ArticlesPage
+    {...(await loadArticlesPageData(
+      db,
+      config,
+      dataVersion,
+      publishedSequence,
+    ))}
+  />
+);
 
 describe("ArticlesPage", async () => {
   const mf = new Miniflare({
@@ -70,7 +89,7 @@ describe("ArticlesPage", async () => {
       .run();
     await refreshTestGeneration(db);
     const { text } = await renderer(
-      <ArticlesPage
+      <LoadedArticlesPage
         dataVersion="legacy"
         publishedSequence={1}
         config={{
@@ -117,7 +136,7 @@ describe("ArticlesPage", async () => {
     expect(initial.articles).toHaveLength(1);
     expect(initial.tagOptions).toContain("C#");
     const missing = await renderer(
-      <ArticlesPage
+      <LoadedArticlesPage
         dataVersion="legacy"
         publishedSequence={1}
         config={{
@@ -139,7 +158,7 @@ describe("ArticlesPage", async () => {
   it("retains an unknown 100-character selected tag alongside punctuation tags in the native GET form", async () => {
     const longTag = "x".repeat(100);
     const { text } = await renderer(
-      <ArticlesPage
+      <LoadedArticlesPage
         dataVersion="legacy"
         publishedSequence={1}
         config={{
@@ -170,7 +189,7 @@ describe("ArticlesPage", async () => {
   it("rejects invalid ranges in the shared page parser", async () => {
     await expect(
       renderer(
-        <ArticlesPage
+        <LoadedArticlesPage
           dataVersion="legacy"
           publishedSequence={1}
           config={{
@@ -190,7 +209,7 @@ describe("ArticlesPage", async () => {
     await db.prepare("DELETE FROM tags WHERE name IN ('C#','a,b')").run();
     await refreshTestGeneration(db);
     const { text } = await renderer(
-      <ArticlesPage
+      <LoadedArticlesPage
         dataVersion="legacy"
         publishedSequence={1}
         config={{ limit: null, offset: null, since: null, until: null }}

@@ -8,18 +8,13 @@ import {
   Suspense,
   lazy,
   useCallback,
-  useEffect,
   useRef,
   useState,
   useTransition,
   type FormEvent,
   type ReactNode,
 } from "react";
-import {
-  useIsFetching,
-  useQueryClient,
-  useSuspenseQuery,
-} from "@tanstack/react-query";
+import { useIsFetching, useSuspenseQuery } from "@tanstack/react-query";
 import {
   Button,
   Card,
@@ -48,13 +43,14 @@ import {
   type AnalysisView,
 } from "./analysis";
 import { DataVersionControls } from "./data-version-controls";
-import { useDataVersion } from "./data-version";
-import { analysisQueryOptions, normalizeAnalysisQuery } from "./queries";
 import {
-  isDataQuery,
-  useProtectedDataQueries,
-  useRemovePreviousGeneration,
-} from "./query-client";
+  queryTask,
+  useRequestIntent,
+  useVersionedQuery,
+} from "./hooks/useVersionedQuery";
+import { pushSearchUrl, subscribePopState } from "./search-history";
+import { analysisQueryOptions, normalizeAnalysisQuery } from "./queries";
+import { isDataQuery, useRemovePreviousGeneration } from "./query-client";
 import {
   analysisCardClass,
   analysisActionFocusId,
@@ -100,10 +96,31 @@ export default function AnalysisApp({
     tags: [...initialData.state.tags],
   };
   const [query, setQuery] = useState(initialQuery);
-  const versionState = useDataVersion(initialData.dataVersion);
+  const requestIntent = useRequestIntent();
+  const [isPending, startTransition] = useTransition();
+  const acceptedQuery = useRef(initialQuery);
+  const commitQuery = useCallback(
+    (next: AnalysisQuery, intent: number) => {
+      startTransition(() => {
+        if (requestIntent.current !== intent) return;
+        acceptedQuery.current = next;
+        setQuery((current) =>
+          requestIntent.current === intent ? next : current,
+        );
+      });
+    },
+    [requestIntent],
+  );
+  const { versionState, load, requestFailure, retryFailedQuery, refresh } =
+    useVersionedQuery({
+      initialVersion: initialData.dataVersion,
+      requestIntent,
+      normalize: normalizeAnalysisQuery,
+      tasks: analysisTasks,
+      commit: commitQuery,
+      errorMessage: "時系列データを取得できませんでした",
+    });
   const { adoptedVersion } = versionState;
-  const queryClient = useQueryClient();
-  const protectQueries = useProtectedDataQueries();
   const queryResult = useSuspenseQuery(
     analysisQueryOptions(adoptedVersion, query),
   );
@@ -129,74 +146,6 @@ export default function AnalysisApp({
   const [validationError, setValidationError] = useState<string | null>(() =>
     analysisDraftError(draft),
   );
-  const [requestFailure, setRequestFailure] = useState<{
-    error: Error;
-    query: AnalysisQuery;
-    version: string;
-  } | null>(null);
-  const [isPending, startTransition] = useTransition();
-  const acceptedQuery = useRef(initialQuery);
-  const requestIntent = useRef(0);
-  useEffect(
-    () => () => {
-      requestIntent.current++;
-    },
-    [],
-  );
-
-  const load = useCallback(
-    async (
-      next: AnalysisQuery,
-      options: {
-        version?: string;
-        force?: boolean;
-        commit?: boolean;
-        onSuccess?: (intent: number) => void;
-      } = {},
-    ): Promise<boolean> => {
-      const normalized = normalizeAnalysisQuery(next);
-      const version = options.version ?? adoptedVersion;
-      const intent = ++requestIntent.current;
-      const queryOptions = analysisQueryOptions(version, normalized);
-      setRequestFailure(null);
-      const releaseProtection = protectQueries([queryOptions.queryKey]);
-      try {
-        await queryClient.prefetchQuery(
-          options.force ? { ...queryOptions, staleTime: 0 } : queryOptions,
-        );
-        const data = queryClient.getQueryData(queryOptions.queryKey);
-        const state = queryClient.getQueryState(queryOptions.queryKey);
-        if (data === undefined || (options.force && state?.status === "error"))
-          throw state?.error ?? new Error("時系列データを取得できませんでした");
-        if (requestIntent.current !== intent) {
-          releaseProtection();
-          return false;
-        }
-        if (options.onSuccess) options.onSuccess(intent);
-        else if (options.commit !== false)
-          startTransition(() => {
-            acceptedQuery.current = normalized;
-            setQuery(normalized);
-          });
-        return true;
-      } catch (error) {
-        releaseProtection();
-        if (requestIntent.current !== intent) return false;
-        const normalizedError =
-          error instanceof Error
-            ? error
-            : new Error("時系列データを取得できませんでした");
-        setRequestFailure({
-          error: normalizedError,
-          query: normalized,
-          version,
-        });
-        versionState.reportError(normalizedError);
-        return false;
-      }
-    },
-    [adoptedVersion, queryClient, protectQueries, versionState.reportError],
-  );
 
   const writeUrl = useCallback(
     (
@@ -214,10 +163,7 @@ export default function AnalysisApp({
         new URLSearchParams(window.location.search),
         bootstrapClock,
       );
-      if (analysisStateParams(currentState).toString() === params.toString())
-        return;
-      const url = new URL(window.location.href);
-      for (const name of [
+      pushSearchUrl(params, analysisStateParams(currentState), [
         "since",
         "until",
         "bucket",
@@ -225,12 +171,7 @@ export default function AnalysisApp({
         "tags",
         "metric",
         "view",
-      ])
-        url.searchParams.delete(name);
-      params.forEach((value, name) => {
-        url.searchParams.append(name, value);
-      });
-      window.history.pushState(null, "", url);
+      ]);
     },
     [bootstrapClock],
   );
@@ -277,7 +218,7 @@ export default function AnalysisApp({
       setValidationError(analysisDraftError(next));
       return next;
     },
-    [],
+    [requestIntent],
   );
 
   const scheduleSearch = useCallback(
@@ -347,9 +288,9 @@ export default function AnalysisApp({
         setValidationError(null);
         void load(query);
       };
-      window.addEventListener("popstate", onPop);
+      const unsubscribe = subscribePopState(onPop);
       return () => {
-        window.removeEventListener("popstate", onPop);
+        unsubscribe();
         debouncedSearch.cancel();
       };
     },
@@ -383,38 +324,23 @@ export default function AnalysisApp({
     metric,
     view,
   })}`;
-  const retryFailedQuery = () => {
-    if (requestFailure)
-      void load(requestFailure.query, {
-        version: requestFailure.version,
-        force: true,
-      });
-  };
-  const refreshData = async () => {
-    const refreshIntent = ++requestIntent.current;
-    let version: string;
-    try {
-      version = await versionState.checkLatestVersion();
-    } catch (error) {
-      versionState.reportError(error);
-      return;
-    }
-    if (requestIntent.current !== refreshIntent) return;
-    await load(query, {
-      version,
-      force: true,
-      commit: false,
-      onSuccess: (intent) => {
-        if (requestIntent.current !== intent) return;
-        writeUrl(query, metric, view);
+  const refreshData = () =>
+    refresh(
+      () => query,
+      (next, version, intent) => {
+        writeUrl(next, metric, view);
         startTransition(() => {
-          versionState.setAdoptedVersion(version);
-          acceptedQuery.current = query;
-          setQuery(query);
+          if (requestIntent.current !== intent) return;
+          versionState.setAdoptedVersion((current) =>
+            requestIntent.current === intent ? version : current,
+          );
+          acceptedQuery.current = next;
+          setQuery((current) =>
+            requestIntent.current === intent ? next : current,
+          );
         });
       },
-    });
-  };
+    );
   const changeFilters = (patch: Record<string, string | string[]>) => {
     const next = { ...latestDraft.current, ...patch };
     latestDraft.current = next;
@@ -824,4 +750,8 @@ function AnalysisChartFallback({ metric }: { metric: AnalysisMetric }) {
       <div className={analysisChartClass} aria-hidden="true" />
     </figure>
   );
+}
+
+function analysisTasks(version: string, query: AnalysisQuery) {
+  return [queryTask(analysisQueryOptions(version, query))];
 }

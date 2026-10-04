@@ -33,40 +33,36 @@ Generate migrations with bun run schema:gen.
 
 ## Frontend architecture
 
-Hono owns routing, validation, the HTML shell, and database access. React 19 owns
-the interactive article list inside `#articles-app`; the header, page title, and
-ranking page continue to use Hono JSX. This is an incremental React island, with
-server-rendered article content available when JavaScript is disabled or the
-client bundle cannot start.
+Hono owns routing, request validation, and the HTML shell. React 19 enhances
+the article, ranking, and analysis pages as islands. Each page has native
+server-rendered content and GET controls that work before JavaScript loads or
+if the client bundle cannot start.
 
-`src/client/main.tsx` mounts `ArticlesApp` on the articles page. The server passes
-the initial query and articles in an escaped JSON bootstrap, so the first React
-render can use the same data. Subsequent searches and pagination fetch
-`/api/articles` without navigating the entire page. Loading, empty, and failure
-states belong to the island. The API and D1 schema remain compatible.
+Server handlers resolve a published data generation through `withDataVersion`.
+Page loaders in `src/services/articleQueries.ts`, `rankingQueries.ts`, and
+`analysisQueries.ts` fetch the data before rendering. Pages receive plain data,
+so the native HTML and escaped JSON bootstrap use the same rows and version.
+The article API and page loader share normalized search retrieval; ranking
+requests share date normalization, and its page loader reads both rankings
+concurrently. Database functions retain their publication checks, including the
+final retention check in `withDataVersion`.
 
-The island follows React's [Async rendering model](https://react.dev/reference/react/use):
-search/history events start a request once and retain its Promise in React state.
-The results component reads it with `use`; `Suspense` owns initial waiting and an
-Error Boundary owns failures. Retry creates a fresh Promise and resets that boundary.
-SSR bootstrap arrays remain synchronous, so mounting does not fetch or flash a fallback.
-An unseeded first load uses a bounded Promise cache to survive render retries.
+TanStack Query owns retrieval and caching for all three islands. SSR data seeds
+the generation-specific query keys before mounting. `useVersionedQuery` shares
+prefetching, request-intent checks, failure state, retry, and explicit refresh.
+Ranking commits only after both datasets succeed. Screen-specific callbacks
+commit results inside transitions and keep editable drafts and display choices
+independent of requests. Superseded results cannot replace a newer intent.
 
-`useTransition` marks result changes as non-urgent and provides `isPending`;
-previous rows remain visible while searching, with pagination disabled until commit.
-Controlled filter inputs update immediately outside the Transition. Superseded
-event-handler requests are aborted and cannot commit over the latest Promise. History subscriptions
-use React 19 callback-ref cleanup and are removed on unmount. There is no fetching
-`useEffect` or manual loading/error state; the mount adapter's `useLayoutEffect` only
-coordinates replacement of the Hono fallback DOM and transfers its unsent form
-values and focus. If an edit arrives after the transfer snapshot, or focused SSR
-content has no client counterpart, the native GET form stays available. Bootstrap
-rows are paired with their server query; after subscribing to history the island
-rechecks the current URL and loads mismatched conditions in a Transition. The limit
-draft stays a string while editing; submitting an empty value uses the default 10.
-Unseeded initial requests share a bounded module cache with no TTL or per-consumer
-unmount cancellation; the normal Hono page always supplies bootstrap articles. See [Suspense](https://react.dev/reference/react/Suspense)
-and [useTransition](https://react.dev/reference/react/useTransition).
+`search-history.ts` shares URL writes and history-listener cleanup. Each screen
+owns URL parsing, draft validation, and its debounce or presentation behavior.
+Old-generation cache cleanup runs after the result subscription hooks so that
+previous observers have detached before inactive results are removed.
+
+The mount adapters transfer native form values, focus, and text selection before
+replacing the fallback DOM. They preserve the native form if a safe transfer is
+not possible. See [the generation contract](docs/data-generations.md) and
+[the shared hook contract](src/client/hooks/README.md).
 
 Client TSX files use `@jsxImportSource react`; the repository default remains
 `hono/jsx` for server components. Vite and `vite-ssr-components` resolve the client
