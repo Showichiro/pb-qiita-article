@@ -71,7 +71,8 @@ import {
   useRequestIntent,
   useVersionedQuery,
 } from "./hooks/useVersionedQuery";
-import { pushSearchUrl, subscribePopState } from "./search-history";
+import { articleSearchParsers } from "./search-params";
+import { useSearchParams } from "./hooks/useSearchParams";
 import { articlesQueryOptions, normalizeArticleQuery } from "./queries";
 import { isDataQuery, useRemovePreviousGeneration } from "./query-client";
 import { useDebouncedAction } from "./hooks/useDebouncedAction";
@@ -140,21 +141,48 @@ export default function ArticlesApp({
     offset: 0,
   })}`;
 
-  const initialUrlChecked = useRef(false);
-
   // Stable ref for latest draft to avoid stale closures in debounce callback
   const latestDraftRef = useRef<ArticleDraft>(draft);
   const isComposing = useRef(false);
 
-  const writeSearchUrl = useCallback((next: ArticleQuery) => {
-    pushSearchUrl(
-      articleQueryParams(next),
-      articleQueryParams(
-        parseArticleQuery(new URLSearchParams(window.location.search)),
-      ),
-      ["sort", ...Object.keys(next)],
-    );
-  }, []);
+  const { params: urlParams, write } = useSearchParams(
+    articleSearchParsers,
+    (params, initial) => {
+      let current: ArticleQuery;
+      try {
+        current = parseArticleQuery(params);
+      } catch (error) {
+        requestIntent.current++;
+        if (!initial) debouncedSearch.cancel();
+        setValidationError(
+          error instanceof Error
+            ? error.message
+            : "検索条件を確認してください。",
+        );
+        return;
+      }
+      if (initial) {
+        if (
+          articleQueryParams(current).toString() !==
+          articleQueryParams(query).toString()
+        )
+          void load(current);
+        return;
+      }
+      debouncedSearch.cancel();
+      const nextDraft = toArticleDraft(current);
+      latestDraftRef.current = nextDraft;
+      setDraft(nextDraft);
+      setValidationError(null);
+      void load(current);
+    },
+  );
+  const writeSearchUrl = useCallback(
+    (next: ArticleQuery) => {
+      void write(articleQueryParams(next));
+    },
+    [write],
+  );
 
   const runSearch = useCallback(
     async (_scheduledDraft: ArticleDraft, signal: AbortSignal) => {
@@ -177,6 +205,8 @@ export default function ArticlesApp({
     isValid: isSearchDraftValid,
     areEqual: areSearchDraftsEqual,
   });
+  useEffect(() => () => debouncedSearch.cancel(), [debouncedSearch.cancel]);
+
   const updateDraft = useCallback(
     (field: keyof ArticleDraft, value: string | string[]) => {
       requestIntent.current++;
@@ -206,13 +236,18 @@ export default function ArticlesApp({
         debouncedSearch.cancel();
         return;
       }
+      let currentUrlQuery: ArticleQuery | null = null;
+      try {
+        currentUrlQuery = parseArticleQuery(urlParams);
+      } catch {
+        // A valid edit can replace a malformed history URL.
+      }
       if (
         articleQueryParams(commitArticleDraft(nextDraft)).toString() ===
           articleQueryParams(query).toString() &&
+        currentUrlQuery !== null &&
         articleQueryParams(commitArticleDraft(nextDraft)).toString() ===
-          articleQueryParams(
-            parseArticleQuery(new URLSearchParams(window.location.search)),
-          ).toString() &&
+          articleQueryParams(currentUrlQuery).toString() &&
         !requestFailure
       ) {
         debouncedSearch.cancel();
@@ -230,6 +265,7 @@ export default function ArticlesApp({
       navigate,
       query,
       requestFailure,
+      urlParams,
     ],
   );
   const handleTextChange = useCallback(
@@ -252,39 +288,6 @@ export default function ArticlesApp({
       scheduleSearch(updateDraft(field, value), true);
     },
     [scheduleSearch, updateDraft],
-  );
-  const subscribeHistory = useCallback(
-    (_node: HTMLElement | null) => {
-      if (!_node) return;
-      const onPop = () => {
-        debouncedSearch.cancel();
-        const current = parseArticleQuery(
-          new URLSearchParams(window.location.search),
-        );
-        const nextDraft = toArticleDraft(current);
-        latestDraftRef.current = nextDraft;
-        setDraft(nextDraft);
-        setValidationError(null);
-        void load(current);
-      };
-      const unsubscribe = subscribePopState(onPop);
-      const current = parseArticleQuery(
-        new URLSearchParams(window.location.search),
-      );
-      if (!initialUrlChecked.current) {
-        initialUrlChecked.current = true;
-        if (
-          articleQueryParams(current).toString() !==
-          articleQueryParams(query).toString()
-        )
-          void load(current);
-      }
-      return () => {
-        unsubscribe();
-        debouncedSearch.cancel();
-      };
-    },
-    [debouncedSearch.cancel, load, query],
   );
   const submit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -355,11 +358,7 @@ export default function ArticlesApp({
     scheduleSearch(next, true);
   };
   return (
-    <section
-      ref={subscribeHistory}
-      className={articlesIslandClass}
-      aria-label="記事検索"
-    >
+    <section className={articlesIslandClass} aria-label="記事検索">
       <Card className={articlesCardExtraClass}>
         <PeriodShortcuts
           range={draft}

@@ -1,5 +1,6 @@
 // @vitest-environment jsdom
 /** @jsxImportSource react */
+import { flushSearchParams } from "./test-query-client";
 import { act, type ReactNode } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import AnalysisApp from "./AnalysisApp";
@@ -121,6 +122,8 @@ afterEach(async () => {
     });
   container.remove();
   window.history.replaceState(null, "", previousUrl);
+  if (vi.isFakeTimers()) await vi.advanceTimersByTimeAsync(60);
+  else await new Promise((resolve) => setTimeout(resolve, 60));
   vi.useRealTimers();
   vi.unstubAllGlobals();
 });
@@ -177,6 +180,7 @@ test("keeps invalid date drafts urgent and prevents both fetching and URL change
     since.dispatchEvent(new Event("input", { bubbles: true }));
   });
   expect(fetchMock).toHaveBeenCalledTimes(1);
+  await flushSearchParams();
   expect(new URL(window.location.href).searchParams.get("since")).toBe(
     "2026-01-03",
   );
@@ -251,6 +255,7 @@ test("retains and reports an invalid raw author draft without fetching", async (
     "200",
   );
   expect(fetchMock).not.toHaveBeenCalled();
+  await flushSearchParams();
   expect(window.location.search).toBe("?since=2026-01-01&until=2026-01-03");
 });
 
@@ -262,6 +267,7 @@ test("metric and chart/table view changes restore through history without refetc
     metric.dispatchEvent(new Event("change", { bubbles: true }));
   });
   expect(fetchMock).not.toHaveBeenCalled();
+  await flushSearchParams();
   expect(new URL(window.location.href).searchParams.get("metric")).toBe(
     "likes",
   );
@@ -272,6 +278,7 @@ test("metric and chart/table view changes restore through history without refetc
     view.dispatchEvent(new Event("change", { bubbles: true }));
   });
   expect(fetchMock).not.toHaveBeenCalled();
+  await flushSearchParams();
   expect(new URL(window.location.href).searchParams.get("view")).toBe("chart");
   expect(container.querySelector("figure[aria-label]")).not.toBeNull();
 
@@ -358,6 +365,7 @@ test("display changes update the accepted URL while invalid raw drafts remain un
   await act(async () => {
     metric.dispatchEvent(new Event("change", { bubbles: true }));
   });
+  await flushSearchParams();
   const params = new URL(window.location.href).searchParams;
   expect(params.get("since")).toBe("2026-01-02");
   expect(params.get("until")).toBe("2026-01-03");
@@ -393,7 +401,15 @@ test("back/forward restores query filters and display controls", async () => {
 });
 
 test("author search waits for an IME-safe 500ms quiet period and sends the full draft", async () => {
-  vi.useFakeTimers();
+  vi.useFakeTimers({
+    toFake: [
+      "Date",
+      "setTimeout",
+      "clearTimeout",
+      "setInterval",
+      "clearInterval",
+    ],
+  });
   await render();
   const since = field<HTMLInputElement>("since");
   const author = field<HTMLInputElement>("author");
@@ -452,13 +468,22 @@ test("an immediate tag change commits the valid whole draft and cancels only deb
   expect(fetchMock).toHaveBeenCalledTimes(1);
   expect(String(fetchMock.mock.calls[0][0])).toContain("author=Writer");
   expect(String(fetchMock.mock.calls[0][0])).toContain("tags=known");
+  await flushSearchParams();
   expect(new URL(window.location.href).searchParams.get("author")).toBe(
     "Writer",
   );
 });
 
 test("clears tags immediately using the latest valid draft and keeps the enhanced action automatic", async () => {
-  vi.useFakeTimers();
+  vi.useFakeTimers({
+    toFake: [
+      "Date",
+      "setTimeout",
+      "clearTimeout",
+      "setInterval",
+      "clearInterval",
+    ],
+  });
   const data: AnalysisBootstrap = {
     ...initialData,
     state: { ...initialData.state, tags: ["known"] },
@@ -494,6 +519,7 @@ test("clears tags immediately using the latest valid draft and keeps the enhance
   expect(fetchMock).toHaveBeenCalledTimes(1);
   expect(String(fetchMock.mock.calls[0][0])).toContain("author=Writer");
   expect(String(fetchMock.mock.calls[0][0])).not.toContain("tags=");
+  await flushSearchParams();
   expect(new URL(window.location.href).searchParams.has("tags")).toBe(false);
   expect(
     Array.from(
@@ -571,6 +597,7 @@ test("tracked composition suppresses Enter even when its keyboard flag is false"
   });
   expect(author.value).toBe("Writer");
   expect(fetchMock).not.toHaveBeenCalled();
+  await flushSearchParams();
   expect(window.location.search).toBe("?since=2026-01-01&until=2026-01-03");
 });
 
@@ -634,9 +661,11 @@ test("obsolete intent fences superseded committed requests without coupling them
     metric.dispatchEvent(new Event("change", { bubbles: true }));
   });
   expect(fetchMock).toHaveBeenCalledTimes(1);
+  await flushSearchParams();
   expect(new URL(window.location.href).searchParams.get("since")).toBe(
     "2026-01-02",
   );
+  await flushSearchParams();
   expect(new URL(window.location.href).searchParams.get("metric")).toBe(
     "likes",
   );
@@ -850,6 +879,7 @@ test("period shortcuts apply both dates in one request and retain analysis setti
       .querySelector<HTMLButtonElement>('[data-focus-id="period-30days"]')
       ?.click(),
   );
+  await flushSearchParams();
   const params = new URLSearchParams(window.location.search);
   expect(params.get("author")).toBe("ada");
   expect(params.getAll("tags")).toEqual(["React"]);

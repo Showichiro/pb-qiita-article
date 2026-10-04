@@ -1,4 +1,4 @@
-import { createElement } from "react";
+import { act, createElement } from "react";
 import ArticlesApp, { type ArticlesAppProps } from "./ArticlesApp";
 import { QueryProvider, getQueryClient, seedQueryData } from "./query-client";
 import { articlesQueryKey, normalizeArticleQuery } from "./queries";
@@ -25,4 +25,12 @@ export function articleTestElement(props: Partial<ArticlesAppProps>) {
 export function resetTestQueries() {
   getQueryClient().clear();
   getQueryClient().setQueryData(["data-version"], { dataVersion: "v1" });
+}
+
+/** nuqs batches browser history writes independently of immediate UI updates. */
+export async function flushSearchParams() {
+  await act(async () => {
+    if (vi.isFakeTimers()) await vi.advanceTimersByTimeAsync(60);
+    else await new Promise((resolve) => setTimeout(resolve, 60));
+  });
 }

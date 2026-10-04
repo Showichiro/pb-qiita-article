@@ -8,6 +8,7 @@ import {
   Suspense,
   lazy,
   useCallback,
+  useEffect,
   useRef,
   useState,
   useTransition,
@@ -48,7 +49,8 @@ import {
   useRequestIntent,
   useVersionedQuery,
 } from "./hooks/useVersionedQuery";
-import { pushSearchUrl, subscribePopState } from "./search-history";
+import { analysisSearchParsers } from "./search-params";
+import { useSearchParams } from "./hooks/useSearchParams";
 import { analysisQueryOptions, normalizeAnalysisQuery } from "./queries";
 import { isDataQuery, useRemovePreviousGeneration } from "./query-client";
 import {
@@ -147,33 +149,46 @@ export default function AnalysisApp({
     analysisDraftError(draft),
   );
 
+  const { write } = useSearchParams(
+    analysisSearchParsers,
+    (params, initial) => {
+      const state = parseAnalysisState(params, bootstrapClock);
+      if (initial) return;
+      debouncedSearch.cancel();
+      const error = analysisDraftError(state);
+      if (error) {
+        requestIntent.current++;
+        setValidationError(error);
+        return;
+      }
+      const next: AnalysisQuery = {
+        since: state.since,
+        until: state.until,
+        bucket: state.bucket,
+        author: state.author,
+        tags: state.tags,
+      };
+      acceptedQuery.current = next;
+      const nextDraft = toAnalysisDraft(next);
+      latestDraft.current = nextDraft;
+      setDraft(nextDraft);
+      setMetric(state.metric);
+      setView(state.view);
+      setValidationError(null);
+      void load(next);
+    },
+  );
   const writeUrl = useCallback(
     (
       query: AnalysisQuery,
       nextMetric: AnalysisMetric,
       nextView: AnalysisView,
     ) => {
-      const next = {
-        ...query,
-        metric: nextMetric,
-        view: nextView,
-      };
-      const params = analysisStateParams(next);
-      const currentState = parseAnalysisState(
-        new URLSearchParams(window.location.search),
-        bootstrapClock,
+      void write(
+        analysisStateParams({ ...query, metric: nextMetric, view: nextView }),
       );
-      pushSearchUrl(params, analysisStateParams(currentState), [
-        "since",
-        "until",
-        "bucket",
-        "author",
-        "tags",
-        "metric",
-        "view",
-      ]);
     },
-    [bootstrapClock],
+    [write],
   );
 
   const acceptDraft = useCallback(
@@ -208,6 +223,8 @@ export default function AnalysisApp({
       analysisQueryParams(commitAnalysisDraft(a)).toString() ===
         analysisQueryParams(commitAnalysisDraft(b)).toString(),
   });
+
+  useEffect(() => () => debouncedSearch.cancel(), [debouncedSearch.cancel]);
 
   const updateDraft = useCallback(
     (field: keyof AnalysisDraft, value: string | string[]) => {
@@ -263,40 +280,6 @@ export default function AnalysisApp({
     [writeUrl],
   );
 
-  const subscribeHistory = useCallback(
-    (node: HTMLElement | null) => {
-      if (!node) return;
-      const onPop = () => {
-        debouncedSearch.cancel();
-        const state = parseAnalysisState(
-          new URLSearchParams(window.location.search),
-          bootstrapClock,
-        );
-        const query: AnalysisQuery = {
-          since: state.since,
-          until: state.until,
-          bucket: state.bucket,
-          author: state.author,
-          tags: state.tags,
-        };
-        acceptedQuery.current = query;
-        const nextDraft = toAnalysisDraft(query);
-        latestDraft.current = nextDraft;
-        setDraft(nextDraft);
-        setMetric(state.metric);
-        setView(state.view);
-        setValidationError(null);
-        void load(query);
-      };
-      const unsubscribe = subscribePopState(onPop);
-      return () => {
-        unsubscribe();
-        debouncedSearch.cancel();
-      };
-    },
-    [bootstrapClock, debouncedSearch.cancel, load],
-  );
-
   const submit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const current = latestDraft.current;
@@ -349,11 +332,7 @@ export default function AnalysisApp({
   };
   const _dataQueryKey = analysisQueryOptions(adoptedVersion, query).queryKey;
   return (
-    <section
-      ref={subscribeHistory}
-      className={analysisIslandClass}
-      aria-label="時系列分析"
-    >
+    <section className={analysisIslandClass} aria-label="時系列分析">
       <Card className={analysisCardClass}>
         <PeriodShortcuts
           range={draft}

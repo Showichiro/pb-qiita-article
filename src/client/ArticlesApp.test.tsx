@@ -1,5 +1,6 @@
 // @vitest-environment jsdom
 /** @jsxImportSource react */
+import { flushSearchParams } from "./test-query-client";
 import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import ArticlesApp from "./ArticlesApp";
@@ -61,6 +62,8 @@ afterEach(async () => {
   root = undefined;
   host.remove();
   getQueryClient().clear();
+  if (vi.isFakeTimers()) await vi.advanceTimersByTimeAsync(60);
+  else await new Promise((resolve) => setTimeout(resolve, 60));
   vi.useRealTimers();
   vi.unstubAllGlobals();
 });
@@ -117,13 +120,48 @@ async function search(value: string) {
   await settle();
 }
 
+it("reports invalid history bounds and allows a valid edit to replace them", async () => {
+  await mount();
+  await act(async () => {
+    window.history.replaceState(null, "", "/articles?minLikes=-1");
+    window.dispatchEvent(new PopStateEvent("popstate"));
+  });
+  expect(resultCalls()).toHaveLength(0);
+  expect(host.querySelector('[role="alert"]')?.textContent).toContain("0以上");
+  expect(host.textContent).toContain("Original article");
+  await search("recovered");
+  await flushSearchParams();
+  expect(resultCalls()).toHaveLength(1);
+  expect(new URLSearchParams(window.location.search).get("q")).toBe(
+    "recovered",
+  );
+  expect(new URLSearchParams(window.location.search).has("minLikes")).toBe(
+    false,
+  );
+  expect(host.querySelector('[role="alert"]')).toBeNull();
+});
+
 it("clears conditions while preserving presentation and resetting pagination", async () => {
-  await mount({ ...defaultArticleQuery, q: "React", author: "writer", tags: ["test"], minLikes: 2, orderField: "stocksCount", orderDirection: "asc", limit: 25, offset: 25 });
+  await mount({
+    ...defaultArticleQuery,
+    q: "React",
+    author: "writer",
+    tags: ["test"],
+    minLikes: 2,
+    orderField: "stocksCount",
+    orderDirection: "asc",
+    limit: 25,
+    offset: 25,
+  });
   expect(host.querySelector('[name="sort"]')?.closest("dialog")).toBeNull();
-  expect(host.querySelector('[name="author"]')?.closest("dialog")).not.toBeNull();
+  expect(
+    host.querySelector('[name="author"]')?.closest("dialog"),
+  ).not.toBeNull();
   await click(".filter-clear");
+  await flushSearchParams();
   const params = new URLSearchParams(window.location.search);
-  for (const name of ["q", "author", "tags", "minLikes"]) expect(params.has(name)).toBe(false);
+  for (const name of ["q", "author", "tags", "minLikes"])
+    expect(params.has(name)).toBe(false);
   expect(params.get("orderField")).toBe("stocksCount");
   expect(params.get("orderDirection")).toBe("asc");
   expect(params.get("limit")).toBe("25");
@@ -131,8 +169,14 @@ it("clears conditions while preserving presentation and resetting pagination", a
 });
 
 it("removes a single condition without dropping the others", async () => {
-  await mount({ ...defaultArticleQuery, q: "React", author: "writer", tags: ["test"] });
+  await mount({
+    ...defaultArticleQuery,
+    q: "React",
+    author: "writer",
+    tags: ["test"],
+  });
   await click('.filter-chip[aria-label="投稿者: writerを解除"]');
+  await flushSearchParams();
   const params = new URLSearchParams(window.location.search);
   expect(params.has("author")).toBe(false);
   expect(params.get("q")).toBe("React");
@@ -178,6 +222,7 @@ it("allows an obsolete response to finish under its own key without replacing th
   await settle();
   expect(host.textContent).toContain("Current result");
   expect(host.textContent).not.toContain("Obsolete result");
+  await flushSearchParams();
   expect(window.location.search).toContain("q=new");
   expect(resultCalls()).toHaveLength(2);
 });
@@ -243,6 +288,7 @@ it("does not adopt an obsolete refresh after the user starts another search", as
   );
   await settle();
   expect(resultCalls()).toHaveLength(1);
+  await flushSearchParams();
   expect(window.location.search).toContain("q=new+search");
   expect(resultCalls()[0][1].headers).toMatchObject({
     "X-Expected-Data-Version": "v1",
@@ -275,6 +321,7 @@ it("clears selected tags immediately while preserving the other filters", async 
   await mount({ ...defaultArticleQuery, q: "keyword", tags: ["test"] });
   await click('[data-focus-id="articles-tag-clear"]');
   expect(resultCalls()).toHaveLength(1);
+  await flushSearchParams();
   const params = new URLSearchParams(window.location.search);
   expect(params.get("q")).toBe("keyword");
   expect(params.getAll("tags")).toEqual([]);
@@ -313,10 +360,12 @@ it("clears a pending tag selection back to the displayed cached query", async ()
     select.dispatchEvent(new Event("change", { bubbles: true }));
   });
   await settle();
+  await flushSearchParams();
   expect(new URLSearchParams(window.location.search).getAll("tags")).toEqual([
     "test",
   ]);
   await click('[data-focus-id="articles-tag-clear"]');
+  await flushSearchParams();
   expect(new URLSearchParams(window.location.search).getAll("tags")).toEqual(
     [],
   );
@@ -330,7 +379,15 @@ it("clears a pending tag selection back to the displayed cached query", async ()
 });
 it("cancels debounce work when the island unmounts", async () => {
   await mount();
-  vi.useFakeTimers();
+  vi.useFakeTimers({
+    toFake: [
+      "Date",
+      "setTimeout",
+      "clearTimeout",
+      "setInterval",
+      "clearInterval",
+    ],
+  });
   const input = host.querySelector<HTMLInputElement>('[name="q"]');
   if (!input) throw new Error("Missing keyword");
   await act(async () => {
@@ -348,14 +405,23 @@ it("cancels debounce work when the island unmounts", async () => {
   expect(resultCalls()).toHaveLength(0);
 });
 it("appends mobile pages without changing the URL and retries a failed page", async () => {
-  vi.stubGlobal("matchMedia", vi.fn(() => ({ matches: true, addEventListener: vi.fn(), removeEventListener: vi.fn() })));
+  vi.stubGlobal(
+    "matchMedia",
+    vi.fn(() => ({
+      matches: true,
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+    })),
+  );
   // The component uses window.matchMedia in browsers.
   window.matchMedia = globalThis.matchMedia;
   let fail = true;
   resultRequest = async (url) => {
     const offset = new URL(url, "http://localhost").searchParams.get("offset");
     if (offset === "1" && fail) throw new Error("offline");
-    return resultResponse(offset === "1" ? [{ ...rows[0], id: "b", title: "Next article" }] : []);
+    return resultResponse(
+      offset === "1" ? [{ ...rows[0], id: "b", title: "Next article" }] : [],
+    );
   };
   await mount({ ...defaultArticleQuery, limit: 1 });
   const originalUrl = window.location.href;
@@ -374,16 +440,31 @@ it("appends mobile pages without changing the URL and retries a failed page", as
 });
 
 it("starts a fresh mobile feed when search conditions change", async () => {
-  vi.stubGlobal("matchMedia", vi.fn(() => ({ matches: true, addEventListener: vi.fn(), removeEventListener: vi.fn() })));
+  vi.stubGlobal(
+    "matchMedia",
+    vi.fn(() => ({
+      matches: true,
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+    })),
+  );
   window.matchMedia = globalThis.matchMedia;
   resultRequest = async (url) => {
     const params = new URL(url, "http://localhost").searchParams;
-    return resultResponse(params.get("q") ? [{ ...rows[0], id: "c", title: "Filtered article" }] : [{ ...rows[0], id: "b", title: "Next article" }]);
+    return resultResponse(
+      params.get("q")
+        ? [{ ...rows[0], id: "c", title: "Filtered article" }]
+        : [{ ...rows[0], id: "b", title: "Next article" }],
+    );
   };
   await mount({ ...defaultArticleQuery, limit: 1 });
   await click(".mobile-feed button");
   await search("Filtered");
-  await act(async () => host.querySelector("form")?.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true })));
+  await act(async () =>
+    host
+      .querySelector("form")
+      ?.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true })),
+  );
   await settle();
   expect(host.textContent).toContain("Filtered article");
   expect(host.textContent).not.toContain("Next article");
@@ -399,6 +480,7 @@ test("period shortcuts preserve filters, reset pagination, and restore selection
     offset: 20,
   });
   await click('[data-focus-id="period-30days"]');
+  await flushSearchParams();
   const params = new URLSearchParams(window.location.search);
   expect(params.get("q")).toBe("React");
   expect(params.get("author")).toBe("writer");
@@ -412,6 +494,7 @@ test("period shortcuts preserve filters, reset pagination, and restore selection
       ?.getAttribute("aria-pressed"),
   ).toBe("true");
   await click('[data-focus-id="period-all"]');
+  await flushSearchParams();
   expect(new URLSearchParams(window.location.search).has("until")).toBe(false);
   window.history.replaceState(null, "", `/articles?${params}`);
   await act(async () => window.dispatchEvent(new PopStateEvent("popstate")));

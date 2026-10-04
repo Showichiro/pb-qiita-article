@@ -10,6 +10,7 @@ import { resetTestQueries } from "./test-query-client";
 beforeEach(resetTestQueries);
 import {
   defaultRankingQuery,
+  rankingQueryParams,
   type RankingDraft,
   type RankingQuery,
 } from "./ranking";
@@ -40,6 +41,11 @@ function mount(
   } = {},
 ) {
   const query = options.query ?? defaultRankingQuery;
+  window.history.replaceState(
+    null,
+    "",
+    `/ranking?${rankingQueryParams(query)}`,
+  );
   const dates = { since: query.since, until: query.until };
   seedQueryData(rankingPostsQueryKey("v1", dates), {
     query: dates,
@@ -135,7 +141,10 @@ beforeEach(() => {
   vi.stubGlobal("fetch", fetchMock);
 });
 
-afterEach(() => {
+afterEach(async () => {
+  await act(async () => {
+    await new Promise((resolve) => setTimeout(resolve, 60));
+  });
   if (root) {
     act(() => root?.unmount());
     root = undefined;
@@ -163,14 +172,18 @@ describe("RankingApp", () => {
     expect(container.textContent).toContain("現在の合計いいね数");
   });
 
-  it("changes view and top-N history without a data request and restores on popstate", () => {
+  it("changes view and top-N history without a data request and restores on popstate", async () => {
     mount({ initialDataVersion: "v1" });
     choose("view", "chart");
     choose("topN", "2");
     expect(fetchMock).not.toHaveBeenCalled();
-    expect(new URLSearchParams(window.location.search)).toEqual(
-      new URLSearchParams("view=chart&topN=2"),
-    );
+    await act(async () => {
+      await vi.waitFor(() =>
+        expect(new URLSearchParams(window.location.search)).toEqual(
+          new URLSearchParams("view=chart&topN=2"),
+        ),
+      );
+    });
     expect(container.querySelectorAll("table tbody tr")).toHaveLength(4);
     expect(container.querySelectorAll(`[class*="h-[320px]"]`)).toHaveLength(2);
 
@@ -308,7 +321,13 @@ describe("RankingApp", () => {
       activeRequests,
     );
     expect(fetchMock).toHaveBeenCalledTimes(2);
-    expect(window.location.search).toBe("?since=2026-12-31&view=chart&topN=3");
+    await act(async () => {
+      await vi.waitFor(() =>
+        expect(window.location.search).toBe(
+          "?since=2026-12-31&view=chart&topN=3",
+        ),
+      );
+    });
     post.resolve(response(postCounts));
     await act(async () => {
       await post.promise;
@@ -399,6 +418,13 @@ test("period shortcuts retain ranking presentation and request both rankings onc
       .querySelector<HTMLButtonElement>('[data-focus-id="period-90days"]')
       ?.click(),
   );
+  await act(async () => {
+    await vi.waitFor(() =>
+      expect(new URLSearchParams(window.location.search).get("until")).toMatch(
+        /T14:59:59.999Z$/,
+      ),
+    );
+  });
   const params = new URLSearchParams(window.location.search);
   expect(params.get("view")).toBe("chart");
   expect(params.get("topN")).toBe("5");
@@ -409,4 +435,86 @@ test("period shortcuts retain ranking presentation and request both rankings onc
       .querySelector('[data-focus-id="period-90days"]')
       ?.getAttribute("aria-pressed"),
   ).toBe("true");
+});
+
+test("history search failure retains both adopted rankings and retries the requested dates", async () => {
+  fetchMock.mockImplementation(async (url: string) =>
+    String(url).includes("post-counts")
+      ? response([], 503)
+      : response(likesCounts),
+  );
+  mount();
+  await act(async () => {
+    window.history.replaceState(
+      null,
+      "",
+      "/ranking?since=2026-03-01&view=chart&topN=2",
+    );
+    window.dispatchEvent(new PopStateEvent("popstate"));
+    await new Promise((resolve) => setTimeout(resolve, 0));
+  });
+  expect(date("since").value).toBe("2026-03-01");
+  expect(select("view").value).toBe("chart");
+  expect(container.textContent).toContain("ada");
+  expect(container.textContent).toContain("全期間");
+  expect(container.querySelector('[role="alert"]')?.textContent).toContain(
+    "503",
+  );
+  expect(fetchMock).toHaveBeenCalledTimes(2);
+
+  fetchMock.mockImplementation(async (url: string) =>
+    String(url).includes("post-counts")
+      ? response([{ userId: "new", userName: "New", count: 4 }])
+      : response([{ userId: "new", userName: "New", totalLikesCount: "40" }]),
+  );
+  await act(async () => {
+    const retry = Array.from(container.querySelectorAll("button")).find(
+      (button) => button.textContent === "再試行",
+    );
+    expect(retry).toBeDefined();
+    retry?.click();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+  });
+  expect(container.querySelector('[role="alert"]')).toBeNull();
+  expect(container.textContent).toContain("2026-03-01");
+  expect(container.textContent).toContain("New");
+  expect(container.textContent).not.toContain("ada");
+});
+
+test("preserves unrelated parameters, timestamp dates and defaults without adding duplicate history entries", async () => {
+  fetchMock.mockImplementation(async (url: string) =>
+    String(url).includes("post-counts")
+      ? response(postCounts)
+      : response(likesCounts),
+  );
+  mount({
+    query: { ...defaultRankingQuery, since: "2026-01-01T15:00:00.000Z" },
+  });
+  window.history.replaceState(
+    { marker: "kept" },
+    "",
+    `${window.location.href}&campaign=test#ranking`,
+  );
+  const initialLength = window.history.length;
+  choose("view", "chart");
+  await act(async () => {
+    await vi.waitFor(() =>
+      expect(new URLSearchParams(window.location.search).get("view")).toBe(
+        "chart",
+      ),
+    );
+  });
+  const params = new URLSearchParams(window.location.search);
+  expect(params.get("since")).toBe("2026-01-01T15:00:00.000Z");
+  expect(params.get("campaign")).toBe("test");
+  expect(params.has("topN")).toBe(false);
+  expect(window.location.hash).toBe("#ranking");
+  expect(window.history.state).toEqual({ marker: "kept" });
+  expect(window.history.length).toBe(initialLength + 1);
+  choose("view", "chart");
+  await act(async () => {
+    await new Promise((resolve) => setTimeout(resolve, 60));
+  });
+  expect(window.history.length).toBe(initialLength + 1);
+  expect(fetchMock).not.toHaveBeenCalled();
 });

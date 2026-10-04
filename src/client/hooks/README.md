@@ -62,3 +62,33 @@ prefetch until observers attach, a request fails/is superseded, or unmount.
 Call `useRemovePreviousGeneration` after `useSuspenseQuery` /
 `useSuspenseQueries` in each screen. Its effect must run after subscription
 updates, so the old generation's results are inactive when cleanup runs.
+
+## `useSearchParams`
+
+The islands use nuqs' React SPA adapter via `QueryProvider`. Pass a stable
+parser map from `search-params.ts` and a callback to restore controls/load
+results on history navigation. The callback receives an initial flag: article
+startup reconciles the URL with its bootstrap; analysis trusts its bootstrap
+and preserves unsent native drafts. Cross-field validation stays in each
+screen's existing query/draft helpers.
+
+`write(params)` updates nuqs' optimistic state immediately and returns the
+Promise for its throttled browser URL write. Local events already own their
+retrieval; the hook suppresses their state echoes and skips identical writes.
+Changed URL values trigger the navigation callback. A same-value popstate is
+also passed through, because it can represent retrying a failed search. nuqs
+resets queued URL updates on browser navigation. All listeners are cleaned up
+on unmount, and each screen cancels its own debounce work.
+
+Repeated tag keys use `parseAsNativeArrayOf`, never comma splitting. Article
+range bounds remain raw strings until validation so malformed URLs cannot
+silently become unfiltered searches. Existing article defaults remain explicit
+in URLs; ranking and analysis omit default presentation values. Unknown query
+parameters, fragments, and browser history state are preserved.
+
+Tests use the real React SPA adapter and await URL writes separately from
+immediate UI and request assertions. Fake timers preserve the browser
+performance clock, and teardown flushes pending writes after disposing roots.
+See [nuqs adapters](https://nuqs.dev/docs/adapters),
+[batching](https://nuqs.dev/docs/batching), and
+[native arrays](https://nuqs.dev/docs/parsers/built-in).

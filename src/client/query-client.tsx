@@ -1,4 +1,5 @@
 /** @jsxImportSource react */
+import { NuqsAdapter } from "nuqs/adapters/react";
 import {
   QueryCache,
   QueryClient,
@@ -20,7 +21,11 @@ let browserQueryClient: QueryClient | undefined;
 
 export function QueryProvider({ children }: { children?: ReactNode }) {
   const [client] = useState(getQueryClient);
-  return <QueryClientProvider client={client}>{children}</QueryClientProvider>;
+  return (
+    <QueryClientProvider client={client}>
+      <NuqsAdapter>{children}</NuqsAdapter>
+    </QueryClientProvider>
+  );
 }
 
 export function getQueryClient(): QueryClient {
