@@ -12,11 +12,7 @@ import {
   useTransition,
   type FormEvent,
 } from "react";
-import {
-  useIsFetching,
-  useQueryClient,
-  useSuspenseQueries,
-} from "@tanstack/react-query";
+import { useIsFetching, useSuspenseQueries } from "@tanstack/react-query";
 import {
   Bar,
   BarChart,
@@ -61,13 +57,14 @@ import {
   withRankingDisplay,
 } from "./ranking";
 import { DataVersionControls } from "./data-version-controls";
-import { useDataVersion } from "./data-version";
-import { rankingLikesQueryOptions, rankingPostsQueryOptions } from "./queries";
 import {
-  isDataQuery,
-  useProtectedDataQueries,
-  useRemovePreviousGeneration,
-} from "./query-client";
+  queryTask,
+  useRequestIntent,
+  useVersionedQuery,
+} from "./hooks/useVersionedQuery";
+import { pushSearchUrl, subscribePopState } from "./search-history";
+import { rankingLikesQueryOptions, rankingPostsQueryOptions } from "./queries";
+import { isDataQuery, useRemovePreviousGeneration } from "./query-client";
 
 type RankingData = {
   postCounts: ArticleCountGroupByUser[];
@@ -89,10 +86,42 @@ export default function RankingApp({
 }: RankingAppProps) {
   const [query, setQuery] = useState(initialConfig);
   const queryRef = useRef(query);
-  const versionState = useDataVersion(initialDataVersion);
+  const requestIntent = useRequestIntent();
+  const [isPending, startTransition] = useTransition();
+  const setCurrentQuery = useCallback(
+    (next: RankingQuery, intent?: number) => {
+      if (intent !== undefined && requestIntent.current !== intent) return;
+      queryRef.current = next;
+      setQuery((current) =>
+        intent === undefined || requestIntent.current === intent
+          ? next
+          : current,
+      );
+    },
+    [requestIntent],
+  );
+
+  const commitQuery = useCallback(
+    (next: RankingQuery, intent: number) => {
+      startTransition(() =>
+        setCurrentQuery(
+          withRankingDisplay(dateQuery(next), queryRef.current),
+          intent,
+        ),
+      );
+    },
+    [setCurrentQuery],
+  );
+  const { versionState, load, requestFailure, retryFailedQuery, refresh } =
+    useVersionedQuery({
+      initialVersion: initialDataVersion,
+      requestIntent,
+      normalize: normalizeRankingLoad,
+      tasks: rankingTasks,
+      commit: commitQuery,
+      errorMessage: "ランキングを取得できませんでした",
+    });
   const { adoptedVersion } = versionState;
-  const queryClient = useQueryClient();
-  const protectQueries = useProtectedDataQueries();
   const dates = dateQuery(query);
   const queryResults = useSuspenseQueries({
     queries: [
@@ -115,115 +144,16 @@ export default function RankingApp({
   );
   const latestDraft = useRef(draft);
   const [validationError, setValidationError] = useState<string | null>(null);
-  const [requestFailure, setRequestFailure] = useState<{
-    error: Error;
-    query: RankingQuery;
-    version: string;
-  } | null>(null);
-  const [isPending, startTransition] = useTransition();
-  const requestIntent = useRef(0);
-  useEffect(
-    () => () => {
-      requestIntent.current++;
-    },
-    [],
-  );
-
-  const setCurrentQuery = useCallback((next: RankingQuery, intent?: number) => {
-    if (intent !== undefined && requestIntent.current !== intent) return;
-    queryRef.current = next;
-    setQuery((current) =>
-      intent === undefined || requestIntent.current === intent ? next : current,
-    );
-  }, []);
 
   const writeSearchUrl = useCallback((next: RankingQuery) => {
-    const canonical = rankingQueryParams(next).toString();
-    const current = rankingQueryParams(
-      parseRankingQuery(new URLSearchParams(window.location.search)),
-    ).toString();
-    if (canonical === current) return;
-    const url = new URL(window.location.href);
-    for (const key of ["since", "until", "view", "topN"])
-      url.searchParams.delete(key);
-    rankingQueryParams(next).forEach((value, key) => {
-      url.searchParams.append(key, value);
-    });
-    window.history.pushState(null, "", url);
+    pushSearchUrl(
+      rankingQueryParams(next),
+      rankingQueryParams(
+        parseRankingQuery(new URLSearchParams(window.location.search)),
+      ),
+      ["since", "until", "view", "topN"],
+    );
   }, []);
-
-  const load = useCallback(
-    async (
-      next: RankingQuery,
-      options: {
-        version?: string;
-        force?: boolean;
-        commit?: boolean;
-        intent?: number;
-        onSuccess?: (intent: number) => void;
-      } = {},
-    ): Promise<boolean> => {
-      const requestQuery = dateQuery(next);
-      const version = options.version ?? adoptedVersion;
-      const intent = options.intent ?? ++requestIntent.current;
-      const postsOptions = rankingPostsQueryOptions(version, requestQuery);
-      const likesOptions = rankingLikesQueryOptions(version, requestQuery);
-      setRequestFailure(null);
-      const releaseProtection = protectQueries([
-        postsOptions.queryKey,
-        likesOptions.queryKey,
-      ]);
-      try {
-        await Promise.all([
-          queryClient.prefetchQuery(
-            options.force ? { ...postsOptions, staleTime: 0 } : postsOptions,
-          ),
-          queryClient.prefetchQuery(
-            options.force ? { ...likesOptions, staleTime: 0 } : likesOptions,
-          ),
-        ]);
-        for (const queryOptions of [postsOptions, likesOptions]) {
-          const data = queryClient.getQueryData(queryOptions.queryKey);
-          const state = queryClient.getQueryState(queryOptions.queryKey);
-          if (
-            data === undefined ||
-            (options.force && state?.status === "error")
-          )
-            throw state?.error ?? new Error("ランキングを取得できませんでした");
-        }
-        if (requestIntent.current !== intent) {
-          releaseProtection();
-          return false;
-        }
-        if (options.onSuccess) options.onSuccess(intent);
-        else if (options.commit !== false)
-          startTransition(() =>
-            setCurrentQuery(
-              withRankingDisplay(dateQuery(next), queryRef.current),
-              intent,
-            ),
-          );
-        return true;
-      } catch (error) {
-        releaseProtection();
-        if (requestIntent.current !== intent) return false;
-        const normalizedError =
-          error instanceof Error
-            ? error
-            : new Error("ランキングを取得できませんでした");
-        setRequestFailure({ error: normalizedError, query: next, version });
-        versionState.reportError(normalizedError);
-        return false;
-      }
-    },
-    [
-      adoptedVersion,
-      queryClient,
-      protectQueries,
-      setCurrentQuery,
-      versionState.reportError,
-    ],
-  );
 
   const navigateDates = useCallback(
     (nextDates: RankingRequestQuery) => {
@@ -270,7 +200,7 @@ export default function RankingApp({
     } else {
       void load(next);
     }
-  }, [load, setCurrentQuery]);
+  }, [load, setCurrentQuery, requestIntent]);
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -291,45 +221,26 @@ export default function RankingApp({
     if (validateRankingDraft(nextDraft) === null)
       navigateDates(commitRankingDraft(nextDraft));
   };
-  const retryFailedQuery = () => {
-    if (requestFailure)
-      void load(requestFailure.query, {
-        version: requestFailure.version,
-        force: true,
-      });
-  };
-  const refreshData = async () => {
-    const intent = ++requestIntent.current;
-    let version: string;
-    try {
-      version = await versionState.checkLatestVersion();
-    } catch (error) {
-      versionState.reportError(error);
-      return;
-    }
-    if (requestIntent.current !== intent) return;
-    const next = { ...queryRef.current };
-    latestDraft.current = toRankingDraft(next);
-    setValidationError(null);
-    await load(next, {
-      version,
-      force: true,
-      commit: false,
-      intent,
-      onSuccess: (request) => {
-        if (requestIntent.current !== request) return;
+  const refreshData = () =>
+    refresh(
+      () => {
+        const next = { ...queryRef.current };
+        latestDraft.current = toRankingDraft(next);
+        setValidationError(null);
+        return next;
+      },
+      (next, version, intent) => {
         startTransition(() => {
           versionState.setAdoptedVersion((current) =>
-            requestIntent.current === request ? version : current,
+            requestIntent.current === intent ? version : current,
           );
-          setCurrentQuery(next, request);
+          setCurrentQuery(next, intent);
           setDraft((current) =>
-            requestIntent.current === request ? latestDraft.current : current,
+            requestIntent.current === intent ? latestDraft.current : current,
           );
         });
       },
-    });
-  };
+    );
   const changePeriod = (patch: Record<string, string | string[]>) => {
     const next = { ...latestDraft.current, ...patch };
     latestDraft.current = next;
@@ -487,8 +398,7 @@ export default function RankingApp({
 
 function HistorySubscription({ onPopState }: { onPopState: () => void }) {
   useEffect(() => {
-    window.addEventListener("popstate", onPopState);
-    return () => window.removeEventListener("popstate", onPopState);
+    return subscribePopState(onPopState);
   }, [onPopState]);
   return null;
 }
@@ -689,4 +599,14 @@ function describePeriod(query: RankingRequestQuery): string {
 function parseTopNControl(value: string): number {
   const count = Number(value);
   return Number.isInteger(count) ? Math.max(1, Math.min(100, count)) : 10;
+}
+
+function normalizeRankingLoad(query: RankingQuery): RankingQuery {
+  return query;
+}
+function rankingTasks(version: string, query: RankingQuery) {
+  return [
+    queryTask(rankingPostsQueryOptions(version, dateQuery(query))),
+    queryTask(rankingLikesQueryOptions(version, dateQuery(query))),
+  ];
 }

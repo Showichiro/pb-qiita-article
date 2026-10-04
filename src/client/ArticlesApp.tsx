@@ -20,7 +20,6 @@ import {
 import {
   useIsFetching,
   useInfiniteQuery,
-  useQueryClient,
   useSuspenseQuery,
 } from "@tanstack/react-query";
 import type { Article } from "@/schemas";
@@ -67,13 +66,14 @@ import {
   validateArticleDraft,
 } from "./articles";
 import { DataVersionControls } from "./data-version-controls";
-import { useDataVersion } from "./data-version";
-import { articlesQueryOptions, normalizeArticleQuery } from "./queries";
 import {
-  isDataQuery,
-  useProtectedDataQueries,
-  useRemovePreviousGeneration,
-} from "./query-client";
+  queryTask,
+  useRequestIntent,
+  useVersionedQuery,
+} from "./hooks/useVersionedQuery";
+import { pushSearchUrl, subscribePopState } from "./search-history";
+import { articlesQueryOptions, normalizeArticleQuery } from "./queries";
+import { isDataQuery, useRemovePreviousGeneration } from "./query-client";
 import { useDebouncedAction } from "./hooks/useDebouncedAction";
 
 export type ArticlesAppProps = {
@@ -94,10 +94,28 @@ export default function ArticlesApp({
       ? parseArticleQuery(new URLSearchParams(window.location.search))
       : parseArticleQuery(configQueryParams(initialConfig ?? {})),
   );
-  const versionState = useDataVersion(initialDataVersion);
+  const requestIntent = useRequestIntent();
+  const [isPending, startTransition] = useTransition();
+  const commitQuery = useCallback(
+    (next: ArticleQuery, intent: number) => {
+      startTransition(() =>
+        setQuery((current) =>
+          requestIntent.current === intent ? next : current,
+        ),
+      );
+    },
+    [requestIntent],
+  );
+  const { versionState, load, requestFailure, retryFailedQuery, refresh } =
+    useVersionedQuery({
+      initialVersion: initialDataVersion,
+      requestIntent,
+      normalize: normalizeArticleQuery,
+      tasks: articleTasks,
+      commit: commitQuery,
+      errorMessage: "記事を取得できませんでした",
+    });
   const { adoptedVersion } = versionState;
-  const queryClient = useQueryClient();
-  const protectQueries = useProtectedDataQueries();
   const queryResult = useSuspenseQuery(
     articlesQueryOptions(adoptedVersion, query),
   );
@@ -112,11 +130,6 @@ export default function ArticlesApp({
     () => initialDraft ?? toArticleDraft(query),
   );
   const [validationError, setValidationError] = useState<string | null>(null);
-  const [requestFailure, setRequestFailure] = useState<{
-    error: Error;
-    query: ArticleQuery;
-    version: string;
-  } | null>(null);
   const tagOptions = normalizeTags([...initialTagOptions, ...draft.tags]);
   const clearTagsQuery = isSearchDraftValid(draft)
     ? commitArticleDraft(draft)
@@ -126,88 +139,21 @@ export default function ArticlesApp({
     tags: [],
     offset: 0,
   })}`;
-  const [isPending, startTransition] = useTransition();
-  const requestIntent = useRef(0);
-  useEffect(
-    () => () => {
-      requestIntent.current++;
-    },
-    [],
-  );
+
   const initialUrlChecked = useRef(false);
 
   // Stable ref for latest draft to avoid stale closures in debounce callback
   const latestDraftRef = useRef<ArticleDraft>(draft);
   const isComposing = useRef(false);
 
-  const load = useCallback(
-    async (
-      next: ArticleQuery,
-      options: {
-        version?: string;
-        force?: boolean;
-        commit?: boolean;
-        onSuccess?: (intent: number) => void;
-      } = {},
-    ): Promise<boolean> => {
-      const normalized = normalizeArticleQuery(next);
-      const version = options.version ?? adoptedVersion;
-      const intent = ++requestIntent.current;
-      setRequestFailure(null);
-      const queryOptions = articlesQueryOptions(version, normalized);
-      const releaseProtection = protectQueries([queryOptions.queryKey]);
-      try {
-        await queryClient.prefetchQuery(
-          options.force ? { ...queryOptions, staleTime: 0 } : queryOptions,
-        );
-        const data = queryClient.getQueryData(queryOptions.queryKey);
-        const state = queryClient.getQueryState(queryOptions.queryKey);
-        if (data === undefined || (options.force && state?.status === "error"))
-          throw state?.error ?? new Error("記事を取得できませんでした");
-        if (requestIntent.current !== intent) {
-          releaseProtection();
-          return false;
-        }
-        if (options.onSuccess) options.onSuccess(intent);
-        else if (options.commit !== false)
-          startTransition(() =>
-            setQuery((current) =>
-              requestIntent.current === intent ? normalized : current,
-            ),
-          );
-        return true;
-      } catch (error) {
-        releaseProtection();
-        if (requestIntent.current !== intent) return false;
-        const normalizedError =
-          error instanceof Error
-            ? error
-            : new Error("記事を取得できませんでした");
-        setRequestFailure({
-          error: normalizedError,
-          query: normalized,
-          version,
-        });
-        versionState.reportError(normalizedError);
-        return false;
-      }
-    },
-    [adoptedVersion, queryClient, protectQueries, versionState.reportError],
-  );
-
   const writeSearchUrl = useCallback((next: ArticleQuery) => {
-    const canonical = articleQueryParams(next).toString();
-    const current = articleQueryParams(
-      parseArticleQuery(new URLSearchParams(window.location.search)),
-    ).toString();
-    if (canonical === current) return;
-    const url = new URL(window.location.href);
-    url.searchParams.delete("sort");
-    for (const key of Object.keys(next)) url.searchParams.delete(key);
-    articleQueryParams(next).forEach((value, key) => {
-      url.searchParams.append(key, value);
-    });
-    window.history.pushState(null, "", url);
+    pushSearchUrl(
+      articleQueryParams(next),
+      articleQueryParams(
+        parseArticleQuery(new URLSearchParams(window.location.search)),
+      ),
+      ["sort", ...Object.keys(next)],
+    );
   }, []);
 
   const runSearch = useCallback(
@@ -240,7 +186,7 @@ export default function ArticlesApp({
       setValidationError(null);
       return nextDraft;
     },
-    [],
+    [requestIntent],
   );
   const navigate = useCallback(
     (next: ArticleQuery) => {
@@ -321,7 +267,7 @@ export default function ArticlesApp({
         setValidationError(null);
         void load(current);
       };
-      window.addEventListener("popstate", onPop);
+      const unsubscribe = subscribePopState(onPop);
       const current = parseArticleQuery(
         new URLSearchParams(window.location.search),
       );
@@ -334,7 +280,7 @@ export default function ArticlesApp({
           void load(current);
       }
       return () => {
-        window.removeEventListener("popstate", onPop);
+        unsubscribe();
         debouncedSearch.cancel();
       };
     },
@@ -355,31 +301,11 @@ export default function ArticlesApp({
     }
     navigate(commitArticleDraft(currentDraft));
   };
-  const retryFailedQuery = () => {
-    if (requestFailure)
-      void load(requestFailure.query, {
-        version: requestFailure.version,
-        force: true,
-      });
-  };
-  const refreshData = async () => {
-    const refreshIntent = ++requestIntent.current;
-    let version: string;
-    try {
-      version = await versionState.checkLatestVersion();
-    } catch (error) {
-      versionState.reportError(error);
-      return;
-    }
-    if (requestIntent.current !== refreshIntent) return;
-    const next = { ...query, offset: 0 };
-    const nextDraft = toArticleDraft(next);
-    await load(next, {
-      version,
-      force: true,
-      commit: false,
-      onSuccess: (intent) => {
-        if (requestIntent.current !== intent) return;
+  const refreshData = () =>
+    refresh(
+      () => ({ ...query, offset: 0 }),
+      (next, version, intent) => {
+        const nextDraft = toArticleDraft(next);
         latestDraftRef.current = nextDraft;
         setValidationError(null);
         writeSearchUrl(next);
@@ -395,8 +321,7 @@ export default function ArticlesApp({
           );
         });
       },
-    });
-  };
+    );
   const renderTextField = (name: "q" | "author") => (
     <label key={name} htmlFor={articleFieldId(name)}>
       {name === "q" ? "キーワード（タイトル）" : "投稿者（ID・名前）"}{" "}
@@ -920,4 +845,8 @@ function subscribeMobile(callback: () => void) {
   const media = window.matchMedia?.("(max-width: 639px)");
   media?.addEventListener("change", callback);
   return () => media?.removeEventListener("change", callback);
+}
+
+function articleTasks(version: string, query: ArticleQuery) {
+  return [queryTask(articlesQueryOptions(version, query))];
 }

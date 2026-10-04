@@ -41,3 +41,24 @@ a debounce cycle is not a substitute for aborting them.
 The hook awaits the action inside the transition. If the action updates React
 state after its own `await`, the action is responsible for wrapping that update
 in `startTransition` as required by React 19.
+
+## `useVersionedQuery` and `useRequestIntent`
+
+All three screens share event-driven retrieval through `useVersionedQuery`.
+Supply a stable query normalizer, typed `queryTask` list, and commit callback.
+The hook prefetches all tasks, checks their cache state (including failed forced
+refreshes with previously cached data), and commits only the latest intent.
+Failures keep existing results and retain the failed query/version for retry.
+Explicit refresh checks metadata first and loads the selected generation before
+calling the screen's adoption callback. Shared cached requests remain reusable;
+an obsolete intent prevents committing its result without cancelling other
+consumers' requests.
+
+`useRequestIntent` provides the stable ref used by loads and draft edits; unmount
+invalidates pending intents. Commit/adoption callbacks wrap React updates in a
+transition and recheck the intent in state updaters. Query protection survives
+prefetch until observers attach, a request fails/is superseded, or unmount.
+
+Call `useRemovePreviousGeneration` after `useSuspenseQuery` /
+`useSuspenseQueries` in each screen. Its effect must run after subscription
+updates, so the old generation's results are inactive when cleanup runs.

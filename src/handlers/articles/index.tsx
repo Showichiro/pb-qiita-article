@@ -1,4 +1,4 @@
-import { findAllArticles } from "@/db";
+import { loadArticles, loadArticlesPageData } from "@/services/articleQueries";
 import { ArticlesPage } from "@/pages";
 import type { ArticlesQuery } from "@/schemas";
 import type { Env } from "@/util";
@@ -21,12 +21,16 @@ export const articleApiHandler: Handler<
   const query = c.req.valid("query");
 
   return withDataVersion(c, async (db, generationId, _publishedSequence) => {
-    const results = await findAllArticles(db, generationId, {
-      ...query,
-      since: processDateParam(query.since),
-      until: processDateParam(query.until),
-    });
-    return c.json(results);
+    const { articles } = await loadArticles(
+      db,
+      {
+        ...query,
+        since: processDateParam(query.since),
+        until: processDateParam(query.until),
+      },
+      generationId,
+    );
+    return c.json(articles);
   });
 };
 
@@ -51,13 +55,12 @@ export const articlePageHandler: Handler<
       until: processDateParam(query.until),
     };
 
-    return c.render(
-      <ArticlesPage
-        db={db}
-        config={config}
-        dataVersion={generationId}
-        publishedSequence={publishedSequence}
-      />,
+    const data = await loadArticlesPageData(
+      db,
+      config,
+      generationId,
+      publishedSequence,
     );
+    return c.render(<ArticlesPage {...data} />);
   });
 };
