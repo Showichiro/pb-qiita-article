@@ -1,26 +1,8 @@
 /** @jsxImportSource react */
-import { PeriodShortcuts } from "./PeriodShortcuts";
-import { ActiveFilters } from "./active-filters";
-import { commonFilters } from "@/client/filter-state";
-import { FilterSheet } from "./filter-sheet";
-import {
-  Component,
-  Suspense,
-  lazy,
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-  useTransition,
-  type FormEvent,
-  type ReactNode,
-} from "react";
-import { useIsFetching, useSuspenseQuery } from "@tanstack/react-query";
+import { Component, Suspense, lazy, type ReactNode } from "react";
 import {
   Button,
   Card,
-  Input,
-  Select,
   Table,
   TableBody,
   TableCell,
@@ -28,48 +10,25 @@ import {
   TableHeader,
   TableRow,
 } from "./ui";
-import {
-  analysisDraftError,
-  analysisQueryParams,
-  analysisStateParams,
-  commitAnalysisDraft,
-  normalizeAnalysisTags,
-  parseAnalysisState,
-  toAnalysisDraft,
-  type AnalysisBootstrap,
-  type AnalysisDraft,
-  type AnalysisMetric,
-  type AnalysisQuery,
-  type AnalysisRow,
-  type AnalysisView,
+import type {
+  AnalysisBootstrap,
+  AnalysisDraft,
+  AnalysisMetric,
+  AnalysisQuery,
+  AnalysisRow,
+  AnalysisView,
 } from "./analysis";
+import { useAnalysisSearch } from "./useAnalysisSearch";
+import { AnalysisSearchForm } from "./AnalysisSearchForm";
 import { DataVersionControls } from "./data-version-controls";
 import {
-  queryTask,
-  useRequestIntent,
-  useVersionedQuery,
-} from "./hooks/useVersionedQuery";
-import { analysisSearchParsers } from "./search-params";
-import { useSearchParams } from "./hooks/useSearchParams";
-import { analysisQueryOptions, normalizeAnalysisQuery } from "./queries";
-import { isDataQuery, useRemovePreviousGeneration } from "./query-client";
-import {
   analysisCardClass,
-  analysisActionFocusId,
   analysisChartClass,
   analysisChartText,
-  analysisFieldClass,
-  analysisFieldId,
   analysisIslandClass,
   analysisNoteClass,
   analysisResultsClass,
-  analysisTagClearClass,
-  analysisTagClearFocusId,
-  analysisTagFieldClass,
-  analysisTagLabelClass,
-  analysisTagsClass,
 } from "./analysis-presentation";
-import { useDebouncedAction } from "./hooks/useDebouncedAction";
 
 const LazyAnalysisChart = lazy(() =>
   import("./analysis-chart").then(({ AnalysisChart }) => ({
@@ -90,487 +49,28 @@ export default function AnalysisApp({
   initialMetric,
   initialView,
 }: AnalysisAppProps) {
-  const initialQuery: AnalysisQuery = {
-    since: initialData.state.since,
-    until: initialData.state.until,
-    bucket: initialData.state.bucket,
-    author: initialData.state.author,
-    tags: [...initialData.state.tags],
-  };
-  const [query, setQuery] = useState(initialQuery);
-  const requestIntent = useRequestIntent();
-  const [isPending, startTransition] = useTransition();
-  const acceptedQuery = useRef(initialQuery);
-  const commitQuery = useCallback(
-    (next: AnalysisQuery, intent: number) => {
-      startTransition(() => {
-        if (requestIntent.current !== intent) return;
-        acceptedQuery.current = next;
-        setQuery((current) =>
-          requestIntent.current === intent ? next : current,
-        );
-      });
-    },
-    [requestIntent],
-  );
-  const { versionState, load, requestFailure, retryFailedQuery, refresh } =
-    useVersionedQuery({
-      initialVersion: initialData.dataVersion,
-      requestIntent,
-      normalize: normalizeAnalysisQuery,
-      tasks: analysisTasks,
-      commit: commitQuery,
-      errorMessage: "時系列データを取得できませんでした",
-    });
-  const { adoptedVersion } = versionState;
-  const queryResult = useSuspenseQuery(
-    analysisQueryOptions(adoptedVersion, query),
-  );
-  const requestQuery = queryResult.data.query;
-  const rows = queryResult.data.rows;
-  const isFetching = useIsFetching({
-    predicate: (activeQuery) =>
-      isDataQuery(activeQuery) && activeQuery.queryKey[0] === "analysis",
-  });
-  useRemovePreviousGeneration(adoptedVersion);
-  const [draft, setDraft] = useState(
-    () => initialDraft ?? toAnalysisDraft(initialQuery),
-  );
-  const latestDraft = useRef(draft);
-  const bootstrapClock = useRef(
-    new Date(`${initialData.state.until}T12:00:00.000Z`),
-  ).current;
-  const [metric, setMetric] = useState(
-    () => initialMetric ?? initialData.state.metric,
-  );
-  const [view, setView] = useState(() => initialView ?? initialData.state.view);
-  const composingRef = useRef(false);
-  const [validationError, setValidationError] = useState<string | null>(() =>
-    analysisDraftError(draft),
-  );
-
-  const { write } = useSearchParams(
-    analysisSearchParsers,
-    (params, initial) => {
-      const state = parseAnalysisState(params, bootstrapClock);
-      if (initial) return;
-      debouncedSearch.cancel();
-      const error = analysisDraftError(state);
-      if (error) {
-        requestIntent.current++;
-        setValidationError(error);
-        return;
-      }
-      const next: AnalysisQuery = {
-        since: state.since,
-        until: state.until,
-        bucket: state.bucket,
-        author: state.author,
-        tags: state.tags,
-      };
-      acceptedQuery.current = next;
-      const nextDraft = toAnalysisDraft(next);
-      latestDraft.current = nextDraft;
-      setDraft(nextDraft);
-      setMetric(state.metric);
-      setView(state.view);
-      setValidationError(null);
-      void load(next);
-    },
-  );
-  const writeUrl = useCallback(
-    (
-      query: AnalysisQuery,
-      nextMetric: AnalysisMetric,
-      nextView: AnalysisView,
-    ) => {
-      void write(
-        analysisStateParams({ ...query, metric: nextMetric, view: nextView }),
-      );
-    },
-    [write],
-  );
-
-  const acceptDraft = useCallback(
-    async (nextDraft: AnalysisDraft, signal?: AbortSignal) => {
-      if (signal?.aborted) return false;
-      const query = commitAnalysisDraft(nextDraft);
-      latestDraft.current = toAnalysisDraft(query);
-      setDraft(latestDraft.current);
-      setValidationError(null);
-      writeUrl(query, metric, view);
-      return load(query);
-    },
-    [load, metric, view, writeUrl],
-  );
-
-  const runDebouncedSearch = useCallback(
-    async (_scheduledDraft: AnalysisDraft, signal: AbortSignal) => {
-      if (signal.aborted) return;
-      const currentDraft = latestDraft.current;
-      if (analysisDraftError(currentDraft)) return;
-      await acceptDraft(currentDraft, signal);
-    },
-    [acceptDraft],
-  );
-  const debouncedSearch = useDebouncedAction(runDebouncedSearch, {
-    intervalMs: 500,
-    startTransition,
-    isValid: (value) => analysisDraftError(value) === null,
-    areEqual: (a, b) =>
-      analysisDraftError(a) === null &&
-      analysisDraftError(b) === null &&
-      analysisQueryParams(commitAnalysisDraft(a)).toString() ===
-        analysisQueryParams(commitAnalysisDraft(b)).toString(),
-  });
-
-  useEffect(() => () => debouncedSearch.cancel(), [debouncedSearch.cancel]);
-
-  const updateDraft = useCallback(
-    (field: keyof AnalysisDraft, value: string | string[]) => {
-      requestIntent.current++;
-      const next = { ...latestDraft.current, [field]: value };
-      latestDraft.current = next;
-      setDraft(next);
-      setValidationError(analysisDraftError(next));
-      return next;
-    },
-    [requestIntent],
-  );
-
-  const scheduleSearch = useCallback(
-    (next: AnalysisDraft, immediate: boolean) => {
-      const error = analysisDraftError(next);
-      setValidationError(error);
-      if (error) {
-        debouncedSearch.cancel();
-        return;
-      }
-      if (immediate) {
-        debouncedSearch.cancel();
-        acceptDraft(next);
-      } else {
-        debouncedSearch.trigger(next);
-      }
-    },
-    [acceptDraft, debouncedSearch.cancel, debouncedSearch.trigger],
-  );
-
-  const handleAuthorChange = useCallback(
-    (value: string, composing: boolean) => {
-      const next = updateDraft("author", value);
-      if (composing || composingRef.current) debouncedSearch.cancel();
-      else scheduleSearch(next, false);
-    },
-    [debouncedSearch.cancel, scheduleSearch, updateDraft],
-  );
-
-  const handleImmediateChange = useCallback(
-    (field: "since" | "until" | "bucket" | "tags", value: string | string[]) =>
-      scheduleSearch(updateDraft(field, value), true),
-    [scheduleSearch, updateDraft],
-  );
-
-  const setDisplay = useCallback(
-    (nextMetric: AnalysisMetric, nextView: AnalysisView) => {
-      setMetric(nextMetric);
-      setView(nextView);
-      writeUrl(acceptedQuery.current, nextMetric, nextView);
-    },
-    [writeUrl],
-  );
-
-  const submit = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const current = latestDraft.current;
-    const error = analysisDraftError(current);
-    setValidationError(error);
-    if (error) {
-      debouncedSearch.cancel();
-      return;
-    }
-    debouncedSearch.cancel();
-    acceptDraft(current);
-  };
-
-  const tagOptions = normalizeAnalysisTags([
-    ...initialData.tagOptions,
-    ...draft.tags,
-  ]);
-  const clearTagsQuery =
-    analysisDraftError(draft) === null
-      ? commitAnalysisDraft(draft)
-      : acceptedQuery.current;
-  const clearTagsHref = `/analysis?${analysisStateParams({
-    ...clearTagsQuery,
-    tags: [],
+  const {
+    requestQuery,
+    rows,
     metric,
     view,
-  })}`;
-  const refreshData = () =>
-    refresh(
-      () => query,
-      (next, version, intent) => {
-        writeUrl(next, metric, view);
-        startTransition(() => {
-          if (requestIntent.current !== intent) return;
-          versionState.setAdoptedVersion((current) =>
-            requestIntent.current === intent ? version : current,
-          );
-          acceptedQuery.current = next;
-          setQuery((current) =>
-            requestIntent.current === intent ? next : current,
-          );
-        });
-      },
-    );
-  const changeFilters = (patch: Record<string, string | string[]>) => {
-    const next = { ...latestDraft.current, ...patch };
-    latestDraft.current = next;
-    setDraft(next);
-    scheduleSearch(next, true);
-  };
-  const _dataQueryKey = analysisQueryOptions(adoptedVersion, query).queryKey;
+    versionState,
+    isFetching,
+    isPending,
+    refreshData,
+    requestFailure,
+    retryFailedQuery,
+    form,
+  } = useAnalysisSearch({
+    initialData,
+    initialDraft,
+    initialMetric,
+    initialView,
+  });
   return (
     <section className={analysisIslandClass} aria-label="時系列分析">
       <Card className={analysisCardClass}>
-        <PeriodShortcuts
-          range={draft}
-          dateOnly
-          onChange={(range) => {
-            requestIntent.current++;
-            const next = { ...latestDraft.current, ...range };
-            latestDraft.current = next;
-            setDraft(next);
-            scheduleSearch(next, true);
-          }}
-        />
-        <form
-          data-focus-id={analysisActionFocusId}
-          tabIndex={-1}
-          id="analysis-filters-form"
-          action="/analysis"
-          method="get"
-          onSubmit={submit}
-          onKeyDown={(event) => {
-            if (
-              event.key !== "Enter" ||
-              event.nativeEvent.isComposing ||
-              composingRef.current ||
-              !(event.target instanceof HTMLInputElement)
-            )
-              return;
-            event.preventDefault();
-            event.currentTarget.requestSubmit();
-          }}
-          className="query-form"
-        >
-          <FilterSheet
-            id="analysis-filters"
-            count={
-              commonFilters(query).filter((filter) => filter.key !== "period")
-                .length
-            }
-            controls={
-              <>
-                {" "}
-                <label
-                  className={analysisFieldClass}
-                  htmlFor={analysisFieldId("bucket")}
-                >
-                  集計単位{" "}
-                  <Select
-                    id={analysisFieldId("bucket")}
-                    name="bucket"
-                    value={draft.bucket}
-                    onChange={(event) =>
-                      handleImmediateChange("bucket", event.currentTarget.value)
-                    }
-                  >
-                    <option value="day">日</option>
-                    <option value="week">週</option>
-                    <option value="month">月</option>
-                  </Select>
-                </label>
-                <label
-                  className={analysisFieldClass}
-                  htmlFor={analysisFieldId("metric")}
-                >
-                  指標{" "}
-                  <Select
-                    id={analysisFieldId("metric")}
-                    name="metric"
-                    value={metric}
-                    onChange={(event) =>
-                      setDisplay(
-                        event.currentTarget.value === "likes"
-                          ? "likes"
-                          : "posts",
-                        view,
-                      )
-                    }
-                  >
-                    <option value="posts">記事数</option>
-                    <option value="likes">いいね数</option>
-                  </Select>
-                </label>
-                <label
-                  className={analysisFieldClass}
-                  htmlFor={analysisFieldId("view")}
-                >
-                  表示{" "}
-                  <Select
-                    id={analysisFieldId("view")}
-                    name="view"
-                    value={view}
-                    onChange={(event) =>
-                      setDisplay(
-                        metric,
-                        event.currentTarget.value === "chart"
-                          ? "chart"
-                          : "table",
-                      )
-                    }
-                  >
-                    <option value="table">表</option>
-                    <option value="chart">グラフ</option>
-                  </Select>
-                </label>
-              </>
-            }
-          >
-            <fieldset className="filter-field-group">
-              <legend>投稿者・タグ</legend>{" "}
-              <label
-                className={analysisFieldClass}
-                htmlFor={analysisFieldId("author")}
-              >
-                投稿者（ID・名前）{" "}
-                <Input
-                  id={analysisFieldId("author")}
-                  name="author"
-                  value={draft.author}
-                  onChange={(event) =>
-                    handleAuthorChange(
-                      event.currentTarget.value,
-                      event.nativeEvent instanceof InputEvent &&
-                        event.nativeEvent.isComposing,
-                    )
-                  }
-                  onCompositionStart={() => {
-                    composingRef.current = true;
-                    debouncedSearch.cancel();
-                  }}
-                  onCompositionEnd={(event) => {
-                    composingRef.current = false;
-                    handleAuthorChange(event.currentTarget.value, false);
-                  }}
-                />
-              </label>
-              <div
-                className={analysisTagFieldClass}
-                data-slot="analysis-tags-field"
-              >
-                <label
-                  className={analysisTagLabelClass}
-                  htmlFor={analysisFieldId("tags")}
-                >
-                  タグ（すべて一致）{" "}
-                  <Select
-                    id={analysisFieldId("tags")}
-                    name="tags"
-                    multiple
-                    size={4}
-                    className={analysisTagsClass}
-                    wrapperClassName={analysisTagsClass}
-                    value={draft.tags}
-                    onChange={(event) =>
-                      handleImmediateChange(
-                        "tags",
-                        Array.from(
-                          event.currentTarget.selectedOptions,
-                          (option) => option.value,
-                        ),
-                      )
-                    }
-                  >
-                    {tagOptions.map((tag) => (
-                      <option key={tag} value={tag}>
-                        {tag}
-                      </option>
-                    ))}
-                  </Select>
-                </label>
-                <a
-                  href={clearTagsHref}
-                  className={analysisTagClearClass}
-                  data-focus-id={analysisTagClearFocusId}
-                  onClick={(event) => {
-                    event.preventDefault();
-                    handleImmediateChange("tags", []);
-                  }}
-                >
-                  タグを解除
-                </a>
-              </div>
-            </fieldset>
-            <fieldset className="filter-field-group">
-              <legend>投稿期間</legend>
-              <label
-                className={analysisFieldClass}
-                htmlFor={analysisFieldId("since")}
-              >
-                開始日{" "}
-                <Input
-                  id={analysisFieldId("since")}
-                  name="since"
-                  type="date"
-                  value={draft.since}
-                  aria-describedby={
-                    validationError ? "analysis-validation" : undefined
-                  }
-                  onChange={(event) =>
-                    handleImmediateChange("since", event.currentTarget.value)
-                  }
-                />
-              </label>
-              <label
-                className={analysisFieldClass}
-                htmlFor={analysisFieldId("until")}
-              >
-                終了日{" "}
-                <Input
-                  id={analysisFieldId("until")}
-                  name="until"
-                  type="date"
-                  value={draft.until}
-                  aria-describedby={
-                    validationError ? "analysis-validation" : undefined
-                  }
-                  onChange={(event) =>
-                    handleImmediateChange("until", event.currentTarget.value)
-                  }
-                />
-              </label>
-            </fieldset>
-
-            {validationError && (
-              <p id="analysis-validation" role="alert">
-                {validationError}
-              </p>
-            )}
-          </FilterSheet>
-          <ActiveFilters
-            filters={commonFilters(query).filter(
-              (filter) => filter.key !== "period",
-            )}
-            onRemove={(filter) => changeFilters(filter.clear)}
-            onClear={() => changeFilters({ author: "", tags: [] })}
-          />
-          <p className="query-period-summary">
-            期間: {query.since} 〜 {query.until}
-          </p>{" "}
-        </form>
+        <AnalysisSearchForm {...form} />
         <p className={analysisNoteClass}>
           いいね数は各期間に公開された記事の現在値であり、その期間中に獲得した数ではありません。
         </p>
@@ -729,8 +229,4 @@ function AnalysisChartFallback({ metric }: { metric: AnalysisMetric }) {
       <div className={analysisChartClass} aria-hidden="true" />
     </figure>
   );
-}
-
-function analysisTasks(version: string, query: AnalysisQuery) {
-  return [queryTask(analysisQueryOptions(version, query))];
 }
