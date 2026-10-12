@@ -42,7 +42,7 @@
     "cf": "1.0.0-beta.11",
     "daisyui": "^5.7.47",
     "drizzle-kit": "^0.31.11",
-    "jsdom": "^30.1.1",
+    "jsdom": "^30.1.2",
     "miniflare": "^4.20260730.0",
     "postcss": "^8.5.28",
     "tailwindcss": "^4.3.3",
