@@ -25,7 +25,7 @@
         "@tailwindcss/postcss": "^4.3.3",
         "@types/react": "^19.3.0",
         "@types/react-dom": "^19.3.0",
-        "bun-types": "^1.4.2",
+        "bun-types": "^1.4.3",
         "cf": "1.0.0-beta.14",
         "daisyui": "^5.7.50",
         "drizzle-kit": "^0.31.11",
@@ -429,7 +429,7 @@
 
     "buffer-from": ["buffer-from@1.1.2", "", {}, "sha512-E+XQCRwSbaaiChtv6k6Dwgc+bx+Bs6vuKJHHl5kox/BaKbhiXzqQOwK4cO22yElGp2OCmjwVhT3HmxgyPGnJfQ=="],
 
-    "bun-types": ["bun-types@1.4.2", "", { "dependencies": { "@types/node": "*" } }, "sha512-bxV1FgK7yBIzjRe5zBozIM4Bem11ZJcCXSrjWRG3YWLt8yFDePu4cLjpebO8OvPeIE9trbyPF4fuj3Cia4Fj3w=="],
+    "bun-types": ["bun-types@1.4.3", "", { "dependencies": { "@types/node": "*", "undici-types": "*" } }, "sha512-tinRJNGOmUN+tEAsn2y2e942n9JHRHR42iUYzDH75NmhJqVBokGSQkkfSFdNWwsANIdrK6ACH9t01M452YyTwg=="],
 
     "cf": ["cf@1.0.0-beta.14", "", { "dependencies": { "@cloudflare/build-output-utils": "0.9.0", "@cloudflare/codemods": "0.4.2", "@cloudflare/config": "0.24.1", "@cloudflare/runtime-types": "0.1.9", "blake3-wasm": "2.1.5", "miniflare": "5.20261006.1-alpha", "minisearch": "7.2.0" }, "bin": { "cf": "./bin/cf", "cloudflare": "./bin/cf" } }, "sha512-CIDV5JAUIhJRTCPG3gR72BBzNbPH0NqpF/C3d6mPTXFd1LMbAgfAv6C0sg0MtLLb0blz1kFudDDd4azlKQ/p9A=="],
 
